@@ -1,13 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
-  subsets: ["latin"],
-  axes: ["opsz"],
-  style: ["normal", "italic"],
-});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -53,8 +46,15 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#050505",
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#050505" },
+    { media: "(prefers-color-scheme: light)", color: "#faf9f7" },
+  ],
 };
+
+/* Applied before first paint so the saved theme never flashes: the
+   night ledger is the default; "light" rides the document root. */
+const THEME_BOOT = `(function(){try{var t=localStorage.getItem("customs-theme");if(t==="light")document.documentElement.classList.add("light")}catch(e){}})();`;
 
 export default function RootLayout({
   children,
@@ -63,9 +63,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} antialiased bg-background text-foreground`}
-      >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT }} />
+      </head>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}>
         {children}
       </body>
     </html>

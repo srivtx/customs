@@ -40,6 +40,7 @@ const REQUIRED = [
   "src/components/customs/why.tsx", "src/components/customs/paper.tsx",
   "src/components/customs/bits.tsx", "src/components/customs/chat-events.tsx",
   "src/components/customs/demo-player.tsx",
+  "src/components/customs/theme.tsx",
   "src/components/customs/footer.tsx", "docs/FORM_ANSWERS.md", "docs/screenshots/landing.jpg",
   "docs/screenshots/playground.jpg", "docs/screenshots/control-room.jpg",
   "public/logo.svg", "public/logo-lockup.svg", "public/og.png",

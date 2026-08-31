@@ -345,7 +345,7 @@ export function ControlRoom() {
                       "btn-ghost h-7 rounded-[4px] border px-2.5 font-mono text-[9.5px] font-semibold uppercase tracking-[0.1em]",
                       ledgerFilter === f
                         ? "border-transparent bg-ink text-paper"
-                        : "border-line2 bg-transparent text-inksoft hover:border-white/30 hover:text-ink"
+                        : "border-line2 bg-transparent text-inksoft hover:border-ink/30 hover:text-ink"
                     )}
                   >
                     {f === "ALL" ? "all" : f.toLowerCase()} <span className="tnum opacity-70">{n}</span>
@@ -548,7 +548,7 @@ export function ControlRoom() {
       {/* ------------------------------ trace dialog ------------------------------ */}
       {traceFor && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-paper/70 p-4 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-label="trace replay"

@@ -1,152 +1,135 @@
 "use client";
 
 /**
- * footer.tsx — the bottom of the site: what Customs actually is, in plain
- * words, with the whole site and the whole repo reachable from one place.
- * Black ground, hairlines, mono links — the desk lamp is off.
+ * footer.tsx — the bottom of the desk, rebuilt on x.ai's footer pattern:
+ * a left column (mark, one copyright line, the theme toggle and the
+ * source pill at its foot) and quiet link columns on the right —
+ * 13px links at half opacity that only reach full ink on approach.
+ * No paragraphs, no stamps, no second bar. A footer says where things
+ * are; it does not repeat the site.
  */
-import { GhostButton, LogoMark, SectionLabel, Stamp } from "./bits";
+import { LogoMark } from "./bits";
+import { ThemeToggle } from "./theme";
 import type { View } from "./shell";
 
-const COUNTER_LINKS: { label: string; hint: string; view: View }[] = [
-  { label: "why it exists", hint: "the problem, the mandate principle, the architecture diagram", view: "why" },
-  { label: "the paper", hint: "how and what we are doing — the working paper, numbers live", view: "paper" },
-  { label: "agent playground", hint: "natural-language buying, tool transparency, mandate approval", view: "agent" },
-  { label: "control room", hint: "live channel P&L, ≥₹10k approvals, span-by-span replay", view: "merchant" },
+const GITHUB = "https://github.com/srivtx/customs";
+
+const SITE: { label: string; view: View }[] = [
+  { label: "Overview", view: "home" },
+  { label: "Why it exists", view: "why" },
+  { label: "The paper", view: "paper" },
+  { label: "Playground", view: "agent" },
+  { label: "Control room", view: "merchant" },
 ];
 
-const EVIDENCE_FILES: [string, string][] = [
-  ["JUDGE.md", "claims mapped to criteria, regenerate commands"],
-  ["PAPER.md", "the working paper, machine-legible"],
-  ["llms.txt", "the whole repo, machine-legible"],
-  ["AGENTS.md", "the invariants the code obeys"],
-  ["ARCHITECTURE.md", "decisions, diagram, P&L formula"],
-  ["ENGINEERING_LOG.md", "dated build log, incidents included"],
-  ["docs/FORM_ANSWERS.md", "the submission form, pre-written"],
+const EVIDENCE: [string, string][] = [
+  ["JUDGE.md", `${GITHUB}/blob/main/JUDGE.md`],
+  ["PAPER.md", `${GITHUB}/blob/main/PAPER.md`],
+  ["llms.txt", `${GITHUB}/blob/main/llms.txt`],
+  ["ENGINEERING_LOG.md", `${GITHUB}/blob/main/ENGINEERING_LOG.md`],
 ];
 
 const COMMANDS: [string, string][] = [
-  ["make triage", "60-second judge tour"],
-  ["make verify", "what CI checks every push"],
-  ["make fuzz", "12 authored attacks vs the gate"],
-  ["make ablation", "three protocols, overhead measured"],
-  ["make meter", "channel P&L from the ledger"],
-  ["make project", "the at-1M projection"],
+  ["make triage", `${GITHUB}#triage`],
+  ["make verify", `${GITHUB}#verify`],
+  ["make fuzz", `${GITHUB}#fuzz`],
 ];
 
 export function SiteFooter({ onEnter }: { onEnter: (view: View) => void }) {
   return (
-    <footer className="mt-auto border-t border-line bg-paper2/30">
-      {/* what it does */}
-      <div className="mx-auto max-w-[1200px] px-5 py-12 sm:px-8">
-        <SectionLabel>declaration — what this thing is</SectionLabel>
-        <div className="mt-6 grid gap-10 lg:grid-cols-[1.3fr_1fr_1fr_1fr]">
-          <div>
-            <h3 className="font-display text-[19px] font-semibold leading-snug tracking-[-0.02em] text-ink">
-              Customs is the checkpoint for agentic commerce.
-            </h3>
-            <p className="mt-3 max-w-sm text-[13px] leading-relaxed text-inksoft">
-              An AI buyer walks up to a storefront and spends real (test) money. Before a single
-              rupee moves, the desk checks a signed mandate — amount cap, item allowlist, expiry,
-              trust tier — re-verifies live prices in plain code, and writes every span to a
-              hash-chained ledger. The merchant watches it all clear on the other side of the
-              counter, with the channel&rsquo;s P&amp;L ticking live.
-            </p>
-            <p className="mt-3 max-w-sm text-[13px] leading-relaxed text-inksoft">
-              Both sides ship in one repo, run on one gate, and prove themselves to a machine in
-              sixty seconds.
-            </p>
-            <div className="mt-5 flex flex-wrap gap-2">
-              <GhostButton onClick={() => onEnter("agent")} active>
-                enter the playground
-              </GhostButton>
-              <GhostButton onClick={() => onEnter("merchant")}>open the control room</GhostButton>
+    <footer className="mt-auto border-t border-line">
+      <div className="mx-auto w-full max-w-[1200px] px-5 pb-12 pt-10 sm:px-8">
+        <div className="flex flex-col gap-10 lg:flex-row lg:gap-16">
+          {/* ---------------- the left column: mark, ©, lamp, source ---------------- */}
+          <div className="flex shrink-0 flex-col lg:w-[260px]">
+            <div>
+              <button
+                onClick={() => onEnter("home")}
+                className="group flex items-center gap-2.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink"
+                aria-label="Customs home"
+              >
+                <LogoMark
+                  size={18}
+                  className="text-ink/40 transition-colors group-hover:text-ink/70"
+                />
+                <span className="font-display text-[15px] font-semibold leading-none tracking-[-0.02em] text-ink/60 transition-colors group-hover:text-ink">
+                  Customs
+                </span>
+              </button>
+              <p className="mt-5 text-[10px] leading-relaxed text-inksoft">
+                © 2026 Customs · Razorpay AI Buildathon 2026, Track 1
+                <br />
+                Test mode only — no real money moves.
+              </p>
+            </div>
+
+            <div className="mt-auto flex items-center gap-3 pt-8">
+              <ThemeToggle />
+              <a
+                href={GITHUB}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border border-ink/[0.08] py-1.5 pl-2.5 pr-3 text-[10px] font-medium text-ink/50 transition-colors hover:border-ink/[0.16] hover:text-ink/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+              >
+                <svg aria-hidden className="size-3.5" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z" />
+                </svg>
+                srivtx/customs
+              </a>
             </div>
           </div>
 
-          <div>
-            <div className="label-caps">the counter — both sides</div>
-            <ul className="mt-3 space-y-3.5">
-              {COUNTER_LINKS.map((l) => (
-                <li key={l.label}>
+          {/* ---------------- quiet link columns ---------------- */}
+          <nav className="flex flex-1 flex-wrap gap-x-14 gap-y-8" aria-label="footer">
+            <div className="flex flex-col">
+              <span className="mb-1.5 text-[13px] font-medium text-ink/70">Site</span>
+              <div className="flex flex-col gap-1">
+                {SITE.map((l) => (
                   <button
+                    key={l.label}
                     onClick={() => onEnter(l.view)}
-                    className="group text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                    className="w-fit text-left text-[13px] leading-relaxed text-inksoft transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
                   >
-                    <span className="text-[13px] font-medium text-ink underline decoration-white/20 decoration-dotted underline-offset-4 transition-colors group-hover:decoration-white/60">
-                      {l.label} <span className="inline-block transition-transform group-hover:translate-x-0.5">→</span>
-                    </span>
-                    <span className="mt-0.5 block text-[12px] leading-relaxed text-inksoft">{l.hint}</span>
+                    {l.label}
                   </button>
-                </li>
-              ))}
-              <li className="pt-1">
-                <span className="text-[13px] font-medium text-ink">the trust ladder</span>
-                <span className="mt-0.5 block text-[12px] leading-relaxed text-inksoft">
-                  walk-in ₹500 · attested ₹5,000 · mandated ₹50,000 — and a human desk over ₹10,000, always.
-                </span>
-              </li>
-            </ul>
-          </div>
+                ))}
+              </div>
+            </div>
 
-          <div>
-            <div className="label-caps">the evidence — in the repo</div>
-            <ul className="mt-3 space-y-3.5">
-              {EVIDENCE_FILES.map(([f, d]) => (
-                <li key={f}>
+            <div className="flex flex-col">
+              <span className="mb-1.5 text-[13px] font-medium text-ink/70">Evidence</span>
+              <div className="flex flex-col gap-1">
+                {EVIDENCE.map(([label, href]) => (
                   <a
-                    href="https://github.com/srivtx/customs"
+                    key={label}
+                    href={href}
                     target="_blank"
                     rel="noreferrer"
-                    className="group block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                    className="w-fit font-mono text-[11.5px] leading-relaxed text-inksoft transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
                   >
-                    <span className="font-mono text-[11px] font-medium text-ink underline decoration-white/20 decoration-dotted underline-offset-4 transition-colors group-hover:decoration-white/60">
-                      {f}
-                    </span>
-                    <span className="mt-0.5 block text-[11.5px] leading-relaxed text-inksoft">{d}</span>
+                    {label}
                   </a>
-                </li>
-              ))}
-            </ul>
-          </div>
+                ))}
+              </div>
+            </div>
 
-          <div>
-            <div className="label-caps">the commands — regenerable</div>
-            <ul className="mt-3 space-y-3.5">
-              {COMMANDS.map(([c, d]) => (
-                <li key={c}>
-                  <code className="rounded-[4px] border border-line bg-card px-1.5 py-0.5 font-mono text-[10.5px] font-medium text-ink">
-                    {c}
-                  </code>
-                  <span className="mt-0.5 block text-[11.5px] leading-relaxed text-inksoft">{d}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      {/* the closing line */}
-      <div className="border-t border-line">
-        <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-x-8 gap-y-3 px-5 py-5 sm:px-8">
-          <div className="flex flex-wrap items-center gap-3">
-            <LogoMark size={22} className="text-ink" />
-            <span className="font-mono text-[10px] leading-relaxed text-inksoft">
-              Customs · Fieldnote Supply · desk no. 01 · Razorpay AI Buildathon 2026, Track 1
-            </span>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Stamp kind="sim" animate={false}>test mode · no real money</Stamp>
-            <Stamp kind="ink" animate={false}>every number regenerates</Stamp>
-            <a
-              href="https://github.com/srivtx/customs"
-              target="_blank"
-              rel="noreferrer"
-              className="font-mono text-[10px] uppercase tracking-[0.1em] text-inksoft underline decoration-white/20 decoration-dotted underline-offset-4 transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
-            >
-              source: github.com/srivtx/customs
-            </a>
-          </div>
+            <div className="flex flex-col">
+              <span className="mb-1.5 text-[13px] font-medium text-ink/70">Verify</span>
+              <div className="flex flex-col gap-1">
+                {COMMANDS.map(([label, href]) => (
+                  <a
+                    key={label}
+                    href={href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-fit font-mono text-[11.5px] leading-relaxed text-inksoft transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                  >
+                    {label}
+                  </a>
+                ))}
+              </div>
+            </div>
+          </nav>
         </div>
       </div>
     </footer>

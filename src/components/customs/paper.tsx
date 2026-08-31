@@ -3,10 +3,12 @@
 /**
  * paper.tsx — "Customs: a signed-mandate checkpoint for agentic payments,"
  * rendered as a working paper. The site is the night desk; the paper is
- * the document on it — the one light surface, set in serif, numbered
- * like a manuscript. §5–§6 numbers are read from the live ledger on
- * page load — the paper cites the running system, not a PDF.
- * PAPER.md in the repo is this page's machine-legible twin.
+ * the document on it — a white sheet set in Geist like the rest of the
+ * product (x.ai sets its docs in its own sans; we do the same), mono for
+ * anything that counts, numbered like a manuscript. §5–§6 numbers are
+ * read from the live ledger on page load — the paper cites the running
+ * system, not a PDF. PAPER.md in the repo is this page's machine-
+ * legible twin.
  */
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -51,12 +53,9 @@ export function PaperPage({ onEnter }: { onEnter: (v: View) => void }) {
   }, []);
 
   return (
-    <div className="mx-auto max-w-[840px]">
+    <div className="mx-auto max-w-[820px]">
       {/* ------------------------------ the sheet ------------------------------ */}
-      <article
-        className="sheet rounded-[4px] px-6 py-10 sm:px-12 sm:py-14"
-        style={{ fontFamily: "var(--font-fraunces), Georgia, serif" }}
-      >
+      <article className="sheet rounded-[4px] px-6 py-10 sm:px-14 sm:py-16">
         {/* masthead */}
         <header className="border-b border-[#17150f]/25 pb-7">
           <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-[10px] uppercase tracking-[0.12em] text-[#6b675c]">
@@ -72,9 +71,9 @@ export function PaperPage({ onEnter }: { onEnter: (v: View) => void }) {
         </header>
 
         {/* abstract */}
-        <section aria-label="abstract" className="mt-9">
+        <section aria-label="abstract" className="mt-12">
           <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-[#6b675c]">abstract</div>
-          <p className="mt-3 text-[15.5px] leading-[1.85] text-[#2d2a22]">
+          <p className="mt-3 text-[15.5px] leading-[1.8] text-[#2d2a22]">
             Payments infrastructure authenticates humans: PINs, OTPs, faces. AI buying
             agents — the channel every commerce platform is now preparing for — cannot
             present any of these. We present <strong className="font-semibold text-[#17150f]">Customs</strong>,
@@ -151,7 +150,7 @@ export function PaperPage({ onEnter }: { onEnter: (v: View) => void }) {
             canonical form is pinned by construction: any deviation fails verification
             rather than degrading to a heuristic. An illustrative envelope:
           </p>
-          <pre className="mt-4 overflow-x-auto rounded-[4px] border border-[#17150f]/10 bg-[#f0eee7] p-4 font-mono text-[11.5px] leading-relaxed text-[#2d2a22]"><code>{`{
+          <pre className="quiet-scroll mt-4 overflow-x-auto rounded-[4px] border border-[#17150f]/10 bg-[#f0eee7] p-4 font-mono text-[11.5px] leading-relaxed text-[#2d2a22]"><code>{`{
   "spec": "customs/mandate/1",
   "buyerId": "buyer_7f3k",
   "tier": "ATTESTED",
@@ -174,7 +173,7 @@ export function PaperPage({ onEnter }: { onEnter: (v: View) => void }) {
             tier escalation cannot be spent retroactively and a mandate cannot outlive
             its clock.
           </p>
-          <div className="mt-4 overflow-x-auto">
+          <div className="quiet-scroll mt-4 overflow-x-auto">
             <table className="w-full min-w-[520px] border-collapse text-left">
               <thead>
                 <tr className="border-b-2 border-[#17150f]/60">
@@ -215,7 +214,7 @@ export function PaperPage({ onEnter }: { onEnter: (v: View) => void }) {
             refuse garbage before expensive checks run, and no verdict depends on
             ordering side effects.
           </p>
-          <div className="mt-4 overflow-x-auto">
+          <div className="quiet-scroll mt-4 overflow-x-auto">
             <table className="w-full min-w-[560px] border-collapse text-left">
               <thead>
                 <tr className="border-b-2 border-[#17150f]/60">
@@ -339,7 +338,7 @@ export function PaperPage({ onEnter }: { onEnter: (v: View) => void }) {
         </PaperSection>
 
         {/* references */}
-        <section aria-label="references" className="mt-9 border-t border-[#17150f]/20 pt-6">
+        <section aria-label="references" className="mt-12 border-t border-[#17150f]/20 pt-7">
           <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-[#6b675c]">references</div>
           <ul className="mt-3 space-y-1.5 font-mono text-[10.5px] leading-relaxed text-[#57534a]">
             <li>[1] Razorpay AI Buildathon 2026 — brief and evaluation criteria. https://razorpay.com/buildathon/</li>
@@ -353,7 +352,7 @@ export function PaperPage({ onEnter }: { onEnter: (v: View) => void }) {
 
       {/* ------------------------------ off the sheet: continue on the desk ------------------------------ */}
       <Reveal>
-        <section className="flex flex-wrap items-center gap-3 pt-8" aria-label="continue">
+        <section className="flex flex-wrap items-center gap-3 pt-10" aria-label="continue">
           <InkButton onClick={() => onEnter("agent")} arrow>
             see the protocol run live
           </InkButton>
@@ -368,12 +367,12 @@ export function PaperPage({ onEnter }: { onEnter: (v: View) => void }) {
 
 function PaperSection({ n, title, children }: { n: string; title: string; children: React.ReactNode }) {
   return (
-    <section aria-label={`section ${n} ${title}`} className="mt-9 border-t border-[#17150f]/12 pt-7">
+    <section aria-label={`section ${n} ${title}`} className="mt-12 border-t border-[#17150f]/12 pt-8">
       <div className="flex items-baseline gap-3">
         <span className="font-mono text-[11px] font-semibold text-[#6b675c]">§{n}</span>
-        <h2 className="text-[21px] font-semibold tracking-[-0.01em] text-[#17150f]">{title}</h2>
+        <h2 className="font-display text-[22px] font-semibold tracking-[-0.015em] text-[#17150f]">{title}</h2>
       </div>
-      <div className="mt-4 space-y-4 text-[15px] leading-[1.85] text-[#2d2a22]">{children}</div>
+      <div className="mt-4 space-y-5 text-[15px] leading-[1.8] text-[#2d2a22]">{children}</div>
     </section>
   );
 }

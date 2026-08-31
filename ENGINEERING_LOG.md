@@ -279,3 +279,66 @@ breathing room, paper leading) applied and re-reviewed.
 the last thing most hackathon repos get right. One device, one accent, and
 numbers in mono is the aesthetic of a payment network, not a template.
 
+
+---
+
+## D8-1 — the desk lamp: dual themes, the quiet footer, real photos
+
+**Date:** 2026-09-01 · **Round:** v3 polish
+
+**What changed:**
+
+- **Two themes, one desk.** The night ledger stays the default; a light
+  "day ledger" is one toggle away — x.ai's footer pattern, measured from
+  their live DOM: a 28px round icon button at 40%/80% opacity, sun on the
+  night desk, moon on the day desk. Implementation: every color was already
+  a token, so the light theme is one `html.light { … }` block of flipped
+  values plus contrast tokens (`--cleared-contrast` etc. for filled chips),
+  `color-scheme` per theme, and a pre-paint no-flash script in layout.tsx
+  (persisted in `localStorage`). The window scrollbar and every scrollable
+  panel share one themed pill (`--sb-thumb`), engine-split for
+  Chromium/Firefox as before.
+- **The white/N utilities audit.** Every `border-white/25`, `bg-white/[0.05]`,
+  `hover:border-white/30`, `bg-black/70` was replaced with `ink`-based
+  overlays (`border-ink/25`, `bg-ink/[0.05]`, `bg-paper/70`) so overlays
+  invert with the theme instead of vanishing on the light ground. The
+  why-page architecture diagram re-inks itself: every stroke/fill is now a
+  `--di-*` CSS variable set via SVG `style` props (var() does not resolve
+  in presentation attributes — that detail cost one failed attempt).
+- **The footer rebuilt on x.ai's actual footer skeleton** (fetched and
+  measured): left column = mark + tiny © + theme toggle + source pill,
+  right = quiet 13px link columns at half opacity. Killed: four columns of
+  hints, two paragraphs, seven evidence blurbs, six command blurbs, three
+  stamps, the second closing bar. A footer says where things are; it does
+  not repeat the site.
+- **The "img text" fix.** The demo player's product card showed a literal
+  `img` placeholder box — the catalog had real photos all along
+  (`public/products/*.jpg`). The product and cart beats now render the
+  actual Bud-Pro photo (56px thumb on the cart line), same asset the
+  playground serves.
+- **Typography discipline.** Fraunces removed from the app entirely —
+  Geist Sans/Mono everywhere (x.ai uses its own sans for docs, not a
+  serif); the paper page keeps its white-sheet concept but set in Geist
+  with mono furniture, wider margins (sm:px-14, §-sections at mt-12/pt-8),
+  1.8 leading, and `.quiet-scroll` pills on every `overflow-x-auto` block
+  (pre, tables) so no raw Chromium scrollbar appears on a text page. The
+  why essay gets the same breathing room (py-20 sections, space-y-6).
+
+**Bugs found and fixed during the round:**
+- Stale dev-server console showed a phantom parse error at
+  chat-events.tsx:298 (mid-edit hot reload) — reload-verified clean; tsc
+  and eslint both green. Lesson re-learned: always re-check after HMR.
+- `hover:bg-white` on the primary InkButton would have rendered
+  white-on-white in light mode — now `hover:bg-ink/90`.
+
+**The test it became:** `make verify` REQUIRED now pins theme.tsx; a
+full 8-screenshot VLM review across both themes (landing light+dark,
+footer light, why+diagram light, paper light, playground, control room)
+returned SHIP on every surface, including "masterclass in grid-based
+structure" on the light control room. Theme persistence across reload
+verified in-browser (localStorage → pre-paint class, zero flash).
+
+**Why it matters for the pitch:** judges open the site at unknown hours
+in unknown color contexts — a footer that offers them the lamp, a diagram
+that re-inks itself, and photos where photos belong are the details that
+separate "a dark demo" from a product.

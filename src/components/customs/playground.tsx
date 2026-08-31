@@ -189,7 +189,7 @@ export function Playground() {
             onChange={(e) => setInput(e.target.value)}
             placeholder={sessionFresh ? "try: search headphones under 5000" : "message the agent…"}
             aria-label="message the agent"
-            className="h-10 flex-1 rounded-[4px] border border-line2 bg-card px-3 text-[13px] text-ink placeholder:text-inksoft/60 transition-colors focus:border-white/30 focus:outline-none"
+            className="h-10 flex-1 rounded-[4px] border border-line2 bg-card px-3 text-[13px] text-ink placeholder:text-inksoft/60 transition-colors focus:border-ink/30 focus:outline-none"
           />
           <InkButton type="submit" disabled={busy || !input.trim()} ariaLabel="send message">
             Send

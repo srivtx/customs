@@ -14,12 +14,12 @@ export function WhyPage({ onEnter }: { onEnter: (v: View) => void }) {
   return (
     <div>
       {/* ------------------------------ the claim ------------------------------ */}
-      <section aria-label="why customs exists" className="pb-16 pt-6 sm:pt-10">
+      <section aria-label="why customs exists" className="pb-20 pt-6 sm:pt-12">
         <p className="label-caps">why customs exists</p>
         <h1 className="mt-6 max-w-[22ch] font-display text-[clamp(34px,5.4vw,64px)] font-semibold leading-[1.04] tracking-[-0.03em] text-ink">
           Every checkout assumes a human is paying.
         </h1>
-        <div className="mt-8 max-w-[62ch] space-y-5 text-[16px] leading-[1.75] text-inksoft">
+        <div className="mt-8 max-w-[62ch] space-y-6 text-[16px] leading-[1.8] text-inksoft">
           <p>
             Cards have CVV prompts and OTP screens. Wallets want a face or a
             fingerprint. UPI wants a PIN pushed to a phone a person is holding.
@@ -53,9 +53,9 @@ export function WhyPage({ onEnter }: { onEnter: (v: View) => void }) {
 
       {/* ------------------------------ the principle ------------------------------ */}
       <Reveal>
-        <section className="rounded-[4px] border border-line bg-card px-6 py-7" aria-label="the principle">
+        <section className="rounded-[4px] border border-line bg-card px-6 py-8 sm:px-8 sm:py-9" aria-label="the principle">
           <SectionLabel>the principle — machines get mandates, not cards</SectionLabel>
-          <p className="mt-4 max-w-[62ch] text-[15px] leading-[1.75] text-inksoft">
+          <p className="mt-4 max-w-[62ch] text-[15px] leading-[1.8] text-inksoft">
             A customs house never asks the cargo whether it is honest. It asks
             for the manifest, checks it against the rules, stamps what passes,
             and refuses what does not — every decision written down. Customs
@@ -101,7 +101,7 @@ export function WhyPage({ onEnter }: { onEnter: (v: View) => void }) {
 
       {/* ------------------------------ the architecture ------------------------------ */}
       <Reveal>
-        <section aria-label="architecture" className="py-16">
+        <section aria-label="architecture" className="py-20">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <h2 className="font-display text-[clamp(24px,3vw,34px)] font-semibold tracking-[-0.025em] text-ink">
               One gate, two counters.
@@ -136,11 +136,11 @@ export function WhyPage({ onEnter }: { onEnter: (v: View) => void }) {
 
       {/* ------------------------------ the honest scope ledger ------------------------------ */}
       <Reveal>
-        <section aria-label="what exists and what does not" className="pb-16">
+        <section aria-label="what exists and what does not" className="pb-20">
           <h2 className="font-display text-[clamp(24px,3vw,34px)] font-semibold tracking-[-0.025em] text-ink">
             What exists — the whole truth.
           </h2>
-          <p className="mt-4 max-w-[62ch] text-[15px] leading-[1.75] text-inksoft">
+          <p className="mt-4 max-w-[62ch] text-[15px] leading-[1.8] text-inksoft">
             We hold ourselves to the brief's own bar — every money action
             explainable, bounded and gated — and to a rule set in AGENTS.md:
             nothing ships unlabeled. If a number is in this product, it
@@ -224,20 +224,24 @@ export function WhyPage({ onEnter }: { onEnter: (v: View) => void }) {
 }
 
 /* ------------------------------------------------------------------ */
-/* the architecture diagram — drawn, not screenshotted (dark)          */
+/* the architecture diagram — drawn, not screenshotted. Every ink is   */
+/* a CSS variable (--di-*), so the diagram re-inks itself when the    */
+/* desk lamp flips: white-on-black at night, black-on-paper by day.   */
 /* ------------------------------------------------------------------ */
 
 function ArchDiagram() {
-  const ink = "#f4f4f0";
-  const soft = "rgba(244,244,240,0.55)";
-  const line = "rgba(244,244,240,0.28)";
-  const hair = "rgba(244,244,240,0.14)";
-  const sage = "#a2c0a9";
+  const ink = "var(--di-ink)";
+  const soft = "var(--di-soft)";
+  const line = "var(--di-line)";
+  const hair = "var(--di-hair)";
+  const sage = "var(--cleared)";
+  const fillBox = "var(--di-fill)";
+  const fillBox2 = "var(--di-fill2)";
   const monoF = { fontFamily: "var(--font-geist-mono), monospace" };
-  const boxStyle = { fill: "rgba(255,255,255,0.03)", stroke: line, strokeWidth: 1 };
-  const gateStyle = { fill: "rgba(255,255,255,0.03)", stroke: ink, strokeWidth: 1.5 };
-  const caps = (x: number, y: number, s: string, size = 10, fill = soft, ls = 1.4) => (
-    <text x={x} y={y} fontSize={size} fill={fill} letterSpacing={ls} style={monoF} textAnchor="middle">
+  const boxStyle = { fill: fillBox, stroke: line, strokeWidth: 1 };
+  const gateStyle = { fill: fillBox, stroke: ink, strokeWidth: 1.5 };
+  const caps = (x: number, y: number, s: string, size = 10, fill: string = soft, ls = 1.4) => (
+    <text x={x} y={y} fontSize={size} letterSpacing={ls} style={{ ...monoF, fill }} textAnchor="middle">
       {s}
     </text>
   );
@@ -250,14 +254,14 @@ function ArchDiagram() {
     >
       <title>Customs architecture diagram</title>
       <defs>
-        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-          <path d="M 0 1 L 9 5 L 0 9 z" fill={line} />
+        <marker id="arrow" viewBox="0 0 10 10" refX={9} refY={5} markerWidth={7} markerHeight={7} orient="auto-start-reverse">
+          <path d="M 0 1 L 9 5 L 0 9 z" style={{ fill: line }} />
         </marker>
-        <marker id="arrowInk" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-          <path d="M 0 1 L 9 5 L 0 9 z" fill={ink} />
+        <marker id="arrowInk" viewBox="0 0 10 10" refX={9} refY={5} markerWidth={7} markerHeight={7} orient="auto-start-reverse">
+          <path d="M 0 1 L 9 5 L 0 9 z" style={{ fill: ink }} />
         </marker>
-        <marker id="arrowSage" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-          <path d="M 0 1 L 9 5 L 0 9 z" fill={sage} />
+        <marker id="arrowSage" viewBox="0 0 10 10" refX={9} refY={5} markerWidth={7} markerHeight={7} orient="auto-start-reverse">
+          <path d="M 0 1 L 9 5 L 0 9 z" style={{ fill: sage }} />
         </marker>
       </defs>
 
@@ -277,17 +281,17 @@ function ArchDiagram() {
       <rect x={54} y={214} width={192} height={54} rx={3} style={boxStyle} />
       {caps(150, 236, "ADAPTER")}
       {caps(150, 252, "naive / mcp / acp", 9)}
-      <path d="M150 120 L150 140" stroke={line} strokeWidth={1} markerEnd="url(#arrow)" />
-      <path d="M150 194 L150 214" stroke={line} strokeWidth={1} markerEnd="url(#arrow)" />
+      <path d="M150 120 L150 140" style={{ stroke: line, strokeWidth: 1 }} markerEnd="url(#arrow)" />
+      <path d="M150 194 L150 214" style={{ stroke: line, strokeWidth: 1 }} markerEnd="url(#arrow)" />
 
       {/* mandate approval loop (human in the loop) */}
-      <path d="M246 93 C 300 93 310 120 356 120" fill="none" stroke={sage} strokeWidth={1} markerEnd="url(#arrowSage)" strokeDasharray="5 3" opacity={0.8} />
+      <path d="M246 93 C 300 93 310 120 356 120" fill="none" style={{ stroke: sage, strokeWidth: 1 }} markerEnd="url(#arrowSage)" strokeDasharray="5 3" opacity={0.8} />
       {caps(300, 63, "mandate approval", 9, sage, 1.2)}
 
       {/* gate box */}
       <rect x={360} y={44} width={340} height={286} rx={4} style={gateStyle} />
       {/* the diamond mark, top-left of the gate header */}
-      <path transform="translate(376, 50) scale(0.42)" d="M30 6 L54 30 L30 54 L6 30 Z M24 17 A6 6 0 0 1 36 17 L36 39 A6 6 0 0 1 24 39 Z" fillRule="evenodd" fill={ink} />
+      <path transform="translate(376, 50) scale(0.42)" d="M30 6 L54 30 L30 54 L6 30 Z M24 17 A6 6 0 0 1 36 17 L36 39 A6 6 0 0 1 24 39 Z" fillRule="evenodd" style={{ fill: ink }} />
       {caps(536, 66, "CUSTOMS GATE")}
       {caps(536, 81, "decide() — 10 checks, plain code", 9)}
       {[
@@ -299,14 +303,14 @@ function ArchDiagram() {
         "≥ ₹10,000 → human desk",
       ].map((s, i) => (
         <g key={s}>
-          <rect x={386} y={96 + i * 30} width={288} height={24} rx={2} fill="rgba(255,255,255,0.045)" />
-          <circle cx={400} cy={108 + i * 30} r={3} fill={sage} />
-          <text x={414} y={112 + i * 30} fontSize={10.5} fill={ink} style={monoF} letterSpacing={0.4}>
+          <rect x={386} y={96 + i * 30} width={288} height={24} rx={2} style={{ fill: fillBox2 }} />
+          <circle cx={400} cy={108 + i * 30} r={3} style={{ fill: sage }} />
+          <text x={414} y={112 + i * 30} fontSize={10.5} letterSpacing={0.4} style={{ ...monoF, fill: ink }}>
             {s}
           </text>
         </g>
       ))}
-      <path d="M246 241 C 300 241 310 190 360 186" fill="none" stroke={ink} strokeWidth={1.5} markerEnd="url(#arrowInk)" />
+      <path d="M246 241 C 300 241 310 190 360 186" fill="none" style={{ stroke: ink, strokeWidth: 1.5 }} markerEnd="url(#arrowInk)" />
       {caps(300, 332, "every tool call crosses here", 8.5)}
 
       {/* rail */}
@@ -314,7 +318,7 @@ function ArchDiagram() {
       {caps(800, 160, "THE RAIL")}
       {caps(800, 176, "razorpay test", 9)}
       {caps(800, 190, "or labeled sim", 9)}
-      <path d="M700 172 L742 172" stroke={ink} strokeWidth={1.5} markerEnd="url(#arrowInk)" />
+      <path d="M700 172 L742 172" style={{ stroke: ink, strokeWidth: 1.5 }} markerEnd="url(#arrowInk)" />
 
       {/* merchant box */}
       <rect x={890} y={44} width={140} height={252} rx={4} style={{ fill: "none", stroke: hair, strokeDasharray: "3 4", strokeWidth: 1 }} />
@@ -327,28 +331,28 @@ function ArchDiagram() {
       <rect x={906} y={214} width={108} height={54} rx={3} style={boxStyle} />
       {caps(960, 236, "RED-TEAM LOG", 10, soft, 0.8)}
       {caps(960, 252, "12 · all blocked", 9, soft, 0.5)}
-      <path d="M858 172 L890 172" stroke={ink} strokeWidth={1.5} markerEnd="url(#arrowInk)" />
+      <path d="M858 172 L890 172" style={{ stroke: ink, strokeWidth: 1.5 }} markerEnd="url(#arrowInk)" />
 
       {/* ledger bar — spans everything */}
-      <rect x={30} y={368} width={1000} height={76} rx={4} fill="rgba(255,255,255,0.03)" stroke={hair} strokeWidth={1} />
+      <rect x={30} y={368} width={1000} height={76} rx={4} style={{ fill: fillBox, stroke: hair, strokeWidth: 1 }} />
       {caps(530, 396, "HASH-CHAINED LEDGER — THE AUDIT TRAIL IS THE DATABASE", 11, ink, 2)}
       {/* chain links */}
       {Array.from({ length: 12 }, (_, i) => {
         const x = 110 + i * 76;
         return (
           <g key={i}>
-            <rect x={x} y={414} width={26} height={22} rx={2} fill="rgba(255,255,255,0.05)" stroke={line} strokeWidth={0.8} />
-            <text x={x + 13} y={429} fontSize={8.5} fill={soft} style={monoF} textAnchor="middle">
+            <rect x={x} y={414} width={26} height={22} rx={2} style={{ fill: fillBox2, stroke: line, strokeWidth: 0.8 }} />
+            <text x={x + 13} y={429} fontSize={8.5} style={{ ...monoF, fill: soft }} textAnchor="middle">
               {`#${i + 1}`}
             </text>
-            {i < 11 && <path d={`M${x + 26} 425 L${x + 76} 425`} stroke={hair} strokeWidth={1} />}
+            {i < 11 && <path d={`M${x + 26} 425 L${x + 76} 425`} style={{ stroke: hair, strokeWidth: 1 }} />}
           </g>
         );
       })}
       {/* arrows into the ledger */}
-      <path d="M150 296 L150 368" stroke={line} strokeWidth={1} markerEnd="url(#arrow)" />
-      <path d="M530 330 L530 368" stroke={ink} strokeWidth={1.5} markerEnd="url(#arrowInk)" />
-      <path d="M960 296 L960 368" stroke={line} strokeWidth={1} markerEnd="url(#arrow)" />
+      <path d="M150 296 L150 368" style={{ stroke: line, strokeWidth: 1 }} markerEnd="url(#arrow)" />
+      <path d="M530 330 L530 368" style={{ stroke: ink, strokeWidth: 1.5 }} markerEnd="url(#arrowInk)" />
+      <path d="M960 296 L960 368" style={{ stroke: line, strokeWidth: 1 }} markerEnd="url(#arrow)" />
       {caps(196, 348, "approvals, refusals, every span", 9)}
       {caps(560, 348, "every verdict, hash-chained", 9)}
       {caps(922, 348, "replay + tamper probe", 9)}

@@ -55,8 +55,8 @@ const STAMP_STYLES: Record<StampKind, string> = {
   cleared: "border-cleared/50 text-cleared bg-cleared/15",
   refused: "border-refused/50 text-refused bg-refused/15",
   held: "border-held/50 text-held bg-held/15",
-  ink: "border-white/25 text-ink bg-white/[0.05]",
-  sim: "border-white/25 text-ink bg-white/[0.04]",
+  ink: "border-ink/25 text-ink bg-ink/[0.05]",
+  sim: "border-ink/25 text-ink bg-ink/[0.04]",
 };
 
 export function Stamp({
@@ -107,7 +107,7 @@ export function StatusChip({ status }: { status: string }) {
 
 export function TierChip({ tier }: { tier: string }) {
   const style: Record<string, string> = {
-    UNVERIFIED: "border-white/25 text-ink/80 bg-white/[0.04]",
+    UNVERIFIED: "border-ink/25 text-ink/80 bg-ink/[0.04]",
     ATTESTED: "border-held/50 text-held bg-held/15",
     MANDATED: "border-cleared/50 text-cleared bg-cleared/15",
   };
@@ -208,9 +208,9 @@ export function ManifestRow({
 export type InkVariant = "ink" | "cleared" | "refused";
 
 const INK_VARIANTS: Record<InkVariant, string> = {
-  ink: "border-transparent bg-ink text-paper hover:bg-white",
-  cleared: "border-cleared/60 bg-cleared text-[#0a0f0b] hover:brightness-110",
-  refused: "border-refused/60 bg-refused text-[#140a08] hover:brightness-110",
+  ink: "border-transparent bg-ink text-paper hover:bg-ink/90",
+  cleared: "border-cleared/60 bg-cleared text-cleared-contrast hover:brightness-110",
+  refused: "border-refused/60 bg-refused text-refused-contrast hover:brightness-110",
 };
 
 export function InkButton({
@@ -295,10 +295,10 @@ export function GhostButton({
         "hover:-translate-y-px active:translate-y-[0.5px]",
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink",
         "disabled:pointer-events-none disabled:opacity-40",
-        variant === "default" && "border-line2 text-inksoft hover:border-white/30 hover:text-ink hover:bg-white/[0.03]",
+        variant === "default" && "border-line2 text-inksoft hover:border-ink/30 hover:text-ink hover:bg-ink/[0.04]",
         variant === "danger" && "border-refused/30 text-refused hover:border-refused/60 hover:bg-refused-ink",
-        variant === "ink" && "border-line2 text-ink hover:border-white/30 hover:bg-white/[0.03]",
-        active && "border-white/25 bg-white/[0.06] text-ink",
+        variant === "ink" && "border-line2 text-ink hover:border-ink/30 hover:bg-ink/[0.04]",
+        active && "border-ink/25 bg-ink/[0.06] text-ink",
         className
       )}
     >
@@ -311,7 +311,7 @@ export function GhostButton({
 
 export function Kbd({ children }: { children: ReactNode }) {
   return (
-    <kbd className="rounded-[3px] border border-line2 bg-white/[0.03] px-1.5 py-0.5 font-mono text-[10px] text-ink">
+    <kbd className="rounded-[3px] border border-line2 bg-ink/[0.04] px-1.5 py-0.5 font-mono text-[10px] text-ink">
       {children}
     </kbd>
   );
@@ -351,7 +351,7 @@ export function MeterBar({
   return (
     <div className="grid grid-cols-[110px_1fr_86px] items-center gap-3 py-1">
       <span className="truncate font-mono text-[11px] text-inksoft">{label}</span>
-      <span className="h-[6px] rounded-full bg-white/[0.05]">
+      <span className="h-[6px] rounded-full bg-ink/[0.06]">
         <span className={cn("block h-full rounded-full", fill[kind])} style={{ width: `${pct}%` }} />
       </span>
       <span className="tnum text-right font-mono text-[11px] text-ink">{right}</span>

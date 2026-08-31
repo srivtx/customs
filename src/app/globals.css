@@ -54,14 +54,16 @@
   --color-line2: var(--line-strong);
   --color-cleared: var(--cleared);
   --color-cleared-ink: var(--cleared-ink);
+  --color-cleared-contrast: var(--cleared-contrast);
   --color-refused: var(--refused);
   --color-refused-ink: var(--refused-ink);
+  --color-refused-contrast: var(--refused-contrast);
   --color-held: var(--held);
   --color-held-ink: var(--held-ink);
 }
 
 /*
- * Customs — the design language, v2.
+ * Customs — the design language, v3.
  *
  * One device: the hairline. A near-black ground, white ink, one accent
  * (the sage). Geometry is sharp (4px), motion is 300ms ease, typography
@@ -69,9 +71,14 @@
  * Verdict color exists to mean something — cleared, refused, held — and
  * nothing else is allowed to be colored. No grain, no glow, no rotated
  * stamps, no second border style. Restraint reads as production.
+ *
+ * Two themes, one desk: the night ledger (default) and the day ledger
+ * (opt-in, from the footer, persisted, no flash — x.ai's pattern). Every
+ * color is a token; the tokens flip; nothing else changes.
  */
 :root {
   --radius: 0.25rem;
+  color-scheme: dark;
 
   --paper: #050505;
   --paper2: #0c0c0c;
@@ -82,10 +89,25 @@
 
   --cleared: #a2c0a9;
   --cleared-ink: rgba(162, 192, 169, 0.1);
+  --cleared-contrast: #0a0f0b;
   --refused: #e5887a;
   --refused-ink: rgba(229, 136, 122, 0.09);
+  --refused-contrast: #140a08;
   --held: #d6a251;
   --held-ink: rgba(214, 162, 81, 0.09);
+
+  --sb-thumb: rgba(255, 255, 255, 0.14);
+  --sb-thumb-hover: rgba(255, 255, 255, 0.28);
+  --card-hover: #0d0d0d;
+  --selection: rgba(162, 192, 169, 0.28);
+
+  /* diagram inks (the why-page SVG reads these, so it re-inks itself) */
+  --di-ink: #f4f4f0;
+  --di-soft: rgba(244, 244, 240, 0.55);
+  --di-line: rgba(244, 244, 240, 0.28);
+  --di-hair: rgba(244, 244, 240, 0.14);
+  --di-fill: rgba(255, 255, 255, 0.03);
+  --di-fill2: rgba(255, 255, 255, 0.045);
 
   /* shadcn variables remapped onto the ledger palette */
   --background: var(--paper);
@@ -121,8 +143,47 @@
   --sidebar-ring: var(--ring);
 }
 
-/* One theme, deliberately: the night ledger. The paper view (the working
-   paper) is the single light surface — a document on the desk. */
+/* The day ledger: the same desk with the lights on. Opt-in from the
+   footer toggle, persisted in localStorage, applied pre-paint by the
+   no-flash script in layout.tsx. Same tokens, flipped values — the
+   sheet (the working paper) stays a document either way. */
+html.light {
+  color-scheme: light;
+
+  --paper: #faf9f7;
+  --paper2: #f1efe9;
+  --ink: #16130e;
+  --ink-soft: rgba(22, 19, 14, 0.62);
+  --line: rgba(22, 19, 14, 0.09);
+  --line-strong: rgba(22, 19, 14, 0.24);
+
+  --cleared: #2f6b47;
+  --cleared-ink: rgba(47, 107, 71, 0.08);
+  --cleared-contrast: #eef5f0;
+  --refused: #b3492f;
+  --refused-ink: rgba(179, 73, 47, 0.07);
+  --refused-contrast: #f8efe9;
+  --held: #916a1e;
+  --held-ink: rgba(145, 106, 30, 0.07);
+
+  --sb-thumb: rgba(22, 19, 14, 0.22);
+  --sb-thumb-hover: rgba(22, 19, 14, 0.4);
+  --card-hover: #fdfcfa;
+  --selection: rgba(47, 107, 71, 0.16);
+
+  --di-ink: #16130e;
+  --di-soft: rgba(22, 19, 14, 0.6);
+  --di-line: rgba(22, 19, 14, 0.3);
+  --di-hair: rgba(22, 19, 14, 0.16);
+  --di-fill: rgba(22, 19, 14, 0.03);
+  --di-fill2: rgba(22, 19, 14, 0.045);
+
+  --card: #ffffff;
+  --popover: #ffffff;
+  --ring: rgba(22, 19, 14, 0.35);
+  --input: rgba(22, 19, 14, 0.25);
+  --sidebar: #ffffff;
+}
 
 @layer base {
   * {
@@ -136,18 +197,19 @@
     font-feature-settings: "ss01" on, "cv11" on;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
   ::selection {
-    background: rgba(162, 192, 169, 0.28);
+    background: var(--selection);
   }
-  ::-webkit-calendar-picker-indicator {
+  html:not(.light) ::-webkit-calendar-picker-indicator {
     filter: invert(1);
   }
 }
 
 @layer utilities {
   .font-display {
-    font-family: var(--font-geist-sans), var(--font-fraunces), Georgia, serif;
+    font-family: var(--font-geist-sans), Georgia, serif;
     letter-spacing: -0.02em;
   }
 
@@ -176,52 +238,67 @@
   }
 
   /* ------------------------------------------------------------------
-   * the one scrollbar — thin, quiet, on black.
+   * the one scrollbar — thin, quiet, on the desk.
    * Engine split: Firefox gets the standard thin/color props. But
    * Chromium ignores ::-webkit-scrollbar whenever those props are set,
    * so inside a selector only Chromium matches we reset them to auto
-   * and draw the custom inset pill by hand.
+   * and draw the custom inset pill by hand. The window scrollbar and
+   * every scrollable panel share one design — themed via --sb-thumb.
    * ------------------------------------------------------------------ */
+  html,
   .chat-scroll,
   .rail-scroll,
-  .ledger-scroll {
+  .ledger-scroll,
+  .quiet-scroll {
     scrollbar-width: thin;
-    scrollbar-color: var(--line-strong) transparent;
+    scrollbar-color: var(--sb-thumb) transparent;
     overscroll-behavior: contain;
   }
   @supports selector(::-webkit-scrollbar) {
+    html,
     .chat-scroll,
     .rail-scroll,
-    .ledger-scroll {
+    .ledger-scroll,
+    .quiet-scroll {
       scrollbar-width: auto;
       scrollbar-color: auto;
     }
+    html::-webkit-scrollbar,
     .chat-scroll::-webkit-scrollbar,
     .rail-scroll::-webkit-scrollbar,
-    .ledger-scroll::-webkit-scrollbar {
+    .ledger-scroll::-webkit-scrollbar,
+    .quiet-scroll::-webkit-scrollbar {
       width: 8px;
       height: 8px;
     }
+    html::-webkit-scrollbar-thumb,
     .chat-scroll::-webkit-scrollbar-thumb,
     .rail-scroll::-webkit-scrollbar-thumb,
-    .ledger-scroll::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.14);
+    .ledger-scroll::-webkit-scrollbar-thumb,
+    .quiet-scroll::-webkit-scrollbar-thumb {
+      background: var(--sb-thumb);
       background-clip: content-box;
       border: 2px solid transparent;
       border-radius: 999px;
     }
+    html::-webkit-scrollbar-thumb:hover,
     .chat-scroll::-webkit-scrollbar-thumb:hover,
     .rail-scroll::-webkit-scrollbar-thumb:hover,
-    .ledger-scroll::-webkit-scrollbar-thumb:hover {
-      background: rgba(255, 255, 255, 0.28);
+    .ledger-scroll::-webkit-scrollbar-thumb:hover,
+    .quiet-scroll::-webkit-scrollbar-thumb:hover {
+      background: var(--sb-thumb-hover);
       background-clip: content-box;
     }
+    html::-webkit-scrollbar-track,
     .chat-scroll::-webkit-scrollbar-track,
     .rail-scroll::-webkit-scrollbar-track,
     .ledger-scroll::-webkit-scrollbar-track,
+    .quiet-scroll::-webkit-scrollbar-track,
+    html::-webkit-scrollbar-corner,
     .chat-scroll::-webkit-scrollbar-corner,
     .rail-scroll::-webkit-scrollbar-corner,
-    .ledger-scroll::-webkit-scrollbar-corner {
+    .ledger-scroll::-webkit-scrollbar-corner,
+    .quiet-scroll::-webkit-scrollbar-corner {
       background: transparent;
     }
   }
@@ -307,7 +384,7 @@
   .card-lift:hover {
     transform: translateY(-1px);
     border-color: var(--line-strong);
-    background-color: #0d0d0d;
+    background-color: var(--card-hover);
   }
 
   /* the typing caret — a ledger pen waiting (always faintly visible) */
@@ -318,13 +395,34 @@
     animation: caret 1s ease-in-out infinite;
   }
 
-  /* the white sheet — the working paper, the one light surface */
+  /* the white sheet — the working paper, a document in both themes.
+     On the night desk it glows by contrast; on the day desk it needs
+     a hairline and a whisper of lift to stay a page on the desk. */
   .sheet {
     background: #fbfaf7;
     color: #17150f;
   }
+  html.light .sheet {
+    border: 1px solid rgba(22, 19, 14, 0.14);
+    box-shadow: 0 1px 2px rgba(22, 19, 14, 0.05), 0 8px 24px rgba(22, 19, 14, 0.04);
+  }
   .sheet ::selection {
     background: rgba(23, 94, 67, 0.16);
+  }
+
+  /* theme icons — CSS decides which face shows, so hydration never
+     flickers: the sun rides the night desk, the moon rides the day. */
+  .icon-sun {
+    display: block;
+  }
+  .icon-moon {
+    display: none;
+  }
+  html.light .icon-sun {
+    display: none;
+  }
+  html.light .icon-moon {
+    display: block;
   }
 }
 

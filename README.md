@@ -131,7 +131,7 @@ the **Why it exists** view and `PAPER.md` §7.
 | `ARCHITECTURE.md` | the one diagram + decisions table |
 | `VIDEO_TRANSCRIPT.md` | the 5:00 pitch script (recorded at submission) |
 | `CLEANUP.md` | operator runbook: what to delete before pushing to GitHub |
-| `DEPLOY.md` | operator runbook: free-tier deployment that stays up |
+| `DEPLOY.md` | operator runbook: run locally, keep it alive, deploy free, operate |
 | `Makefile` | verify / triage / fuzz / ablation / meter / project / audit / test |
 | `scripts/verify.mjs` | repo-evidence checks (CI entry, zero deps) |
 | `scripts/triage.mjs` | 60-second self-guided judge tour |
@@ -160,7 +160,7 @@ the **Why it exists** view and `PAPER.md` §7.
 | `src/lib/customs/runtime.ts` | wiring + deterministic 48h seed history |
 | `src/app/page.tsx` | one route, five surfaces |
 | `src/app/icon.svg` | the gate diamond — favicon (night tile) |
-| `src/app/globals.css` | the design system — the night ledger |
+| `src/app/globals.css` | the design system — night + day ledger themes |
 | `src/components/customs/` | the design system + all screens |
 | `src/components/customs/shell.tsx` | the app shell — views, transitions, masthead |
 | `src/components/customs/landing.tsx` | overview: hero, the live demo, ladder, proof layer |
@@ -171,7 +171,8 @@ the **Why it exists** view and `PAPER.md` §7.
 | `src/components/customs/control-room.tsx` | merchant side: P&L, approvals, the order ledger |
 | `src/components/customs/bits.tsx` | design primitives: chips, buttons, the gate diamond |
 | `src/components/customs/chat-events.tsx` | the transcript — tool calls, gate checklist, receipts |
-| `src/components/customs/footer.tsx` | the declaration page — what Customs is, in plain words |
+| `src/components/customs/theme.tsx` | the desk lamp — footer dark/light toggle, persisted, no-flash |
+| `src/components/customs/footer.tsx` | the footer — mark, quiet link columns, the theme toggle (x.ai pattern) |
 | `src/app/api/` | route handlers: chat, state, decision, fuzz, webhook, health |
 | `public/logo.svg` | the gate diamond (badge, night tile) |
 | `public/logo-lockup.svg` | centered lockup (this README) |

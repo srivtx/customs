@@ -20,8 +20,8 @@ type Beat =
   | { t: "user"; text: string; hold?: number }
   | { t: "tool"; tag: string; text: string }
   | { t: "say"; text: string }
-  | { t: "product"; name: string; price: string; note: string }
-  | { t: "cart"; name: string; qty: number; price: string }
+  | { t: "product"; name: string; price: string; note: string; image: string }
+  | { t: "cart"; name: string; qty: number; price: string; image: string }
   | { t: "refuse"; code: string; note: string }
   | { t: "tier"; tier: string; note: string }
   | { t: "mandate"; cap: string; sig: string }
@@ -42,9 +42,9 @@ const GATE_CHECKS = [
 const SCRIPT: (Beat & { hold?: number })[] = [
   { t: "user", text: "get me the bud-pro earbuds", hold: 900 },
   { t: "tool", tag: "AGENT", text: "catalog.search(\"bud-pro\") → 1 match" },
-  { t: "product", name: "Bud-Pro Earbuds", price: "₹3,499", note: "24h battery · anc · usb-c" },
+  { t: "product", name: "Bud-Pro Earbuds", price: "₹3,499", note: "24h battery · anc · usb-c", image: "/products/bud-pro-earbuds.jpg" },
   { t: "user", text: "add 2 to my cart", hold: 700 },
-  { t: "cart", name: "Bud-Pro Earbuds", qty: 2, price: "₹6,998" },
+  { t: "cart", name: "Bud-Pro Earbuds", qty: 2, price: "₹6,998", image: "/products/bud-pro-earbuds.jpg" },
   { t: "refuse", code: "AMOUNT_OVER_TIER", note: "₹6,998 exceeds the ₹500 unverified envelope" },
   { t: "say", text: "The desk refuses politely. Escalate trust — say \"attest\" and the envelope rises to ₹5,000." },
   { t: "user", text: "attest", hold: 500 },
@@ -212,7 +212,7 @@ export function DemoPlayer() {
           <span aria-hidden className={cn("h-1.5 w-1.5 rounded-full", done ? "bg-cleared" : "bg-held animate-pulse")} />
           <button
             onClick={restart}
-            className="rounded-[4px] border border-line2 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-inksoft transition-colors hover:border-white/30 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+            className="rounded-[4px] border border-line2 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-inksoft transition-colors hover:border-ink/30 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
             aria-label="replay the golden path"
           >
             ↻ replay
@@ -270,9 +270,15 @@ function BeatView({ p, last }: { p: Played; last: boolean }) {
     case "product":
       return (
         <div className={cn(cls, "flex max-w-[420px] items-center gap-3 rounded-[4px] border border-line bg-card p-3")}>
-          <div className="flex h-14 w-14 items-center justify-center rounded-[4px] bg-paper2 font-mono text-[10px] text-inksoft">
-            img
-          </div>
+          {/* the real product photo — the same asset the playground serves */}
+          <img
+            src={b.image}
+            alt={b.name}
+            width={112}
+            height={112}
+            loading="lazy"
+            className="h-14 w-14 shrink-0 rounded-[4px] border border-line object-cover"
+          />
           <div className="min-w-0">
             <div className="truncate text-[13px] font-medium text-ink">{b.name}</div>
             <div className="font-mono text-[10px] text-inksoft">{b.note}</div>
@@ -282,9 +288,17 @@ function BeatView({ p, last }: { p: Played; last: boolean }) {
       );
     case "cart":
       return (
-        <div className={cn(cls, "max-w-[420px] rounded-[4px] border border-line bg-card px-3.5 py-2")}>
-          <div className="flex items-baseline justify-between font-mono text-[12px]">
-            <span className="text-inksoft">
+        <div className={cn(cls, "flex max-w-[420px] items-center gap-3 rounded-[4px] border border-line bg-card px-3.5 py-2")}>
+          <img
+            src={b.image}
+            alt=""
+            width={56}
+            height={56}
+            loading="lazy"
+            className="h-7 w-7 shrink-0 rounded-[3px] border border-line object-cover"
+          />
+          <div className="flex min-w-0 flex-1 items-baseline justify-between font-mono text-[12px]">
+            <span className="truncate text-inksoft">
               {b.name} × {b.qty}
             </span>
             <span className="tnum font-semibold text-ink">{b.price}</span>

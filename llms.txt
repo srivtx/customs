@@ -29,7 +29,7 @@ Test mode only; without Razorpay keys the rail is a labeled simulation.
 - AGENTS.md — working guide + the 11 invariants
 - ENGINEERING_LOG.md — dated incidents; every incident became a test
 - CLEANUP.md — what to delete before pushing to GitHub
-- DEPLOY.md — free-tier deployment runbook
+- DEPLOY.md — the operating runbook: run locally, keep alive, deploy free, operate
 - src/lib/customs/gate/ — mandate contract, canonical JSON, decision checklist
 - src/lib/customs/ledger/ — hash-chained JSONL audit trail (the database)
 - src/lib/customs/fuzz/corpus.ts — the 12 authored attacks, expected verdicts
@@ -37,6 +37,7 @@ Test mode only; without Razorpay keys the rail is a labeled simulation.
 - src/components/customs/why.tsx — the why page: architecture diagram + honest scope ledger (shipped / simulated / not yet)
 - src/components/customs/paper.tsx — the paper view: a white-sheet document; §5–§6 numbers read live from the ledger
 - src/components/customs/demo-player.tsx — the landing demo: the golden path plays itself in code, loops
+- src/components/customs/theme.tsx — dark/light theme toggle (footer, persisted, no flash)
 - results/ — every measured number, JSON only, regeneration-only
 
 ## numbers policy
