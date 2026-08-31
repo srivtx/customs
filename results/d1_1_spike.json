@@ -1,0 +1,5 @@
+{
+  "status": "not-run",
+  "requires": "RAZORPAY_KEY_ID + RAZORPAY_KEY_SECRET (test keys only — live keys are refused by the script)",
+  "notes": "Populated only by scripts/spike-d1-1.mjs (make spike-d1-1). Carries the payment-mechanism decision receipts."
+}
