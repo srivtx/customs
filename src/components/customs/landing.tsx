@@ -9,6 +9,7 @@
 import { useEffect, useState } from "react";
 import { GhostButton, InkButton, inr, CountUp, Reveal, Ticker, LiveDot } from "./bits";
 import { DemoPlayer } from "./demo-player";
+import { HeroBot } from "./hero-bot";
 import { TRUST_TIERS } from "@/lib/customs/gate/types";
 import { ADAPTERS, AdapterId } from "@/lib/customs/adapters";
 import type { View } from "./shell";
@@ -31,7 +32,7 @@ interface TickerOrder {
 
 export function Landing({ onEnter }: { onEnter: (view: View) => void }) {
   const [stats, setStats] = useState<LandingStats | null>(null);
-  const [tickerItems, setTickerItems] = useState<string[]>([]);
+  const [tickerItems, setTickerItems] = useState<TickerOrder[]>([]);
 
   useEffect(() => {
     const load = async () => {
@@ -53,12 +54,12 @@ export function Landing({ onEnter }: { onEnter: (view: View) => void }) {
             chainOk: d.chain.ok,
             eventsTotal: d.eventsTotal,
           });
-          setTickerItems(
-            (d.orders ?? []).slice(0, 14).map(
-              (o) =>
-                `${o.orderId.slice(0, 12)} · ${inr(o.totalPaise)} · ${o.status.replace(/_/g, " ").toLowerCase()} · ${o.adapter}`
-            )
-          );
+          setTickerItems((d.orders ?? []).slice(0, 14).map((o) => ({
+            orderId: o.orderId,
+            totalPaise: o.totalPaise,
+            status: o.status,
+            adapter: o.adapter,
+          })));
         }
       } catch {
         /* stats strip is optional garnish */
@@ -71,29 +72,35 @@ export function Landing({ onEnter }: { onEnter: (view: View) => void }) {
     <div>
       {/* ------------------------------ hero ------------------------------ */}
       <section aria-label="intro" className="pb-16 pt-6 sm:pt-10">
-        <p className="label-caps">razorpay ai buildathon 2026 · track 1 · test mode</p>
-        <h1 className="mt-6 max-w-[15ch] font-display text-[clamp(44px,7.4vw,92px)] font-semibold leading-[0.98] tracking-[-0.035em] text-ink">
-          Agents can finally pay.
-          <br />
-          <span className="text-inksoft">Safely.</span>
-        </h1>
-        <p className="mt-7 max-w-[52ch] text-[17px] leading-relaxed text-inksoft">
-          Customs is the checkout AI buyers transact on — and the desk merchants
-          trust. Every rupee an agent moves is signed, bounded, and provable:
-          a mandate in plain code, ten checks at bind time, a hash-chained
-          ledger, a human desk over ₹10,000.
-        </p>
-        <div className="mt-9 flex flex-wrap items-center gap-3">
-          <InkButton onClick={() => onEnter("agent")} ariaLabel="enter the agent playground" arrow className="h-11 px-5 text-[14px]">
-            Enter the playground
-          </InkButton>
-          <GhostButton onClick={() => onEnter("merchant")} ariaLabel="open the control room" variant="ink" className="h-11 px-5">
-            Open the control room
-          </GhostButton>
+        <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,29rem)] lg:gap-6">
+          <div>
+            <p className="label-caps">razorpay ai buildathon 2026 · track 1 · test mode</p>
+            <h1 className="mt-6 max-w-[15ch] font-display text-[clamp(44px,7.4vw,92px)] font-semibold leading-[0.98] tracking-[-0.035em] text-ink">
+              Agents can finally pay.
+              <br />
+              <span className="text-inksoft">Safely.</span>
+            </h1>
+            <p className="mt-7 max-w-[52ch] text-[17px] leading-relaxed text-inksoft">
+              Customs is the checkout AI buyers transact on — and the desk merchants
+              trust. Every rupee an agent moves is signed, bounded, and provable:
+              a mandate in plain code, ten checks at bind time, a hash-chained
+              ledger, a human desk over ₹10,000.
+            </p>
+            <div className="mt-9 flex flex-wrap items-center gap-3">
+              <InkButton onClick={() => onEnter("agent")} ariaLabel="enter the agent playground" arrow className="h-11 px-5 text-[14px]">
+                Enter the playground
+              </InkButton>
+              <GhostButton onClick={() => onEnter("merchant")} ariaLabel="open the control room" variant="ink" className="h-11 px-5">
+                Open the control room
+              </GhostButton>
+            </div>
+          </div>
+          {/* the customs bot — the desk's little officer, stamping as it orbits */}
+          <HeroBot className="mx-auto w-[min(80vw,340px)] lg:w-full" />
         </div>
 
         {/* live stats — one hairline row, mono numbers */}
-        <div className="mt-24 grid grid-cols-2 gap-x-8 gap-y-6 border-t border-line pt-8 sm:grid-cols-4">
+        <div className="mt-16 grid grid-cols-2 gap-x-8 gap-y-6 border-t border-line pt-8 sm:mt-20 sm:grid-cols-4">
           <Stat label="agent GMV">
             {stats ? <CountUp value={stats.gmvPaise} format={(n) => inr(Math.round(n))} className="tnum font-display text-[22px] font-semibold tracking-[-0.02em] text-ink" /> : "—"}
           </Stat>
@@ -135,11 +142,15 @@ export function Landing({ onEnter }: { onEnter: (view: View) => void }) {
       {/* ------------------------------ live manifest ticker ------------------------------ */}
       {tickerItems.length > 0 && (
         <section aria-label="recent ledger lines" className="pb-16">
-          <div className="mb-3 flex items-center justify-between">
-            <LiveDot label="recently through customs — live ledger lines" />
-            <span className="font-mono text-[11px] text-inksoft">same lines the control room shows · hash-chained</span>
+          <div className="doc overflow-hidden">
+            <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
+              <LiveDot label="recently through customs — live ledger" />
+              <span className="hidden font-mono text-[10.5px] text-inksoft sm:block">
+                same lines the control room shows · hash-chained
+              </span>
+            </div>
+            <Ticker items={tickerItems} />
           </div>
-          <Ticker items={tickerItems} />
         </section>
       )}
 
@@ -176,7 +187,7 @@ export function Landing({ onEnter }: { onEnter: (view: View) => void }) {
                   <span className="font-mono text-[11px] text-inksoft">{s.n}</span>
                 </div>
                 <p className="mt-2.5 text-[13.5px] leading-relaxed text-inksoft">{s.d}</p>
-                <div className="mt-4 rounded-[4px] border border-line bg-paper2/70 px-2.5 py-1.5 font-mono text-[11px] text-ink">{s.code}</div>
+                <div className="mt-4 rounded-[4px] border border-line bg-paper2 px-2.5 py-1.5 font-mono text-[11px] text-ink">{s.code}</div>
               </div>
             </Reveal>
           ))}

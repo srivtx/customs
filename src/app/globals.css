@@ -145,8 +145,8 @@
 
 /* The day ledger: the same desk with the lights on. Opt-in from the
    footer toggle, persisted in localStorage, applied pre-paint by the
-   no-flash script in layout.tsx. Same tokens, flipped values — the
-   sheet (the working paper) stays a document either way. */
+   no-flash script in layout.tsx. Same tokens, flipped values — every
+   surface re-inks, the document pages included. */
 html.light {
   color-scheme: light;
 
@@ -154,8 +154,8 @@ html.light {
   --paper2: #f1efe9;
   --ink: #16130e;
   --ink-soft: rgba(22, 19, 14, 0.62);
-  --line: rgba(22, 19, 14, 0.09);
-  --line-strong: rgba(22, 19, 14, 0.24);
+  --line: rgba(22, 19, 14, 0.12);
+  --line-strong: rgba(22, 19, 14, 0.28);
 
   --cleared: #2f6b47;
   --cleared-ink: rgba(47, 107, 71, 0.08);
@@ -395,21 +395,6 @@ html.light {
     animation: caret 1s ease-in-out infinite;
   }
 
-  /* the white sheet — the working paper, a document in both themes.
-     On the night desk it glows by contrast; on the day desk it needs
-     a hairline and a whisper of lift to stay a page on the desk. */
-  .sheet {
-    background: #fbfaf7;
-    color: #17150f;
-  }
-  html.light .sheet {
-    border: 1px solid rgba(22, 19, 14, 0.14);
-    box-shadow: 0 1px 2px rgba(22, 19, 14, 0.05), 0 8px 24px rgba(22, 19, 14, 0.04);
-  }
-  .sheet ::selection {
-    background: rgba(23, 94, 67, 0.16);
-  }
-
   /* theme icons — CSS decides which face shows, so hydration never
      flickers: the sun rides the night desk, the moon rides the day. */
   .icon-sun {
@@ -423,6 +408,95 @@ html.light {
   }
   html.light .icon-moon {
     display: block;
+  }
+
+  /* ------------------------------------------------------------------
+   * the customs bot — the desk's little officer. Everything moves on
+   * transform and opacity only (60fps, no layout), every color is a
+   * token (the bot re-inks under the desk lamp), and reduced motion
+   * stands it still on duty. x.ai animates its hero with shimmering
+   * hairlines; we borrowed the shimmer and gave it a body.
+   * ------------------------------------------------------------------ */
+  .hero-bot {
+    display: block;
+  }
+  .hb-mono {
+    font-family: var(--font-geist-mono), ui-monospace, monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.02em;
+  }
+
+  /* the illustration inks — UI chrome may whisper, but a hero
+     illustration needs real ink to hold its shape; a touch stronger
+     under the day lamp so the bot never washes out on white */
+  .hb-strong {
+    stroke: var(--ink);
+    stroke-opacity: 0.44;
+  }
+  html.light .hb-strong {
+    stroke-opacity: 0.62;
+  }
+  .hb-rail {
+    stroke: var(--ink);
+    stroke-opacity: 0.18;
+  }
+  html.light .hb-rail {
+    stroke-opacity: 0.32;
+  }
+
+  /* the mandate ring: rotates slowly; each bound riding it
+     counter-rotates about its own center so it stays upright */
+  .hb-ring {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: hb-spin 46s linear infinite;
+  }
+  .hb-chip {
+    animation: hb-spin-rev 46s linear infinite;
+  }
+
+  /* the bot itself: a quiet float, blinking eyes, the stamp leaving
+     the chest diamond every few seconds */
+  .hb-bot {
+    animation: hb-float 7s ease-in-out infinite alternate;
+  }
+  .hb-eye {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: hb-blink 5.4s ease-in-out infinite;
+    transition: fill 0.3s ease;
+  }
+  .hero-bot:hover .hb-eye {
+    fill: var(--cleared);
+  }
+  .hb-stamp {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: hb-stamp 3.8s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+  }
+  .hb-stamp-b {
+    animation-delay: 1.9s;
+  }
+
+  /* the floating evidence — receipts bob out of phase */
+  .hb-bob-a {
+    animation: hb-bob 5.6s ease-in-out infinite alternate;
+  }
+  .hb-bob-b {
+    animation: hb-bob 6.8s ease-in-out infinite alternate-reverse;
+  }
+
+  /* the shimmer — a verdict-colored sweep riding a resting hairline */
+  .hb-shimmer {
+    animation: hb-sweep 4.6s linear infinite;
+  }
+  .hb-shimmer-b {
+    animation-duration: 5.4s;
+    animation-delay: 1.4s;
+  }
+  .hb-shimmer-c {
+    animation-duration: 6.6s;
+    animation-delay: 2.8s;
   }
 }
 
@@ -501,13 +575,87 @@ html.light {
   }
 }
 
+/* ---------------- the customs bot's moves ---------------- */
+@keyframes hb-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes hb-spin-rev {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-360deg);
+  }
+}
+@keyframes hb-float {
+  from {
+    transform: translateY(-6px);
+  }
+  to {
+    transform: translateY(6px);
+  }
+}
+@keyframes hb-blink {
+  0%,
+  91%,
+  100% {
+    transform: scaleY(1);
+  }
+  94% {
+    transform: scaleY(0.08);
+  }
+  97% {
+    transform: scaleY(1);
+  }
+}
+@keyframes hb-stamp {
+  0% {
+    transform: scale(0.55);
+    opacity: 0.55;
+  }
+  70%,
+  100% {
+    transform: scale(1.7);
+    opacity: 0;
+  }
+}
+@keyframes hb-bob {
+  from {
+    transform: translateY(-4px);
+  }
+  to {
+    transform: translateY(5px);
+  }
+}
+@keyframes hb-sweep {
+  from {
+    transform: translateX(-200px);
+  }
+  to {
+    transform: translateX(500px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-rise,
   .animate-typing span,
   .animate-flash,
   .row-fresh,
   .view-enter,
-  .type-caret::after {
+  .type-caret::after,
+  .hb-ring,
+  .hb-chip,
+  .hb-bot,
+  .hb-eye,
+  .hb-stamp,
+  .hb-bob-a,
+  .hb-bob-b,
+  .hb-shimmer {
     animation: none !important;
   }
   .pulse-dot::after,

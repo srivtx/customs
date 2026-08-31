@@ -28,6 +28,13 @@
 Built for the **Razorpay AI Buildathon 2026** · Track 1 (AI Growth & Agentic
 Commerce) · **test mode only — no live keys, no real money.**
 
+**The whole golden path, rendered live by the page itself** — the customs bot
+on stamp duty, the agent checkout played in code (intent → search → tier
+refusal → attestation → mandate → approval → the ten-check gate → capture →
+the ledger line landing), and the live ledger ticking:
+
+![Customs — the golden path, played live](docs/demo.gif)
+
 ![Customs — the agent playground](docs/screenshots/playground.jpg)
 
 ![Customs — the merchant control room](docs/screenshots/control-room.jpg)
@@ -56,9 +63,11 @@ database. A human desk over ₹10,000, at every tier.
 
 Plus three reading surfaces: **Why it exists** (the problem and the mandate
 principle, with the architecture diagram), **the Paper** (a working paper
-rendered as a document — §5–§6 numbers read live from the running ledger),
-and **the live demo** on the landing page (the golden path plays itself in
-code — no video, no GIF).
+rendered as a clean document page — §5–§6 numbers read live from the running
+ledger), and **the live demo** on the landing page (the golden path plays
+itself in code — the GIF above is a recording of that page, not a separate
+asset). One design system, two themes (the night ledger default, the day
+ledger one click away in the footer — x.ai's desk lamp).
 
 ## The gate in one look
 
@@ -97,7 +106,7 @@ deterministic rules brain runs everything, replayable.
 | attacks blocked / authored | 12/12 — `results/conformance_matrix.json` (`make fuzz`) |
 | agent GMV (deterministic 48h ledger) | ₹63,732 · 12 captures — `make meter` |
 | ₹ AI cost per captured payment | ₹0.03 — `make meter` |
-| channel P&amp;L @ 1M payments/month | net ₹1,06,19,000 — `make project` |
+| channel P&amp;L @ 1M payments/month | net ₹10,61,90,000 — `make project` |
 | audit chain | 257 events · tamper control detected — `make audit` |
 | D1-1 payment spike | `blocked-no-keys` — code ready; set test keys and `make spike-d1-1` |
 | Live deployment | PENDING — `DEPLOY.md` is the runbook; CI enforces every shipped link |
@@ -163,10 +172,11 @@ the **Why it exists** view and `PAPER.md` §7.
 | `src/app/globals.css` | the design system — night + day ledger themes |
 | `src/components/customs/` | the design system + all screens |
 | `src/components/customs/shell.tsx` | the app shell — views, transitions, masthead |
-| `src/components/customs/landing.tsx` | overview: hero, the live demo, ladder, proof layer |
-| `src/components/customs/demo-player.tsx` | the golden path, played live in code (the GIF's replacement) |
+| `src/components/customs/landing.tsx` | overview: hero + bot, the live demo, ladder, proof layer |
+| `src/components/customs/demo-player.tsx` | the golden path, played live in code (what the README GIF records) |
+| `src/components/customs/hero-bot.tsx` | the customs bot — the animated desk officer (SVG, token-inked, reduced-motion aware) |
 | `src/components/customs/why.tsx` | why it exists + the architecture diagram + scope ledger |
-| `src/components/customs/paper.tsx` | the working paper view — a white sheet, numbers live |
+| `src/components/customs/paper.tsx` | the working paper view — a clean document page, numbers live |
 | `src/components/customs/playground.tsx` | buyer side: chat, mandate approval, red team |
 | `src/components/customs/control-room.tsx` | merchant side: P&L, approvals, the order ledger |
 | `src/components/customs/bits.tsx` | design primitives: chips, buttons, the gate diamond |
@@ -177,6 +187,7 @@ the **Why it exists** view and `PAPER.md` §7.
 | `public/logo.svg` | the gate diamond (badge, night tile) |
 | `public/logo-lockup.svg` | centered lockup (this README) |
 | `public/og.png` | the social card |
+| `docs/demo.gif` | the recorded golden path (this README) |
 | `docs/FORM_ANSWERS.md` | the 12 submission-form answers, claim → evidence |
 | `docs/screenshots/` | product screenshots (this README) |
 <!-- FILEMAP:END -->

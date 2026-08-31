@@ -220,10 +220,12 @@ export function DemoPlayer() {
         </div>
       </div>
 
-      {/* the transcript */}
+      {/* the transcript — every beat is one of two shapes: a quiet
+          hairline block (what is said) or a hairline card (what the
+          desk produces). No bubbles, no second border style. */}
       <div
         ref={scrollRef}
-        className="chat-scroll h-[460px] space-y-2 overflow-y-auto px-4 py-4 sm:px-5"
+        className="chat-scroll h-[460px] space-y-2.5 overflow-y-auto px-4 py-4 sm:px-5"
         aria-live="off"
       >
         {played.map((p, i) => (
@@ -251,16 +253,19 @@ function BeatView({ p, last }: { p: Played; last: boolean }) {
     case "user":
       return (
         <div className={cn(cls, "flex justify-end")}>
-          <div className="max-w-[78%] rounded-[4px] bg-ink px-3.5 py-2 text-[13px] text-paper">
+          {/* the buyer's intent — a logged input, right-aligned. Same
+              hairline, same 4px, same lift as everything else on the desk. */}
+          <div className="max-w-[78%] rounded-[4px] border border-line bg-ink/[0.04] px-3.5 py-2 text-[13px] text-ink">
             <span className={last && p.typed.length < b.text.length ? "type-caret" : undefined}>{p.typed}</span>
           </div>
         </div>
       );
     case "tool":
       return (
-        <div className={cn(cls, "flex items-center gap-2.5 rounded-[4px] border border-line bg-paper2/60 px-3 py-1.5")}>
-          <span className="font-mono text-[9px] font-semibold tracking-[0.1em] text-held">{b.tag}</span>
-          <span className="font-mono text-[11px] text-ink">{b.text}</span>
+        <div className={cn(cls, "flex items-center gap-2.5 rounded-[4px] border border-line bg-ink/[0.02] px-3 py-1.5")}>
+          {/* the tag is a chip — it reads as a token, never as a word */}
+          <span className="shrink-0 rounded-[3px] border border-line bg-ink/[0.04] px-1.5 py-px font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-inksoft">{b.tag}</span>
+          <ToolText text={b.text} />
         </div>
       );
     case "say":
@@ -368,4 +373,18 @@ function BeatView({ p, last }: { p: Played; last: boolean }) {
     default:
       return null;
   }
+}
+
+/** the tool line's text — the call in soft ink, the arrow and its
+    result reach full ink, so the outcome is what your eye lands on */
+function ToolText({ text }: { text: string }) {
+  const at = text.indexOf("\u2192");
+  if (at === -1) return <span className="truncate font-mono text-[11px] text-inksoft">{text}</span>;
+  return (
+    <span className="truncate font-mono text-[11px]">
+      <span className="text-inksoft">{text.slice(0, at)}</span>
+      <span className="text-cleared">{text.slice(at, at + 1)}</span>
+      <span className="text-ink">{text.slice(at + 1)}</span>
+    </span>
+  );
 }

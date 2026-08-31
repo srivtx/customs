@@ -52,13 +52,15 @@ export function ChatEventView({
         <div
           className={cn(
             "max-w-[82%] rounded-[4px] border px-3.5 py-2.5 text-[13.5px] leading-relaxed",
+            /* the same logged-input block the demo player renders — one
+               transcript system across the recording and the real thing */
             isUser
-              ? "border-transparent bg-ink text-paper"
+              ? "border-line bg-ink/[0.04] text-ink"
               : "border-line bg-card text-ink"
           )}
         >
           {isUser ? event.text : rich(event.text)}
-          <div className={cn("mt-1 font-mono text-[9px] tracking-wide", isUser ? "text-paper/50" : "text-inksoft/70")}>
+          <div className={cn("mt-1 font-mono text-[9px] tracking-wide", isUser ? "text-inksoft" : "text-inksoft/70")}>
             {tsOf(event.ts)}
           </div>
         </div>
@@ -212,11 +214,13 @@ function StepChip({ event }: { event: Extract<ChatEventT, { kind: "step" }> }) {
     <div className="animate-rise py-1">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center gap-2.5 rounded-[4px] border border-line bg-paper2/50 px-3 py-1.5 text-left transition-colors hover:border-line2 focus-visible:outline-2 focus-visible:outline-ink"
+        className="flex w-full items-center gap-2.5 rounded-[4px] border border-line bg-ink/[0.02] px-3 py-1.5 text-left transition-colors hover:border-line2 focus-visible:outline-2 focus-visible:outline-ink"
         aria-expanded={open}
       >
-        <span className={cn("font-mono text-[9px] font-bold tracking-[0.1em]", event.adapter === "naive" && "text-inksoft", event.adapter === "mcp" && "text-held", event.adapter === "acp" && "text-cleared")}>
-          {event.adapter.toUpperCase()}
+        {/* the adapter rides as a chip — the same token the demo player
+            renders; adapters are not verdicts, so they stay uncolored */}
+        <span className="shrink-0 rounded-[3px] border border-line bg-ink/[0.04] px-1.5 py-px font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-inksoft">
+          {event.adapter}
         </span>
         <span className="font-mono text-[11px] text-ink">{event.tool}</span>
         <span className="truncate font-mono text-[10px] text-inksoft">{event.summary}</span>

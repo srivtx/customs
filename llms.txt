@@ -35,9 +35,11 @@ Test mode only; without Razorpay keys the rail is a labeled simulation.
 - src/lib/customs/fuzz/corpus.ts — the 12 authored attacks, expected verdicts
 - src/lib/customs/meter.ts — channel P&L + projection, assumptions declared
 - src/components/customs/why.tsx — the why page: architecture diagram + honest scope ledger (shipped / simulated / not yet)
-- src/components/customs/paper.tsx — the paper view: a white-sheet document; §5–§6 numbers read live from the ledger
-- src/components/customs/demo-player.tsx — the landing demo: the golden path plays itself in code, loops
+- src/components/customs/paper.tsx — the paper view: a clean theme-aware document page; §5–§6 numbers read live from the ledger
+- src/components/customs/demo-player.tsx — the landing demo: the golden path plays itself in code, loops (docs/demo.gif is a recording of it)
+- src/components/customs/hero-bot.tsx — the customs bot: the animated SVG desk officer on the hero, token-inked, reduced-motion aware
 - src/components/customs/theme.tsx — dark/light theme toggle (footer, persisted, no flash)
+- docs/demo.gif — the recorded golden path (embedded in README.md)
 - results/ — every measured number, JSON only, regeneration-only
 
 ## numbers policy

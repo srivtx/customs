@@ -184,20 +184,25 @@ export function ControlRoom() {
   return (
     <div className="space-y-6">
       {/* ------------------------------ header ------------------------------ */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
         <div>
           <div className="label-caps">fieldnote supply · merchant desk</div>
-          <h2 className="font-display text-2xl font-medium">Control Room</h2>
+          <h2 className="font-display text-2xl font-medium tracking-[-0.02em]">Control Room</h2>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Stamp kind={state.rail.simulated ? "sim" : "cleared"} animate={false}>
-            {state.rail.simulated ? "SIMULATED RAIL" : "RAZORPAY TEST"}
-          </Stamp>
-          <Stamp kind="ink" animate={false}>BRAIN: {state.brain}</Stamp>
-          <Stamp kind={state.chain.ok ? "cleared" : "refused"} animate={false}>
-            CHAIN OK · {state.chain.length}
-          </Stamp>
-          {state.ephemeral && <Stamp kind="sim" animate={false}>EPHEMERAL STATE</Stamp>}
+        {/* the desk's state — one quiet mono strip, not a wall of chips:
+            rail · brain · chain, each key muted and each value inked */}
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 font-mono text-[10.5px] uppercase tracking-[0.08em]">
+          <span className="text-inksoft">
+            rail <span className="text-ink">{state.rail.simulated ? "simulated" : "razorpay test"}</span>
+          </span>
+          <span className="text-inksoft">
+            brain <span className="text-ink">{state.brain}</span>
+          </span>
+          <span className={cn("inline-flex items-center gap-1.5", state.chain.ok ? "text-cleared" : "text-refused")}>
+            <span className={cn("h-1.5 w-1.5 rounded-full", state.chain.ok ? "bg-cleared" : "bg-refused")} aria-hidden />
+            chain {state.chain.ok ? "ok" : "broken"} · {state.chain.length}
+          </span>
+          {state.ephemeral && <span className="text-held">ephemeral state</span>}
           <GhostButton
             onClick={async () => {
               setBusy("reset");
@@ -250,7 +255,7 @@ export function ControlRoom() {
           <div className="flex flex-col justify-center bg-paper2/60 px-4 py-3">
             <div className="label-caps">at 1M payments / month</div>
             <p className="mt-1 font-mono text-[10px] leading-relaxed text-inksoft">
-              {state.projection.formula}. Every input regenerates — <span className="font-semibold text-ink">make project</span>.
+              every input declared — regenerates with <span className="text-ink">make project</span>
             </p>
           </div>
           <div className="bg-paper2/60 px-4 py-3">
@@ -526,9 +531,9 @@ export function ControlRoom() {
           {/* ------------------------------ attack log ------------------------------ */}
           <section className="doc px-4 py-4" aria-label="attack log">
             <SectionLabel>blocks — red-team log</SectionLabel>
-            <div className="chat-scroll mt-3 max-h-[300px] space-y-1.5 overflow-y-auto">
+            <div className="chat-scroll mt-3 max-h-[300px] space-y-2.5 overflow-y-auto">
               {state.attacks.map((a, i) => (
-                <div key={i} className="animate-rise flex items-center justify-between gap-2 border-b border-line/60 pb-1.5">
+                <div key={i} className="animate-rise flex items-center justify-between gap-2 border-b border-line/60 pb-2.5 last:border-b-0 last:pb-0">
                   <div className="min-w-0">
                     <div className="truncate font-mono text-[11px] text-ink">{a.label}</div>
                     <div className="font-mono text-[9px] text-inksoft">

@@ -2,13 +2,14 @@
 
 /**
  * paper.tsx — "Customs: a signed-mandate checkpoint for agentic payments,"
- * rendered as a working paper. The site is the night desk; the paper is
- * the document on it — a white sheet set in Geist like the rest of the
- * product (x.ai sets its docs in its own sans; we do the same), mono for
- * anything that counts, numbered like a manuscript. §5–§6 numbers are
- * read from the live ledger on page load — the paper cites the running
- * system, not a PDF. PAPER.md in the repo is this page's machine-
- * legible twin.
+ * as a clean document page. Not a paper prop: no sheet floating on the
+ * desk, no cream artifact — the page IS the document, set in the same
+ * Geist, the same hairlines, the same tokens as every other surface,
+ * so it re-inks with the desk lamp like the rest of the site (x.ai
+ * renders its documents in whatever theme you are in; so do we).
+ * §5–§6 numbers are read from the live ledger on page load — the paper
+ * cites the running system, not a PDF. PAPER.md in the repo is this
+ * page's machine-legible twin.
  */
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -53,30 +54,27 @@ export function PaperPage({ onEnter }: { onEnter: (v: View) => void }) {
   }, []);
 
   return (
-    <div className="mx-auto max-w-[820px]">
-      {/* ------------------------------ the sheet ------------------------------ */}
-      <article className="sheet rounded-[4px] px-6 py-10 sm:px-14 sm:py-16">
+    <div className="mx-auto max-w-[760px]">
+      {/* ------------------------------ the document ------------------------------ */}
+      <article>
         {/* masthead */}
-        <header className="border-b border-[#17150f]/25 pb-7">
-          <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-[10px] uppercase tracking-[0.12em] text-[#6b675c]">
-            <span>working paper · v1 · razorpay ai buildathon 2026</span>
-            <span>twin: PAPER.md · make triage (60s)</span>
-          </div>
-          <h1 className="mt-5 text-[clamp(28px,4.2vw,42px)] font-semibold leading-[1.12] tracking-[-0.015em] text-[#17150f]">
+        <header className="border-b border-line pb-8">
+          <p className="label-caps">razorpay ai buildathon 2026 · track 1 · test mode</p>
+          <h1 className="mt-5 font-display text-[clamp(28px,4.2vw,42px)] font-semibold leading-[1.12] tracking-[-0.015em] text-ink">
             Customs: a signed-mandate checkpoint for agentic payments
           </h1>
-          <p className="mt-3 font-mono text-[10.5px] uppercase tracking-[0.12em] text-[#6b675c]">
-            srivtx · fieldnote supply desk no. 01 · test mode only
+          <p className="mt-3 font-mono text-[10.5px] uppercase tracking-[0.12em] text-inksoft">
+            srivtx · fieldnote supply desk no. 01 · twin: PAPER.md · make triage (60s)
           </p>
         </header>
 
         {/* abstract */}
-        <section aria-label="abstract" className="mt-12">
-          <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-[#6b675c]">abstract</div>
-          <p className="mt-3 text-[15.5px] leading-[1.8] text-[#2d2a22]">
+        <section aria-label="abstract" className="mt-10">
+          <div className="label-caps">abstract</div>
+          <p className="mt-3 text-[15.5px] leading-[1.8] text-inksoft">
             Payments infrastructure authenticates humans: PINs, OTPs, faces. AI buying
             agents — the channel every commerce platform is now preparing for — cannot
-            present any of these. We present <strong className="font-semibold text-[#17150f]">Customs</strong>,
+            present any of these. We present <strong className="font-semibold text-ink">Customs</strong>,
             a two-sided agentic checkout in which an agent holds no payment credential at
             all. Instead, the buyer&apos;s principal issues a signed <em>mandate</em> — an
             Ed25519 envelope over canonical JSON bounding amount, items, expiry, and a
@@ -150,7 +148,7 @@ export function PaperPage({ onEnter }: { onEnter: (v: View) => void }) {
             canonical form is pinned by construction: any deviation fails verification
             rather than degrading to a heuristic. An illustrative envelope:
           </p>
-          <pre className="quiet-scroll mt-4 overflow-x-auto rounded-[4px] border border-[#17150f]/10 bg-[#f0eee7] p-4 font-mono text-[11.5px] leading-relaxed text-[#2d2a22]"><code>{`{
+          <pre className="quiet-scroll mt-4 overflow-x-auto rounded-[4px] border border-line bg-paper2 p-4 font-mono text-[11.5px] leading-relaxed text-ink"><code>{`{
   "spec": "customs/mandate/1",
   "buyerId": "buyer_7f3k",
   "tier": "ATTESTED",
@@ -163,7 +161,7 @@ export function PaperPage({ onEnter }: { onEnter: (v: View) => void }) {
 }
 -- signature (Ed25519 over the canonical serialization) --
 "z3Fq…9cA" (detached; verified at every bind)`}</code></pre>
-          <p className="mt-2 font-mono text-[10px] text-[#6b675c]">
+          <p className="mt-2 font-mono text-[10px] text-inksoft">
             illustrative shape — the schema and reason codes are the contract in src/lib/customs/gate/types.ts
           </p>
           <p>
@@ -176,21 +174,21 @@ export function PaperPage({ onEnter }: { onEnter: (v: View) => void }) {
           <div className="quiet-scroll mt-4 overflow-x-auto">
             <table className="w-full min-w-[520px] border-collapse text-left">
               <thead>
-                <tr className="border-b-2 border-[#17150f]/60">
+                <tr className="border-b border-line2">
                   {["tier", "per-order bound", "mandate lifetime", "distinct items"].map((h) => (
-                    <th key={h} className="py-2 pr-4 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-[#6b675c]">{h}</th>
+                    <th key={h} className="py-2 pr-4 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-inksoft">{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="font-mono text-[12px] text-[#2d2a22]">
+              <tbody className="font-mono text-[12px] text-inksoft">
                 {[
                   ["UNVERIFIED", "≤ ₹500", "10 minutes", "≤ 3"],
                   ["ATTESTED", "≤ ₹5,000", "30 minutes", "≤ 5"],
                   ["MANDATED", "≤ ₹50,000", "60 minutes", "≤ 8"],
                 ].map((r) => (
-                  <tr key={r[0]} className="border-b border-[#17150f]/12">
+                  <tr key={r[0]} className="border-b border-line">
                     {r.map((c, i) => (
-                      <td key={i} className={cn("tnum py-2 pr-4", i === 0 ? "font-semibold text-[#17150f]" : "text-[#57534a]")}>{c}</td>
+                      <td key={i} className={cn("tnum py-2 pr-4", i === 0 ? "font-semibold text-ink" : "text-inksoft")}>{c}</td>
                     ))}
                   </tr>
                 ))}
@@ -217,13 +215,13 @@ export function PaperPage({ onEnter }: { onEnter: (v: View) => void }) {
           <div className="quiet-scroll mt-4 overflow-x-auto">
             <table className="w-full min-w-[560px] border-collapse text-left">
               <thead>
-                <tr className="border-b-2 border-[#17150f]/60">
+                <tr className="border-b border-line2">
                   {["#", "check", "refusal code"].map((h) => (
-                    <th key={h} className="py-2 pr-4 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-[#6b675c]">{h}</th>
+                    <th key={h} className="py-2 pr-4 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-inksoft">{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="font-mono text-[11.5px] text-[#2d2a22]">
+              <tbody className="font-mono text-[11.5px] text-inksoft">
                 {[
                   ["01", "currency is INR, amounts are integer paise", "CURRENCY_UNSUPPORTED · MALFORMED_MANDATE"],
                   ["02", "mandate signature verifies (Ed25519, canonical)", "SIGNATURE_INVALID"],
@@ -236,10 +234,10 @@ export function PaperPage({ onEnter }: { onEnter: (v: View) => void }) {
                   ["09", "order below ₹10,000, or a human has approved", "OVER_HUMAN_THRESHOLD_UNAPPROVED → hold"],
                   ["10", "payment confirmation is not a replay", "REPLAY_DETECTED"],
                 ].map((r) => (
-                  <tr key={r[0]} className="border-b border-[#17150f]/12">
-                    <td className="tnum py-1.5 pr-4 text-[#6b675c]">{r[0]}</td>
-                    <td className="py-1.5 pr-4 text-[#17150f]">{r[1]}</td>
-                    <td className="py-1.5 pr-4 text-[#57534a]">{r[2]}</td>
+                  <tr key={r[0]} className="border-b border-line">
+                    <td className="tnum py-1.5 pr-4 text-inksoft">{r[0]}</td>
+                    <td className="py-1.5 pr-4 text-ink">{r[1]}</td>
+                    <td className="py-1.5 pr-4 text-inksoft">{r[2]}</td>
                   </tr>
                 ))}
               </tbody>
@@ -263,9 +261,9 @@ export function PaperPage({ onEnter }: { onEnter: (v: View) => void }) {
             sent. Both terms are measured from the same ledger that records the
             gate&apos;s verdicts; the projection scales the measured unit numbers to
             one million payments per month with every assumption declared in{" "}
-            <code className="rounded-[3px] border border-[#17150f]/10 bg-[#f0eee7] px-1 py-0.5 font-mono text-[10.5px]">results/project.json</code>.
+            <code className="rounded-[3px] border border-line bg-paper2 px-1 py-0.5 font-mono text-[10.5px] text-ink">results/project.json</code>.
           </p>
-          <div className="mt-4 grid gap-px bg-[#17150f]/10 sm:grid-cols-3">
+          <div className="mt-4 grid gap-px bg-line sm:grid-cols-3">
             <LiveStat
               label="agent GMV — this ledger"
               value={stats ? inr(stats.gmvPaise) : "—"}
@@ -282,7 +280,7 @@ export function PaperPage({ onEnter }: { onEnter: (v: View) => void }) {
               hint={stats ? `${stats.eventsTotal} ledger events · chain ${stats.chain.ok ? "intact" : "broken"}` : ""}
             />
           </div>
-          <p className="mt-2 font-mono text-[10px] text-[#6b675c]">
+          <p className="mt-2 font-mono text-[10px] text-inksoft">
             the numbers above are read from the running ledger at page load — they are the live demo&apos;s numbers, not a table frozen for print (make meter, make project)
           </p>
         </PaperSection>
@@ -338,9 +336,9 @@ export function PaperPage({ onEnter }: { onEnter: (v: View) => void }) {
         </PaperSection>
 
         {/* references */}
-        <section aria-label="references" className="mt-12 border-t border-[#17150f]/20 pt-7">
-          <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-[#6b675c]">references</div>
-          <ul className="mt-3 space-y-1.5 font-mono text-[10.5px] leading-relaxed text-[#57534a]">
+        <section aria-label="references" className="mt-10 border-t border-line pt-8">
+          <div className="label-caps">references</div>
+          <ul className="mt-3 space-y-1.5 font-mono text-[10.5px] leading-relaxed text-inksoft">
             <li>[1] Razorpay AI Buildathon 2026 — brief and evaluation criteria. https://razorpay.com/buildathon/</li>
             <li>[2] Customs, JUDGE.md — every claim mapped to a file and a regeneration command. (this repo)</li>
             <li>[3] Customs, ARCHITECTURE.md — the decision table and the P&amp;L formula. (this repo)</li>
@@ -350,7 +348,7 @@ export function PaperPage({ onEnter }: { onEnter: (v: View) => void }) {
         </section>
       </article>
 
-      {/* ------------------------------ off the sheet: continue on the desk ------------------------------ */}
+      {/* ------------------------------ continue ------------------------------ */}
       <Reveal>
         <section className="flex flex-wrap items-center gap-3 pt-10" aria-label="continue">
           <InkButton onClick={() => onEnter("agent")} arrow>
@@ -367,22 +365,22 @@ export function PaperPage({ onEnter }: { onEnter: (v: View) => void }) {
 
 function PaperSection({ n, title, children }: { n: string; title: string; children: React.ReactNode }) {
   return (
-    <section aria-label={`section ${n} ${title}`} className="mt-12 border-t border-[#17150f]/12 pt-8">
+    <section aria-label={`section ${n} ${title}`} className="mt-10 border-t border-line pt-8">
       <div className="flex items-baseline gap-3">
-        <span className="font-mono text-[11px] font-semibold text-[#6b675c]">§{n}</span>
-        <h2 className="font-display text-[22px] font-semibold tracking-[-0.015em] text-[#17150f]">{title}</h2>
+        <span className="font-mono text-[11px] font-semibold text-inksoft">§{n}</span>
+        <h2 className="font-display text-[22px] font-semibold tracking-[-0.015em] text-ink">{title}</h2>
       </div>
-      <div className="mt-4 space-y-5 text-[15px] leading-[1.8] text-[#2d2a22]">{children}</div>
+      <div className="mt-4 space-y-5 text-[15px] leading-[1.8] text-inksoft">{children}</div>
     </section>
   );
 }
 
 function LiveStat({ label, value, hint }: { label: string; value: string; hint: string }) {
   return (
-    <div className="bg-[#f6f4ee] px-4 py-3.5">
-      <div className="font-mono text-[9.5px] font-semibold uppercase tracking-[0.1em] text-[#6b675c]">{label}</div>
-      <div className="tnum mt-1 font-mono text-[20px] font-semibold text-[#17150f]">{value}</div>
-      {hint && <div className="mt-0.5 font-mono text-[9.5px] text-[#6b675c]">{hint}</div>}
+    <div className="bg-card px-4 py-3.5">
+      <div className="font-mono text-[9.5px] font-semibold uppercase tracking-[0.1em] text-inksoft">{label}</div>
+      <div className="tnum mt-1 font-mono text-[20px] font-semibold text-ink">{value}</div>
+      {hint && <div className="mt-0.5 font-mono text-[9.5px] text-inksoft">{hint}</div>}
     </div>
   );
 }

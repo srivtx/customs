@@ -342,3 +342,84 @@ verified in-browser (localStorage → pre-paint class, zero flash).
 in unknown color contexts — a footer that offers them the lamp, a diagram
 that re-inks itself, and photos where photos belong are the details that
 separate "a dark demo" from a product.
+
+---
+
+## D9-1 — the customs bot, one transcript system, the clean document page
+
+**Trigger:** the fourth review round. The product read well at a distance,
+but up close it spoke several dialects: the demo transcript had a white
+SMS-style user bubble that popped against the hairline system (three
+different border weights in one panel: 0.06 / 0.08 / 0.15), the "AGENT"
+tag was set in gold so it ran into the mono text as one word
+("AGENTcatalog.search"), the live ticker floated unframed on the page,
+the paper page was a cream "sheet" artifact rather than a document, and
+the control room opened with a wall of four badge chips. x.ai was
+re-fetched and re-measured before changing anything: Geist Mono in the
+hero headline spans, `font-medium` (not semibold) display type, radii
+3–6px, and — the useful find — their homepage animates the hero with
+`gridShimmerH`: 1px horizontal rules carrying gradient sweeps.
+
+**What we changed:**
+
+- **hero-bot.tsx (new)** — the customs bot: a small SVG desk officer
+  beside the hero text. It borrows x.ai's shimmer (sage/ink gradient
+  sweeps riding three resting rails) and gives it a body: a geometric
+  bot that floats, blinks (scaleY keyframes; eyes turn sage on hover),
+  stamps a verdict ring out of its chest diamond every 3.8s, and wears
+  the mandate ring — a hairline circle rotating 46s with three bounds
+  ("₹ cap 5,000", "✓ ed25519", "10 checks") counter-rotating about
+  their own centers to stay upright. A receipt and a ledger line bob
+  out of phase around it. Every stroke is a token; illustration inks
+  (`hb-strong` 0.44 / `hb-rail` 0.18, stronger under `html.light`)
+  sit above UI-hairline strength so the bot holds its shape on white.
+  Reduced motion: it stands still on duty.
+- **demo-player.tsx** — the transcript rebuilt as one system. The
+  user's intent is now a logged input (right-aligned, `border-line`,
+  `bg-ink/[0.04]`, 4px radius) — not a white bubble; the AGENT tag is
+  a bordered chip so it reads as a token; the tool line splits at the
+  arrow (call in soft ink, `→` in sage, result in full ink); every
+  beat carries the same border weight, radius, and padding rhythm.
+- **the ticker** — wrapped in a `doc` panel with a header row (LiveDot
+  + "same lines the control room shows"), and the items became
+  structured ledger rows: mono id · amount · status in its verdict
+  color · rail, with a status-colored dot.
+- **paper.tsx** — the white-sheet artifact is gone. The page is the
+  document: same Geist, same hairlines, same tokens as every other
+  surface, so it re-inks with the theme (x.ai renders its documents in
+  whatever theme you are in — so do we). Masthead restored to the
+  exact landing label: "razorpay ai buildathon 2026 · track 1 · test
+  mode". The `.sheet` class is deleted from globals.css.
+- **control-room.tsx** — the four-badge header wall is now one quiet
+  mono strip (`rail simulated · brain rules · chain ok · 257` with a
+  verdict dot); the red-team log rows breathe (space-y-2.5, pb-2.5);
+  the at-1M projection band states its regeneration path without
+  spraying the formula across the card.
+- **light theme tokens** — `--line` 9%→12%, `--line-strong` 24%→28%:
+  day-mode hairlines were one notch too faint against the white ground
+  (VLM flagged the tier-card dividers and code chips as near-invisible;
+  the bump fixed all of them at once).
+
+**Bugs found and fixed along the way:**
+
+- The README had been quoting the at-1M projection an order of
+  magnitude low: "net ₹1,06,19,000" vs the measured
+  `results/project.json` `netInr: 106190000` = ₹10,61,90,000. Fixed;
+  caught because this round's rule was re-read every number shown
+  before shipping the GIF.
+- The dev server could not be restarted with a plain background spawn —
+  the tool session reaped child processes when each command exited
+  (three servers died mid-review before the pattern was clear). Fixed
+  with `scripts/start-dev.py`: a double-fork + setsid daemon so the
+  server survives between commands. Recorded here because the next
+  agent will hit the same wall.
+
+**Validation:** tsc clean, eslint clean, `make verify` green (new
+REQUIRED entries: hero-bot.tsx, docs/demo.gif), `make test` green
+(fuzz 12/12, ablation 8/8×3, audit 257 ok + tamper@129). Browser
+walkthrough both themes with VLM design review: hero bot "cute and
+premium" (dark + light), demo panel "one consistent system", paper
+"native dark-mode docs", control-room header "calm telemetry, not a
+badge wall". The new GIF (960×600, 322 frames, 2.7MB, palette-
+optimized) records the live page: hero + bot, the golden path playing,
+the ticker ticking.

@@ -427,23 +427,49 @@ export function LiveDot({ label, className }: { label: string; className?: strin
 
 /**
  * One long strip sliding left — recent ledger lines on the landing page.
- * Duplicated once for the seamless loop; pauses on hover; collapses to a
- * static line under reduced motion.
+ * Each line is a real ledger row — id, amount, status, rail — set in the
+ * same mono the control room's ledger uses, the status wearing its verdict
+ * color. Duplicated once for the seamless loop; pauses on hover; collapses
+ * to a static line under reduced motion.
  */
-export function Ticker({ items, duration = 46 }: { items: string[]; duration?: number }) {
+export interface TickerItem {
+  orderId: string;
+  totalPaise: number;
+  status: string;
+  adapter: string;
+}
+
+const TICKER_STATUS: Record<string, { dot: string; text: string; label: string }> = {
+  CAPTURED: { dot: "bg-cleared", text: "text-cleared", label: "captured" },
+  REFUSED: { dot: "bg-refused", text: "text-refused", label: "refused" },
+  AWAITING_APPROVAL: { dot: "bg-held", text: "text-held", label: "held" },
+  HOLD_FOR_APPROVAL: { dot: "bg-held", text: "text-held", label: "held" },
+  PROPOSED: { dot: "bg-ink/40", text: "text-inksoft", label: "proposed" },
+};
+
+export function Ticker({ items, duration = 46 }: { items: TickerItem[]; duration?: number }) {
   if (items.length === 0) return null;
+  const line = (it: TickerItem) => {
+    const s = TICKER_STATUS[it.status] ?? { dot: "bg-ink/40", text: "text-inksoft", label: it.status.replace(/_/g, " ").toLowerCase() };
+    return (
+      <span className="mx-5 inline-flex items-center gap-2.5 font-mono text-[11px]">
+        <span className={cn("h-1 w-1 shrink-0 rounded-full", s.dot)} aria-hidden />
+        <span className="text-inksoft">{monoId(it.orderId, 14)}</span>
+        <span className="tnum text-ink">{inr(it.totalPaise)}</span>
+        <span className={s.text}>{s.label}</span>
+        <span className="text-inksoft/70">{it.adapter}</span>
+      </span>
+    );
+  };
   const row = (key: string, hidden: boolean) => (
     <span key={key} aria-hidden={hidden} className="inline-flex items-center">
       {items.map((it, i) => (
-        <span key={i} className="mx-6 inline-flex items-center gap-2.5 font-mono text-[11px] text-inksoft">
-          <span className="h-1 w-1 rounded-full bg-cleared/60" aria-hidden />
-          {it}
-        </span>
+        <span key={i}>{line(it)}</span>
       ))}
     </span>
   );
   return (
-    <div className="ticker overflow-hidden border-y border-line py-2.5" role="marquee" aria-label="recent ledger lines">
+    <div className="ticker overflow-hidden py-3" role="marquee" aria-label="recent ledger lines">
       <div className="ticker-track" style={{ ["--ticker-dur" as string]: `${duration}s` }}>
         {row("a", false)}
         {row("b", true)}
