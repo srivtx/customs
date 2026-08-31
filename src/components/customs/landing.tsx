@@ -5,9 +5,10 @@
  * the trust ladder, the protocol matrix, and the proof layer commands.
  */
 import { useEffect, useState } from "react";
-import { SectionLabel, Stamp, GhostButton, ManifestRow, inr, CountUp, Reveal, Ticker, LiveDot } from "./bits";
+import { SectionLabel, Stamp, GhostButton, InkButton, ManifestRow, inr, CountUp, Reveal, Ticker, LiveDot } from "./bits";
 import { TRUST_TIERS } from "@/lib/customs/gate/types";
 import { ADAPTERS, AdapterId } from "@/lib/customs/adapters";
+import type { View } from "./shell";
 
 interface LandingStats {
   gmvPaise: number;
@@ -25,7 +26,7 @@ interface TickerOrder {
   adapter: string;
 }
 
-export function Landing({ onEnter }: { onEnter: (view: "agent" | "merchant") => void }) {
+export function Landing({ onEnter }: { onEnter: (view: View) => void }) {
   const [stats, setStats] = useState<LandingStats | null>(null);
   const [tickerItems, setTickerItems] = useState<string[]>([]);
 
@@ -71,31 +72,33 @@ export function Landing({ onEnter }: { onEnter: (view: "agent" | "merchant") => 
           <div className="px-1 py-8 lg:pr-10 lg:py-12">
             <div className="label-caps">razorpay ai buildathon 2026 · track 1 · test mode only</div>
             <h1 className="mt-4 font-display text-[clamp(38px,6vw,64px)] font-medium leading-[1.02] tracking-tight text-ink">
-              The checkpoint for
+              AI agents can
               <br />
-              <em className="font-normal">agentic commerce.</em>
+              finally pay. <em className="font-normal">Safely.</em>
             </h1>
             <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-inksoft">
-              AI buyers are about to spend money in your app. Customs ships both sides of that
-              counter: a storefront agents transact on, and a merchant desk a payments company can
-              trust — every money action <span className="text-ink">bounded, metered, replayable</span>,
-              and provable to a machine in sixty seconds.
+              Customs is the checkout AI buyers transact on — and the desk merchants
+              trust. Every rupee an agent moves is <span className="text-ink">signed, bounded,
+              and provable</span>: a mandate in plain code, a hash-chained ledger, a
+              human desk over ₹10,000.
             </p>
             <div className="mt-7 flex flex-wrap items-center gap-3">
-              <button
+              <InkButton
                 onClick={() => onEnter("agent")}
-                aria-label="enter the agent playground"
-                className="h-11 border border-ink bg-ink px-6 font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-paper transition-all hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_var(--line-strong)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                ariaLabel="enter the agent playground"
+                arrow
+                className="h-11 px-6"
               >
-                Enter the agent playground
-              </button>
-              <button
+                Enter the playground
+              </InkButton>
+              <GhostButton
                 onClick={() => onEnter("merchant")}
-                aria-label="open the control room"
-                className="h-11 border border-line2 bg-transparent px-6 font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-ink transition-colors hover:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                ariaLabel="open the control room"
+                variant="ink"
+                className="h-11 px-6"
               >
                 Open the control room
-              </button>
+              </GhostButton>
             </div>
             {/* live stats strip */}
             <div className="mt-9 grid max-w-xl grid-cols-2 gap-x-8 gap-y-3 border-t border-line pt-5 sm:grid-cols-4">
@@ -142,6 +145,33 @@ export function Landing({ onEnter }: { onEnter: (view: "agent" | "merchant") => 
         </div>
       </section>
 
+      {/* ------------------------------ the demo, recorded ------------------------------ */}
+      <Reveal>
+        <section aria-label="recorded demo">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <SectionLabel>watch it clear — the golden path, recorded</SectionLabel>
+            <span className="font-mono text-[10px] text-inksoft">26 seconds · no cuts · driven by scripts/make-demo-gif.sh</span>
+          </div>
+          <div className="doc mt-5 overflow-hidden">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-2.5">
+              <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-inksoft">
+                one agent, one mandate, one receipt — end to end
+              </span>
+              <Stamp kind="sim" animate={false}>REPLAY OF A REAL RUN</Stamp>
+            </div>
+            <img
+              src="/demo.gif"
+              alt="Screen recording of the Customs golden path: the agent searches for headphones, adds them to the cart, is refused for exceeding its trust tier, attests, requests a mandate, the principal approves, the gate runs its checks, the payment is captured, and the merchant control room shows the live P&L and ledger."
+              className="block w-full"
+              loading="lazy"
+            />
+            <div className="border-t border-line px-4 py-2 font-mono text-[10px] leading-relaxed text-inksoft">
+              intent → search → cart → tier refusal → attest → mandate → bind-time checks → capture → receipt → the merchant&apos;s live P&amp;L
+            </div>
+          </div>
+        </section>
+      </Reveal>
+
       {/* ------------------------------ live manifest ticker ------------------------------ */}
       {tickerItems.length > 0 && (
         <section aria-label="recent ledger lines">
@@ -161,19 +191,19 @@ export function Landing({ onEnter }: { onEnter: (view: "agent" | "merchant") => 
             {
               n: "01",
               t: "Mandate",
-              d: "The buyer's agent asks; the desk signs an Ed25519 envelope over canonical JSON — amount cap, item list, expiry, trust tier. No mandate, no money.",
+              d: "The buyer signs a mandate: amount cap, item list, expiry, trust tier. Ed25519 over canonical JSON. No mandate, no money.",
               code: "sign(mandate.body)",
             },
             {
               n: "02",
               t: "Bind",
-              d: "At bind time the gate re-verifies everything in plain code: signature, tier bounds, live catalog prices, item allowlist. The agent's arithmetic is never trusted.",
+              d: "At checkout the gate re-checks everything in plain code: signature, tier bounds, live catalog prices, item allowlist. The agent's arithmetic is never trusted.",
               code: "decide(mandate, order)",
             },
             {
               n: "03",
               t: "Settle",
-              d: "Capture on the rail (test mode or labeled simulation), manifest issued, every span hash-chained into an audit ledger that can be replayed and tamper-probed.",
+              d: "Capture on the rail (test mode or labeled simulation), manifest receipt issued, every span hash-chained into an audit ledger you can replay.",
               code: "capture(orderId)",
             },
           ].map((s, i) => (
@@ -194,7 +224,7 @@ export function Landing({ onEnter }: { onEnter: (view: "agent" | "merchant") => 
       {/* ------------------------------ trust ladder ------------------------------ */}
       <section aria-label="trust tiers">
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <SectionLabel>the trust ladder — identity becomes a spending envelope</SectionLabel>
+          <SectionLabel>how much an agent may spend — the trust ladder</SectionLabel>
           <span className="font-mono text-[10px] text-inksoft">+ a human desk over ₹10,000, always</span>
         </div>
         <div className="mt-5 grid gap-4 md:grid-cols-3">
@@ -221,7 +251,7 @@ export function Landing({ onEnter }: { onEnter: (view: "agent" | "merchant") => 
 
       {/* ------------------------------ protocol matrix ------------------------------ */}
       <section aria-label="protocol matrix">
-        <SectionLabel>one gate, three protocols — the matrix is the point</SectionLabel>
+        <SectionLabel>speaks your protocol — one gate, three transports</SectionLabel>
         <div className="mt-5 grid gap-4 md:grid-cols-3">
           {(["naive", "mcp", "acp"] as AdapterId[]).map((a, i) => (
             <Reveal key={a} delay={i * 90}>
@@ -279,8 +309,10 @@ export function Landing({ onEnter }: { onEnter: (view: "agent" | "merchant") => 
           </div>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
-          <GhostButton onClick={() => onEnter("agent")}>try the playground →</GhostButton>
-          <GhostButton onClick={() => onEnter("merchant")}>see the control room →</GhostButton>
+          <GhostButton onClick={() => onEnter("agent")}>try the playground</GhostButton>
+          <GhostButton onClick={() => onEnter("merchant")}>see the control room</GhostButton>
+          <GhostButton onClick={() => onEnter("why")} variant="ink">why it exists</GhostButton>
+          <GhostButton onClick={() => onEnter("paper")} variant="ink">read the paper</GhostButton>
         </div>
         </section>
       </Reveal>

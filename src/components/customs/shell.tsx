@@ -1,27 +1,39 @@
 "use client";
 
 /**
- * shell.tsx — the app shell: one route, three surfaces (overview, agent
- * playground, merchant control room), a customs-house top bar, honest
- * status chips, and a footer that says the true things.
+ * shell.tsx — the app shell: one route, five surfaces (overview, why it
+ * exists, the paper, agent playground, merchant control room), the gate
+ * diamond in the masthead, honest status chips, and a footer that says
+ * the true things. Views swap instantly and settle in — no exit lag.
  */
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { cn } from "@/lib/utils";
+import { LogoMark } from "./bits";
 import { Landing } from "./landing";
+import { WhyPage } from "./why";
+import { PaperPage } from "./paper";
 import { Playground } from "./playground";
 import { ControlRoom } from "./control-room";
 import { SiteFooter } from "./footer";
 
-type View = "home" | "agent" | "merchant";
+export type View = "home" | "why" | "paper" | "agent" | "merchant";
 
 const NAV: { id: View; label: string }[] = [
   { id: "home", label: "overview" },
-  { id: "agent", label: "agent playground" },
+  { id: "why", label: "why" },
+  { id: "paper", label: "paper" },
+  { id: "agent", label: "playground" },
   { id: "merchant", label: "control room" },
 ];
 
 export function CustomsApp() {
   const [view, setView] = useState<View>("home");
+
+  /** switch surface: instant swap + settle-in, back to the top of the page */
+  const go = useCallback((v: View) => {
+    setView(v);
+    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+  }, []);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -29,28 +41,29 @@ export function CustomsApp() {
       <header className="sticky top-0 z-40 border-b border-line bg-paper/95 backdrop-blur-sm">
         <div className="mx-auto flex max-w-[1320px] flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3 sm:px-6">
           <button
-            onClick={() => setView("home")}
+            onClick={() => go("home")}
             className="group flex items-center gap-3 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink"
             aria-label="Customs home"
           >
-            <span className="stamp h-9 w-9 rotate-[-5deg] items-center justify-center border-[2.5px] border-ink text-[9px] text-ink transition-transform group-hover:rotate-[0deg]">
-              C
-            </span>
+            <LogoMark
+              size={30}
+              className="text-ink transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:rotate-[-8deg]"
+            />
             <span className="text-left">
               <span className="block font-display text-[19px] font-semibold leading-none tracking-tight text-ink">
                 Customs
               </span>
               <span className="block font-mono text-[9px] uppercase tracking-[0.22em] text-inksoft">
-                fieldnote supply · desk no. 01
+                the checkpoint for agentic commerce
               </span>
             </span>
           </button>
 
-          <nav className="flex items-center gap-1" aria-label="views">
+          <nav className="flex flex-wrap items-center gap-1" aria-label="views">
             {NAV.map((n) => (
               <button
                 key={n.id}
-                onClick={() => setView(n.id)}
+                onClick={() => go(n.id)}
                 aria-current={view === n.id ? "page" : undefined}
                 aria-label={`view ${n.label}`}
                 className={cn(
@@ -73,13 +86,17 @@ export function CustomsApp() {
 
       {/* ------------------------------ content ------------------------------ */}
       <main className="mx-auto w-full max-w-[1320px] flex-1 px-4 py-6 sm:px-6 sm:py-8">
-        {view === "home" && <Landing onEnter={setView} />}
-        {view === "agent" && <Playground />}
-        {view === "merchant" && <ControlRoom />}
+        <div key={view} className="view-enter">
+          {view === "home" && <Landing onEnter={go} />}
+          {view === "why" && <WhyPage onEnter={go} />}
+          {view === "paper" && <PaperPage onEnter={go} />}
+          {view === "agent" && <Playground />}
+          {view === "merchant" && <ControlRoom />}
+        </div>
       </main>
 
       {/* ------------------------------ footer ------------------------------ */}
-      <SiteFooter onEnter={setView} />
+      <SiteFooter onEnter={go} />
     </div>
   );
 }

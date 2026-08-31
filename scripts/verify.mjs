@@ -18,14 +18,14 @@ console.log("customs :: verify — evidence checks (CI entry)\n");
 
 // 1. required files exist (the product + the proof layer)
 const REQUIRED = [
-  "README.md", "JUDGE.md", "llms.txt", "AGENTS.md", "ARCHITECTURE.md",
+  "README.md", "JUDGE.md", "PAPER.md", "LICENSE", "llms.txt", "AGENTS.md", "ARCHITECTURE.md",
   "ENGINEERING_LOG.md", "VIDEO_TRANSCRIPT.md", "CLEANUP.md", "DEPLOY.md",
   "Makefile", ".env.example", ".github/workflows/verify.yml",
   "scripts/verify.mjs", "scripts/triage.mjs", "scripts/spike-d1-1.mjs",
   "scripts/fuzz.ts", "scripts/ablation.ts", "scripts/meter.ts",
   "scripts/project.ts", "scripts/audit.ts", "scripts/ledger-fork.ts",
   "scripts/make-demo-gif.sh",
-  "src/app/page.tsx", "src/app/layout.tsx",
+  "src/app/page.tsx", "src/app/layout.tsx", "src/app/icon.svg",
   "src/app/api/chat/route.ts", "src/app/api/state/route.ts",
   "src/app/api/decision/route.ts", "src/app/api/fuzz/route.ts",
   "src/app/api/hook/webhook/route.ts", "src/app/api/health/route.ts",
@@ -38,8 +38,10 @@ const REQUIRED = [
   "src/lib/customs/meter.ts", "src/lib/customs/store/catalog.ts",
   "src/components/customs/shell.tsx", "src/components/customs/playground.tsx",
   "src/components/customs/control-room.tsx", "src/components/customs/landing.tsx",
+  "src/components/customs/why.tsx", "src/components/customs/paper.tsx",
   "src/components/customs/bits.tsx", "src/components/customs/chat-events.tsx",
   "src/components/customs/footer.tsx", "docs/FORM_ANSWERS.md", "docs/demo.gif",
+  "public/logo.svg", "public/logo-lockup.svg", "public/demo.gif",
 ];
 for (const f of REQUIRED) ok(`file: ${f}`, existsSync(join(ROOT, f)));
 
@@ -92,9 +94,11 @@ const URL_ALLOW = [
   /^https:\/\/github\.com\/HRaj07\/eacp$/,
   /^https:\/\/(www\.)?razorpay\.com\/docs\//,
   /^https:\/\/(www\.)?razorpay\.com\/buildathon\/?$/,
+  /^https:\/\/img\.shields\.io\/badge\//, // README badges only — static, no tracking
+  /^https:\/\/img\.shields\.io\/-/,
   /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/, // local dev instructions only
 ];
-const META_FILES = ["README.md", "JUDGE.md", "llms.txt", "AGENTS.md",
+const META_FILES = ["README.md", "JUDGE.md", "PAPER.md", "llms.txt", "AGENTS.md",
   "ARCHITECTURE.md", "ENGINEERING_LOG.md", "VIDEO_TRANSCRIPT.md"];
 const urlRe = /https?:\/\/[^\s)\]"<>]+/g;
 let urlCount = 0;

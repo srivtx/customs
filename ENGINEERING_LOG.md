@@ -177,3 +177,48 @@ the second incident (after D3-2) where the honesty layer caught a real defect �
 are in the video's failure beat, both became regression harnesses.
 
 ---
+
+## 2026-09-01 — D6-1: the design round — the gate diamond, two reading surfaces, the ledger as a terminal
+
+**What happened:** the product worked but read as "engineered, then styled." Three
+concrete complaints from the operator: (1) no logo — the masthead carried a stamped
+"C"; (2) the order ledger scrolled on default browser gutters and overflowed its
+container, which reads as generated rather than designed; (3) no page explained why
+this exists, and the deep story (protocol, economics, evaluation) lived only in repo
+files a judge might never open.
+**Evidence:** v1.1 masthead (`shell.tsx` `stamp` "C"), `chat-scroll` at 8px default
+thumb with no Firefox story, no `why`/`paper` views in the nav.
+**What we changed:**
+- **The gate diamond** — one mark, drawn once, used everywhere: a solid diamond
+  (value) with a negative-space pill slot (authorization) cut through it. Favicon
+  (`src/app/icon.svg`), masthead + footer (`LogoMark`, currentColor, inline SVG),
+  README lockup (`public/logo-lockup.svg`), badge (`public/logo.svg`). Fraunces
+  wordmark, Georgia fallback so the GitHub-rendered image still reads correctly.
+- **The ledger as a terminal** — one designed scrollbar system (7px inset pill
+  thumb, transparent track, hover-darkens, Firefox `scrollbar-width/color`,
+  `overscroll-contain`), status filter tabs with live counts, a time column,
+  `table-fixed` colgroup, sticky blurred thead, right-aligned tabular totals, a
+  summary rule footer (rows · captured/refused · Σ shown · chain · events), rows
+  keyboard-focusable, new rows rise then flash and *drain* (2.4s) instead of
+  blinking.
+- **Two reading surfaces** — "Why it exists" (`why.tsx`): the problem in plain
+  words, the mandate principle, a hand-drawn SVG architecture diagram (no
+  screenshot slop), and the honest scope ledger in three stamps: SHIPPED /
+  SIMULATED / NOT YET. "The Paper" (`paper.tsx` + `PAPER.md` as its
+  machine-legible twin): abstract, §1–§7, tables for tiers and the ten checks,
+  §5–§6 numbers read live from `/api/state` at page load.
+- **The settle** — view transitions (instant swap + 260ms settle, sections stagger
+  via Reveal; reduced-motion inert), button press physics (140ms, hover lift,
+  active pressed into the paper, approve/danger variants, arrow slide), the
+  recorded demo GIF embedded on the landing page ("watch it clear"), simplified
+  hero copy ("AI agents can finally pay. Safely."), README rebuilt around the
+  centered lockup + badge row.
+**The test it became:** `make verify` (REQUIRED list grew: why.tsx, paper.tsx,
+PAPER.md, LICENSE, logo assets, public/demo.gif; filemap follows; shields.io
+badge URLs explicitly allowlisted as static and non-tracking). AGENTS invariant 11:
+PAPER.md and the paper view are twins — edit both or neither.
+**Why it matters for the pitch:** judges triage in minutes; the two reading
+surfaces are the pitch, pre-rendered. The scope ledger converts "what's missing?"
+from an attack surface into an exhibit of discipline.
+
+---

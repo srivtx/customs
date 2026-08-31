@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400">
+  <!-- Customs — centered lockup: the gate diamond above the wordmark -->
+  <rect x="1" y="1" width="718" height="398" rx="26" fill="#f6f3ec" stroke="#ddd6c4"/>
+
+  <!-- the mark -->
+  <path fill="#1b180f" fill-rule="evenodd"
+    d="M360 78 L430 148 L360 218 L290 148 Z M345 118 A8.5 8.5 0 0 1 375 118 L375 166 A8.5 8.5 0 0 1 345 166 Z"/>
+
+  <!-- the wordmark -->
+  <text x="360" y="300" text-anchor="middle"
+    font-family="Fraunces, Georgia, 'Times New Roman', serif"
+    font-weight="600" font-size="86" letter-spacing="-2" fill="#1b180f">customs</text>
+
+  <!-- the line -->
+  <text x="360" y="348" text-anchor="middle"
+    font-family="'Geist Mono', 'Courier New', monospace"
+    font-size="19" letter-spacing="7" fill="#5c5643">THE CHECKPOINT FOR AGENTIC COMMERCE</text>
+</svg>

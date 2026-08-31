@@ -21,6 +21,31 @@ export function monoId(id: string, max = 14): string {
   return id.length > max ? id.slice(0, max) + "…" : id;
 }
 
+/* ---------------- the gate diamond — the Customs mark ---------------- */
+
+/**
+ * A solid diamond with a negative-space mandate slot cut through it:
+ * value passes only through the authorization. CurrentColor so it sits
+ * on paper or ink alike; one shape from favicon to footer.
+ */
+export function LogoMark({ size = 28, className }: { size?: number; className?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 96 96"
+      aria-hidden="true"
+      className={cn("shrink-0", className)}
+    >
+      <path
+        fill="currentColor"
+        fillRule="evenodd"
+        d="M48 9 L87 48 L48 87 L9 48 Z M41 36 A7 7 0 0 1 55 36 L55 60 A7 7 0 0 1 41 60 Z"
+      />
+    </svg>
+  );
+}
+
 /* ---------------- verdict stamp — the signature element ---------------- */
 
 export type StampKind = "cleared" | "refused" | "held" | "ink" | "sim";
@@ -190,6 +215,14 @@ export function ManifestRow({
 
 /* ---------------- buttons — the house style ---------------- */
 
+export type InkVariant = "ink" | "cleared" | "refused";
+
+const INK_VARIANTS: Record<InkVariant, string> = {
+  ink: "border-ink bg-ink text-paper hover:shadow-[3px_3px_0_0_var(--line-strong)]",
+  cleared: "border-cleared bg-cleared text-cleared-ink hover:shadow-[3px_3px_0_0_var(--line-strong)]",
+  refused: "border-refused bg-refused text-refused-ink hover:shadow-[3px_3px_0_0_var(--line-strong)]",
+};
+
 export function InkButton({
   children,
   onClick,
@@ -197,6 +230,9 @@ export function InkButton({
   type = "button",
   className,
   title,
+  variant = "ink",
+  arrow = false,
+  ariaLabel,
 }: {
   children: ReactNode;
   onClick?: () => void;
@@ -204,22 +240,35 @@ export function InkButton({
   type?: "button" | "submit";
   className?: string;
   title?: string;
+  variant?: InkVariant;
+  arrow?: boolean;
+  ariaLabel?: string;
 }) {
   return (
     <button
       type={type}
       title={title}
+      aria-label={ariaLabel}
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "group relative inline-flex h-10 items-center justify-center gap-2 border border-ink bg-ink px-4 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-paper transition-all",
-        "hover:-translate-y-px hover:shadow-[3px_3px_0_0_var(--line-strong)] active:translate-y-0 active:shadow-none",
+        "btn-ink group relative inline-flex h-10 items-center justify-center gap-2 border px-4 font-mono text-[11px] font-semibold uppercase tracking-[0.14em]",
+        "hover:-translate-y-px active:translate-y-[0.5px] active:shadow-none",
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink",
         "disabled:pointer-events-none disabled:opacity-40",
+        INK_VARIANTS[variant],
         className
       )}
     >
       {children}
+      {arrow && (
+        <span
+          aria-hidden
+          className="inline-block transition-transform duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-1"
+        >
+          →
+        </span>
+      )}
     </button>
   );
 }
@@ -231,6 +280,8 @@ export function GhostButton({
   className,
   title,
   active,
+  variant = "default",
+  ariaLabel,
 }: {
   children: ReactNode;
   onClick?: () => void;
@@ -238,17 +289,24 @@ export function GhostButton({
   className?: string;
   title?: string;
   active?: boolean;
+  variant?: "default" | "danger" | "ink";
+  ariaLabel?: string;
 }) {
   return (
     <button
       type="button"
       title={title}
+      aria-label={ariaLabel}
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "inline-flex h-8 items-center justify-center gap-1.5 border border-line2 bg-transparent px-3 font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-inksoft transition-colors",
-        "hover:border-ink hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink",
+        "btn-ghost inline-flex h-8 items-center justify-center gap-1.5 border bg-transparent px-3 font-mono text-[10px] font-semibold uppercase tracking-[0.12em]",
+        "hover:-translate-y-px active:translate-y-[0.5px]",
+        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink",
         "disabled:pointer-events-none disabled:opacity-40",
+        variant === "default" && "border-line2 text-inksoft hover:border-ink hover:text-ink",
+        variant === "danger" && "border-refused/50 text-refused hover:border-refused",
+        variant === "ink" && "border-ink/60 text-ink hover:border-ink hover:-translate-y-px",
         active && "border-ink bg-ink text-paper hover:text-paper",
         className
       )}

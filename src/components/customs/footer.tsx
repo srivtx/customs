@@ -5,15 +5,19 @@
  * words, with the whole site and the whole repo reachable from one place.
  * A customs form ends with declarations — so does this page.
  */
-import { GhostButton, SectionLabel, Stamp } from "./bits";
+import { GhostButton, LogoMark, SectionLabel, Stamp } from "./bits";
+import type { View } from "./shell";
 
-const COUNTER_LINKS: { label: string; hint: string; view: "agent" | "merchant" }[] = [
+const COUNTER_LINKS: { label: string; hint: string; view: View }[] = [
+  { label: "why it exists", hint: "the problem, the mandate principle, the architecture diagram", view: "why" },
+  { label: "the paper", hint: "how and what we are doing — the working paper, numbers live", view: "paper" },
   { label: "agent playground", hint: "natural-language buying, tool transparency, mandate approval", view: "agent" },
   { label: "control room", hint: "live channel P&L, ≥₹10k approvals, span-by-span replay", view: "merchant" },
 ];
 
 const EVIDENCE_FILES: [string, string][] = [
   ["JUDGE.md", "claims mapped to criteria, regenerate commands"],
+  ["PAPER.md", "the working paper, machine-legible"],
   ["llms.txt", "the whole repo, machine-legible"],
   ["AGENTS.md", "the invariants the code obeys"],
   ["ARCHITECTURE.md", "decisions, diagram, P&L formula"],
@@ -30,7 +34,7 @@ const COMMANDS: [string, string][] = [
   ["make project", "the at-1M projection"],
 ];
 
-export function SiteFooter({ onEnter }: { onEnter: (view: "agent" | "merchant") => void }) {
+export function SiteFooter({ onEnter }: { onEnter: (view: View) => void }) {
   return (
     <footer className="mt-auto border-t border-line bg-paper2/40">
       {/* what it does */}
@@ -126,7 +130,7 @@ export function SiteFooter({ onEnter }: { onEnter: (view: "agent" | "merchant") 
       <div className="border-t border-line">
         <div className="mx-auto flex max-w-[1320px] flex-wrap items-center justify-between gap-x-8 gap-y-3 px-4 py-5 sm:px-6">
           <div className="flex flex-wrap items-center gap-3">
-            <span className="stamp h-8 w-8 rotate-[-5deg] items-center justify-center border-[2px] border-ink text-[9px]">C</span>
+            <LogoMark size={26} className="text-ink" />
             <span className="font-mono text-[10px] leading-relaxed text-inksoft">
               Customs · Fieldnote Supply · desk no. 01 · Razorpay AI Buildathon 2026, Track 1
             </span>

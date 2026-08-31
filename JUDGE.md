@@ -34,7 +34,9 @@ buyer-side chat storefronts exist; nobody ships the merchant desk with a
 pricing story attached.
 Evidence: `ARCHITECTURE.md` (the one diagram + decisions) · the two surfaces in
 one app: Playground (`src/components/customs/playground.tsx`) and Control Room
-(`src/components/customs/control-room.tsx`).
+(`src/components/customs/control-room.tsx`) · the **Why it exists** view
+(`src/components/customs/why.tsx`) states the problem and the unbuilt merchant
+half in plain words, with the architecture diagram and the honest scope ledger.
 
 ### 2 — Judgment on where AI genuinely helps
 Claim: mandate validation, bounds and price re-verification are deterministic
@@ -48,9 +50,12 @@ arms; LLM arm status recorded honestly).
 
 ### 3 — Ease of understanding
 Claim: one command runs the product; one command tours the evidence; the
-ledger is a file you can `head`.
+ledger is a file you can `head` — and the whole technical story is pre-rendered
+as two reading surfaces: **Why it exists** (problem, principle, diagram, scope)
+and **the Paper** (working paper; §5–§6 numbers read live from the ledger).
 Evidence: `make demo` · `make triage` · `data/state/ledger.jsonl` (hash-chained
-JSONL — the audit trail IS the database).
+JSONL — the audit trail IS the database) · `src/components/customs/why.tsx` ·
+`src/components/customs/paper.tsx` + `PAPER.md` (twins, AGENTS invariant 11).
 
 ### 4 — Failure handling & recovery
 Claim: twelve authored attacks are refused (or held) with specific reason
@@ -95,6 +100,9 @@ regenerated, never promised.
 
 ## The honest scope ledger
 
+- Reading surfaces: the Why view (problem, architecture diagram, scope ledger)
+  and the Paper view + `PAPER.md` (protocol, economics, evaluation) ship in-app
+  and in-repo; the paper's §5–§6 numbers are the live ledger's, never printed.
 - Live deployment: PENDING — deployment is the operator's step after this
   build; `DEPLOY.md` is the runbook (free tier, no-spin-down plan included).
   CI enforces every link that appears, so no URL is shipped until it answers.

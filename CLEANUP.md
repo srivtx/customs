@@ -9,12 +9,15 @@ the free tier. Follow it top to bottom; every step is a command.
 
 | Thing | Where | State |
 |---|---|---|
-| Source of truth | the build machine's `repo-out/customs/` + every tar in `download/` | 6 commits, all green locally |
+| Source of truth | the build machine's `repo-out/customs/` + every tar in `download/` | 7 commits (design round on top of v1.1), all green locally |
 | Public repo | `https://github.com/srivtx/customs` | `main` pushed, CI: `verify` workflow (3 jobs) |
 | Private research | build machine `download/*.md`, `data/`, `scripts/*.py` | **never** in the repo — assembled by allowlist |
 | Deploy | `DEPLOY.md` (Vercel primary) | run when ready; JUDGE.md line flips from PENDING |
 
 If you're starting from a tar: `tar xzf customs-repo-<date>.tar.gz && cd customs`.
+On the build machine, the whole sync is one command:
+`SYNC_PAT=<pat> bash scripts/sync-repo.sh` (allowlist copy → verify → commit →
+push → token scan; `COMMIT_MSG` env overrides the message).
 
 ## 1. Delete before any re-push from a fresh tree
 
@@ -108,7 +111,9 @@ any one LLM key (`GROQ_API_KEY` / `GEMINI_API_KEY` have free tiers) with
 - Do **not** edit any file under `results/` by hand — regeneration only.
 - Do **not** add a live Razorpay key; the app refuses them at construction and
   so should you.
-- Do **not** delete `ENGINEERING_LOG.md` entries — the incidents (D1-1 … D5-1)
+- Do **not** delete `ENGINEERING_LOG.md` entries — the incidents (D1-1 … D6-1)
   are the honesty artifact.
+- Do **not** let `PAPER.md` and the paper view drift apart — they are twins
+  (AGENTS.md invariant 11); edit both or neither.
 - Do **not** commit `.env`, `data/`, or any tar of the workspace — the repo's
   whole credibility is that the private layer never leaks.

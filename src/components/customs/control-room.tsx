@@ -24,6 +24,9 @@ import {
 } from "./bits";
 import type { OrderView } from "@/lib/customs/ledger/ledger";
 
+type LedgerFilter = "ALL" | "CAPTURED" | "HELD" | "REFUSED" | "PROPOSED";
+const LEDGER_FILTERS: LedgerFilter[] = ["ALL", "CAPTURED", "HELD", "REFUSED", "PROPOSED"];
+
 interface StateResponse {
   ok: boolean;
   rail: { id: string; label: string; simulated: boolean };
@@ -84,6 +87,7 @@ export function ControlRoom() {
   const [busy, setBusy] = useState<string | null>(null);
   const [traceFor, setTraceFor] = useState<string | null>(null);
   const [trace, setTrace] = useState<TraceResponse | null>(null);
+  const [ledgerFilter, setLedgerFilter] = useState<LedgerFilter>("ALL");
   const prevGmv = useRef(0);
   const seenIds = useRef<Set<string>>(new Set());
   const [flashIds, setFlashIds] = useState<Set<string>>(new Set());
@@ -144,6 +148,21 @@ export function ControlRoom() {
     }
   };
 
+  const closeTrace = useCallback(() => {
+    setTraceFor(null);
+    setTrace(null);
+  }, []);
+
+  /* Escape closes the replay dialog — a dialog that traps the keyboard is a bug */
+  useEffect(() => {
+    if (!traceFor) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeTrace();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [traceFor, closeTrace]);
+
   if (!state) {
     return (
       <div className="doc flex min-h-[480px] items-center justify-center">
@@ -155,6 +174,12 @@ export function ControlRoom() {
   const m = state.meter;
   const gmvDelta = m.gmvPaise - prevGmv.current;
   const maxWire = Math.max(...(state.ablation?.arms ?? []).map((a) => a.wireBytes), 1);
+  const ledgerRows =
+    ledgerFilter === "ALL"
+      ? state.orders
+      : state.orders.filter(
+          (o) => o.status === ledgerFilter || (ledgerFilter === "HELD" && o.status === "AWAITING_APPROVAL")
+        );
 
   return (
     <div className="space-y-6">
@@ -279,10 +304,10 @@ export function ControlRoom() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <InkButton onClick={() => decide(a.orderId, true)} disabled={busy === a.orderId} className="h-9">
+                      <InkButton onClick={() => decide(a.orderId, true)} disabled={busy === a.orderId} variant="cleared" className="h-9">
                         {busy === a.orderId ? "…" : "Approve"}
                       </InkButton>
-                      <GhostButton onClick={() => decide(a.orderId, false)} disabled={busy === a.orderId} className="h-9 border-refused/60 text-refused hover:border-refused hover:text-refused">
+                      <GhostButton onClick={() => decide(a.orderId, false)} disabled={busy === a.orderId} variant="danger" className="h-9">
                         Reject
                       </GhostButton>
                     </div>
@@ -300,63 +325,124 @@ export function ControlRoom() {
                 <LiveDot label="ticking" />
               </div>
               <span className="font-mono text-[10px] text-inksoft">
-                {state.orders.length} shown · auto-refresh 6s · click a row to replay its spans
+                auto-refresh 6s · click a row to replay its spans
               </span>
             </div>
-            <div className="chat-scroll mt-3 max-h-[460px] overflow-y-auto">
-              <table className="w-full border-collapse text-left">
-                <thead className="sticky top-0 z-10 bg-card shadow-[0_1px_0_0_var(--line)]">
-                  <tr className="border-b border-line2">
-                    {["order", "buyer · tier", "items", "total", "protocol", "status", ""].map((h) => (
-                      <th key={h} className="label-caps py-2 pr-3 font-mono">{h}</th>
+            {/* status filters — the desk clerk's tabs */}
+            <div className="mt-3 flex flex-wrap items-center gap-1.5" role="tablist" aria-label="filter orders by status">
+              {LEDGER_FILTERS.map((f) => {
+                const n =
+                  f === "ALL"
+                    ? state.orders.length
+                    : state.orders.filter((o) => o.status === f || (f === "HELD" && o.status === "AWAITING_APPROVAL")).length;
+                return (
+                  <button
+                    key={f}
+                    role="tab"
+                    aria-selected={ledgerFilter === f}
+                    onClick={() => setLedgerFilter(f)}
+                    className={cn(
+                      "btn-ghost h-7 border px-2.5 font-mono text-[9.5px] font-semibold uppercase tracking-[0.12em]",
+                      ledgerFilter === f
+                        ? "border-ink bg-ink text-paper"
+                        : "border-line2 bg-transparent text-inksoft hover:border-ink hover:text-ink"
+                    )}
+                  >
+                    {f === "ALL" ? "all" : f.toLowerCase()} <span className="tnum opacity-70">{n}</span>
+                  </button>
+                );
+              })}
+            </div>
+            {/* the ledger itself — a contained, styled, sticky-headed terminal */}
+            <div className="ledger-scroll mt-3 max-h-[440px] overflow-auto">
+              <table className="w-full min-w-[780px] table-fixed border-collapse text-left">
+                <colgroup>
+                  <col style={{ width: 62 }} />
+                  <col style={{ width: 118 }} />
+                  <col style={{ width: 148 }} />
+                  <col />
+                  <col style={{ width: 96 }} />
+                  <col style={{ width: 76 }} />
+                  <col style={{ width: 132 }} />
+                  <col style={{ width: 52 }} />
+                </colgroup>
+                <thead className="sticky top-0 z-10">
+                  <tr className="border-b border-line2 bg-card/95 backdrop-blur-sm">
+                    {["time", "order", "buyer · tier", "items", "total", "rail", "status", ""].map((h, i) => (
+                      <th key={h || i} className={cn("label-caps py-2 pr-3 font-mono", (h === "total" || i === 7) && "text-right")}>
+                        {h}
+                      </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {state.orders.map((o) => {
+                  {ledgerRows.map((o) => {
                     const fresh = flashIds.has(o.orderId);
                     return (
-                    <tr
-                      key={o.orderId}
-                      className="cursor-pointer border-b border-line/70 align-middle transition-colors hover:bg-paper2/50"
-                      style={
-                        fresh
-                          ? { animation: "rise .32s cubic-bezier(0.22,1,0.36,1) both, flash 1.6s ease-out 1 both" }
-                          : undefined
-                      }
-                      onClick={() => openTrace(o.orderId)}
-                    >
-                      <td className="py-2 pr-3 font-mono text-[11px] text-inksoft">{monoId(o.orderId, 20)}</td>
-                      <td className="py-2 pr-3">
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-mono text-[10px] text-inksoft">{o.buyerId}</span>
-                          <TierChip tier={o.tier} />
-                        </div>
-                      </td>
-                      <td className="max-w-[220px] truncate py-2 pr-3 text-[12px] text-inksoft">
-                        {o.items.map((i: { name: string; quantity: number }) => `${i.name} ×${i.quantity}`).join(", ")}
-                      </td>
-                      <td className="tnum py-2 pr-3 font-mono text-[12px] font-semibold text-ink">
-                        {inr(o.totalPaise)}
-                      </td>
-                      <td className="py-2 pr-3 font-mono text-[10px] uppercase text-inksoft">{o.adapter}</td>
-                      <td className="py-2 pr-3">
-                        <StatusChip status={o.status} />
-                        {o.code && o.status === "REFUSED" && (
-                          <div className="mt-0.5 font-mono text-[9px] text-refused">{o.code}</div>
+                      <tr
+                        key={o.orderId}
+                        tabIndex={0}
+                        role="button"
+                        aria-label={`replay order ${o.orderId}, ${inr(o.totalPaise)}, ${o.status}`}
+                        className={cn(
+                          "cursor-pointer border-b border-line/70 outline-none transition-colors",
+                          "hover:bg-paper2/60 focus-visible:bg-paper2/60",
+                          fresh && "row-fresh"
                         )}
-                        {o.rail === "simulation" && o.status === "CAPTURED" && (
-                          <div className="mt-0.5 font-mono text-[9px] text-inksoft">simulated</div>
-                        )}
-                      </td>
-                      <td className="py-2 pr-1 text-right">
-                        <span className="font-mono text-[9px] text-inksoft underline decoration-dotted">replay</span>
-                      </td>
-                    </tr>
+                        onClick={() => openTrace(o.orderId)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            openTrace(o.orderId);
+                          }
+                        }}
+                      >
+                        <td className="tnum py-2.5 pr-3 font-mono text-[10px] text-inksoft">
+                          {new Date(o.createdAtMs).toLocaleTimeString("en-IN", { hour12: false })}
+                        </td>
+                        <td className="py-2.5 pr-3 font-mono text-[11px] text-inksoft">{monoId(o.orderId, 18)}</td>
+                        <td className="py-2.5 pr-3">
+                          <div className="flex items-center gap-1.5 overflow-hidden">
+                            <span className="truncate font-mono text-[10px] text-inksoft">{o.buyerId}</span>
+                            <TierChip tier={o.tier} />
+                          </div>
+                        </td>
+                        <td className="truncate py-2.5 pr-3 text-[12px] text-inksoft">
+                          {o.items.map((i: { name: string; quantity: number }) => `${i.name} ×${i.quantity}`).join(", ")}
+                        </td>
+                        <td className="tnum py-2.5 pr-3 text-right font-mono text-[12px] font-semibold text-ink">
+                          {inr(o.totalPaise)}
+                        </td>
+                        <td className="py-2.5 pr-3 font-mono text-[9.5px] uppercase text-inksoft">{o.adapter}</td>
+                        <td className="py-2.5 pr-3">
+                          <StatusChip status={o.status} />
+                          {o.code && o.status === "REFUSED" && (
+                            <div className="mt-0.5 font-mono text-[9px] text-refused">{o.code}</div>
+                          )}
+                          {o.rail === "simulation" && o.status === "CAPTURED" && (
+                            <div className="mt-0.5 font-mono text-[9px] text-inksoft">simulated</div>
+                          )}
+                        </td>
+                        <td className="py-2.5 pr-1 text-right">
+                          <span className="font-mono text-[9px] text-inksoft underline decoration-dotted">replay</span>
+                        </td>
+                      </tr>
                     );
                   })}
                 </tbody>
               </table>
+              {ledgerRows.length === 0 && (
+                <p className="py-6 text-center font-mono text-[11px] text-inksoft">
+                  no orders with status {ledgerFilter.toLowerCase()} — fire a chat or the corpus and the ledger ticks
+                </p>
+              )}
+            </div>
+            {/* the ledger's own footer — a summary rule, like a real book */}
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-x-6 gap-y-1 border-t border-line pt-2.5 font-mono text-[10px] text-inksoft">
+              <span>
+                {ledgerRows.length} of {state.orders.length} rows · {state.meter.capturedCount} captured · {state.meter.refusedCount} refused · {state.meter.attackCount} attacks blocked
+              </span>
+              <span className="tnum">Σ shown {inr(ledgerRows.reduce((s, o) => s + o.totalPaise, 0))} · chain {state.chain.ok ? "intact" : "BROKEN"} · {state.eventsTotal} events</span>
             </div>
           </section>
         </div>
@@ -467,8 +553,7 @@ export function ControlRoom() {
           aria-modal="true"
           aria-label="trace replay"
           onClick={() => {
-            setTraceFor(null);
-            setTrace(null);
+            closeTrace();
           }}
         >
           <div className="doc max-h-[86vh] w-full max-w-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
@@ -477,7 +562,7 @@ export function ControlRoom() {
                 <div className="label-caps">trace replay</div>
                 <div className="font-mono text-[12px] text-ink">{traceFor}</div>
               </div>
-              <GhostButton onClick={() => { setTraceFor(null); setTrace(null); }}>close</GhostButton>
+              <GhostButton onClick={closeTrace}>close</GhostButton>
             </div>
             <div className="chat-scroll max-h-[70vh] overflow-y-auto px-4 py-3">
               {!trace && <p className="font-mono text-[12px] text-inksoft">loading spans…</p>}

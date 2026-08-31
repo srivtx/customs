@@ -54,6 +54,11 @@ to check the repo's claims. The harnesses run the real engine, so they need one
 8. **Live keys refused at construction.** Test keys (`rzp_test_`) only.
 9. **The README file map must match the actual tree** — `make verify` checks it.
 10. **Anything PENDING says PENDING.** Never estimate, never round, never ship a vibe.
+11. **PAPER.md and the in-app paper view are twins.** Edit both or neither; the page
+   reads its §5–§6 numbers live from the ledger, the file cites regeneration
+   commands — neither hand-writes a measured number. The Why page's scope ledger
+   follows the same rule: it states what shipped, what is simulated, what is
+   missing — and stays true.
 
 ## How to add things
 

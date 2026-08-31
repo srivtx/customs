@@ -185,18 +185,85 @@
     mask-position: 0 0;
   }
 
-  .chat-scroll::-webkit-scrollbar,
-  .rail-scroll::-webkit-scrollbar {
-    width: 8px;
+  /* ------------------------------------------------------------------
+   * the one scrollbar — thin, ink, quiet.
+   * A finance document scrolls on a rail, not a browser gutter.
+   * Engine split: Firefox gets the standard thin/color props. But
+   * Chromium ignores ::-webkit-scrollbar whenever those props are set,
+   * so inside a selector only Chromium matches we reset them to auto
+   * and draw the custom inset pill by hand.
+   * ------------------------------------------------------------------ */
+  .chat-scroll,
+  .rail-scroll,
+  .ledger-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-strong) transparent;
+    overscroll-behavior: contain;
   }
-  .chat-scroll::-webkit-scrollbar-thumb,
-  .rail-scroll::-webkit-scrollbar-thumb {
-    background: var(--line-strong);
-    border-radius: 8px;
+  @supports selector(::-webkit-scrollbar) {
+    .chat-scroll,
+    .rail-scroll,
+    .ledger-scroll {
+      scrollbar-width: auto;
+      scrollbar-color: auto;
+    }
+    .chat-scroll::-webkit-scrollbar,
+    .rail-scroll::-webkit-scrollbar,
+    .ledger-scroll::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+    .chat-scroll::-webkit-scrollbar-thumb,
+    .rail-scroll::-webkit-scrollbar-thumb,
+    .ledger-scroll::-webkit-scrollbar-thumb {
+      background: var(--line-strong);
+      background-clip: content-box;
+      border: 2px solid transparent;
+      border-radius: 999px;
+    }
+    .chat-scroll::-webkit-scrollbar-thumb:hover,
+    .rail-scroll::-webkit-scrollbar-thumb:hover,
+    .ledger-scroll::-webkit-scrollbar-thumb:hover {
+      background: var(--ink-soft);
+      background-clip: content-box;
+    }
+    .chat-scroll::-webkit-scrollbar-track,
+    .rail-scroll::-webkit-scrollbar-track,
+    .ledger-scroll::-webkit-scrollbar-track,
+    .chat-scroll::-webkit-scrollbar-corner,
+    .rail-scroll::-webkit-scrollbar-corner,
+    .ledger-scroll::-webkit-scrollbar-corner {
+      background: transparent;
+    }
   }
-  .chat-scroll::-webkit-scrollbar-track,
-  .rail-scroll::-webkit-scrollbar-track {
-    background: transparent;
+
+  /* ---------------- view transitions — the x.ai settle ----------------
+   * Views swap instantly (no exit lag); the incoming surface settles
+   * onto the desk in 260ms. Sections then stagger via their own Reveal.
+   * ------------------------------------------------------------------ */
+  .view-enter {
+    animation: view-enter 0.26s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  /* new ledger rows: rise, then a green wash drains out of the paper —
+     slower and softer than a blink, the way a real blot dries */
+  .row-fresh {
+    animation: rise 0.34s cubic-bezier(0.22, 1, 0.36, 1) both,
+      flash 2.4s cubic-bezier(0.22, 1, 0.36, 1) 1 both;
+  }
+
+  /* stamp buttons press into the paper — 140ms, one spring, no jelly */
+  .btn-ink,
+  .btn-ghost {
+    transition: transform 0.14s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.14s cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 0.14s ease, color 0.14s ease, background-color 0.14s ease;
+  }
+  .btn-ink:hover {
+    transform: translateY(-1px);
+  }
+  .btn-ink:active {
+    transform: translateY(0.5px);
   }
 
   .animate-rise {
@@ -255,6 +322,17 @@
   }
 }
 
+@keyframes view-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes rise {
   from {
     opacity: 0;
@@ -278,7 +356,10 @@
 
 @keyframes flash {
   0% {
-    background-color: rgba(23, 94, 67, 0.14);
+    background-color: rgba(23, 94, 67, 0.16);
+  }
+  60% {
+    background-color: rgba(23, 94, 67, 0.07);
   }
   100% {
     background-color: transparent;
@@ -309,7 +390,9 @@
 @media (prefers-reduced-motion: reduce) {
   .animate-rise,
   .animate-typing span,
-  .animate-flash {
+  .animate-flash,
+  .row-fresh,
+  .view-enter {
     animation: none !important;
   }
   .pulse-dot::after,

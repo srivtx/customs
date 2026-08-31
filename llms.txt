@@ -17,16 +17,16 @@ Test mode only; without Razorpay keys the rail is a labeled simulation.
 
 - `make triage` — 60-second self-guided tour (prints claims, runs checks, exits 0)
 - `make verify` — the exact checks CI runs on every push (zero deps)
-- `make test` — fuzz + ablation + audit + ledger-fork (concurrent-writer convergence)
-- `make test` — fuzz + ablation + audit harnesses, exit codes propagate
+- `make test` — fuzz + ablation + audit + ledger-fork (concurrent-writer convergence), exit codes propagate
 - `make demo` — run the product (no keys needed)
 
 ## key files
 
 - JUDGE.md — claims mapped to the judging criteria + evidence commands
+- PAPER.md — the working paper: problem, protocol, economics, evaluation (twin of the in-app paper view)
 - README.md — product overview, quickstart, file map
 - ARCHITECTURE.md — the one diagram, decisions table, threat model
-- AGENTS.md — working guide + the 10 invariants
+- AGENTS.md — working guide + the 11 invariants
 - ENGINEERING_LOG.md — dated incidents; every incident became a test
 - CLEANUP.md — what to delete before pushing to GitHub
 - DEPLOY.md — free-tier deployment runbook
@@ -34,6 +34,8 @@ Test mode only; without Razorpay keys the rail is a labeled simulation.
 - src/lib/customs/ledger/ — hash-chained JSONL audit trail (the database)
 - src/lib/customs/fuzz/corpus.ts — the 12 authored attacks, expected verdicts
 - src/lib/customs/meter.ts — channel P&L + projection, assumptions declared
+- src/components/customs/why.tsx — the why page: architecture diagram + honest scope ledger (shipped / simulated / not yet)
+- src/components/customs/paper.tsx — the paper view: §5–§6 numbers read live from the ledger
 - results/ — every measured number, JSON only, regeneration-only
 
 ## numbers policy
