@@ -205,14 +205,14 @@ export function DemoPlayer() {
     >
       {/* panel header */}
       <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
-        <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-inksoft">
+        <span className="label-caps">
           one agent · one mandate · one receipt — rendered live, not recorded
         </span>
         <div className="flex items-center gap-2.5">
           <span aria-hidden className={cn("h-1.5 w-1.5 rounded-full", done ? "bg-cleared" : "bg-held animate-pulse")} />
           <button
             onClick={restart}
-            className="rounded-[4px] border border-line2 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-inksoft transition-colors hover:border-ink/30 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+            className="rounded-[4px] border border-line2 px-2 py-0.5 text-[11.5px] font-medium text-inksoft transition-colors hover:border-ink/30 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
             aria-label="replay the golden path"
           >
             ↻ replay
@@ -233,11 +233,13 @@ export function DemoPlayer() {
         ))}
       </div>
 
-      {/* the loop bar — the whole sequence, one hairline of progress */}
+      {/* the loop bar — the whole sequence, one hairline of progress.
+          Set in the house sans, like any caption — the mono voice is
+          for machine strings, and this is prose. */}
       <div className="border-t border-line px-4 py-2.5">
-        <div className="flex items-center justify-between font-mono text-[9.5px] text-inksoft">
-          <span>intent → search → refusal → attest → mandate → approve → gate → capture → ledger</span>
-          <span>{paused && visible ? "held — move away to resume" : done ? "looping" : "playing"}</span>
+        <div className="flex items-center justify-between text-[12px] text-inksoft">
+          <span className="truncate">intent → search → refusal → attest → mandate → approve → gate → capture → ledger</span>
+          <span className="shrink-0 pl-4">{paused && visible ? "held — move away to resume" : done ? "looping" : "playing"}</span>
         </div>
       </div>
     </div>
@@ -262,9 +264,10 @@ function BeatView({ p, last }: { p: Played; last: boolean }) {
       );
     case "tool":
       return (
-        <div className={cn(cls, "flex items-center gap-2.5 rounded-[4px] border border-line bg-ink/[0.02] px-3 py-1.5")}>
-          {/* the tag is a chip — it reads as a token, never as a word */}
-          <span className="shrink-0 rounded-[3px] border border-line bg-ink/[0.04] px-1.5 py-px font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-inksoft">{b.tag}</span>
+        <div className={cn(cls, "flex items-center gap-2.5 rounded-[4px] border border-ink/20 bg-ink/[0.03] px-3 py-1.5")}>
+          {/* the tag is a chip in plain ink — black on white, exactly the
+              button style; the verdict colors are reserved for verdicts */}
+          <span className="shrink-0 rounded-[3px] border border-ink/25 bg-ink/[0.05] px-1.5 py-px font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-ink">{b.tag}</span>
           <ToolText text={b.text} />
         </div>
       );
@@ -286,7 +289,7 @@ function BeatView({ p, last }: { p: Played; last: boolean }) {
           />
           <div className="min-w-0">
             <div className="truncate text-[13px] font-medium text-ink">{b.name}</div>
-            <div className="font-mono text-[10px] text-inksoft">{b.note}</div>
+            <div className="text-[11.5px] text-inksoft">{b.note}</div>
           </div>
           <div className="tnum ml-auto shrink-0 font-mono text-[13px] font-semibold text-ink">{b.price}</div>
         </div>
@@ -302,51 +305,51 @@ function BeatView({ p, last }: { p: Played; last: boolean }) {
             loading="lazy"
             className="h-7 w-7 shrink-0 rounded-[3px] border border-line object-cover"
           />
-          <div className="flex min-w-0 flex-1 items-baseline justify-between font-mono text-[12px]">
+          <div className="flex min-w-0 flex-1 items-baseline justify-between text-[12.5px]">
             <span className="truncate text-inksoft">
               {b.name} × {b.qty}
             </span>
-            <span className="tnum font-semibold text-ink">{b.price}</span>
+            <span className="tnum font-mono font-semibold text-ink">{b.price}</span>
           </div>
         </div>
       );
     case "refuse":
       return (
         <div className={cn(cls, "flex max-w-[420px] items-center justify-between rounded-[4px] border border-refused/30 bg-refused-ink px-3.5 py-2")}>
-          <span className="font-mono text-[11px] text-inksoft">{b.note}</span>
+          <span className="text-[12.5px] text-inksoft">{b.note}</span>
           <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-refused">{b.code}</span>
         </div>
       );
     case "tier":
       return (
-        <div className={cn(cls, "flex max-w-[420px] items-center gap-3 rounded-[4px] border border-cleared/30 bg-cleared-ink px-3.5 py-2")}>
-          <span className="stamp border-cleared/40 text-cleared">{b.tier}</span>
-          <span className="text-[12px] text-inksoft">{b.note}</span>
+        <div className={cn(cls, "flex max-w-[420px] items-center gap-3 rounded-[4px] border border-ink/20 bg-ink/[0.03] px-3.5 py-2")}>
+          <span className="stamp border-ink/25 text-ink bg-ink/[0.05]">{b.tier}</span>
+          <span className="text-[12.5px] text-inksoft">{b.note}</span>
         </div>
       );
     case "mandate":
       return (
-        <div className={cn(cls, "max-w-[440px] rounded-[4px] border border-line bg-card")}>
+        <div className={cn(cls, "max-w-[440px] rounded-[4px] border border-ink/20 bg-card")}>
           <div className="flex items-center justify-between border-b border-line px-3.5 py-2">
-            <span className="font-mono text-[9.5px] uppercase tracking-[0.1em] text-inksoft">spending mandate</span>
+            <span className="label-caps">spending mandate</span>
             <span className="tnum font-mono text-[13px] font-semibold text-ink">{b.cap} envelope</span>
           </div>
-          <div className="flex items-baseline justify-between px-3.5 py-2 font-mono text-[11px]">
+          <div className="flex items-baseline justify-between px-3.5 py-2 text-[12.5px]">
             <span className="text-inksoft">signature</span>
-            <span className="text-ink">{b.sig}</span>
+            <span className="font-mono text-ink">{b.sig}</span>
           </div>
         </div>
       );
     case "gate":
       return (
-        <div className={cn(cls, "max-w-[480px] rounded-[4px] border border-line bg-card")}>
-          <div className="border-b border-line px-3.5 py-2 font-mono text-[9.5px] uppercase tracking-[0.1em] text-inksoft">
+        <div className={cn(cls, "max-w-[480px] rounded-[4px] border border-ink/20 bg-card")}>
+          <div className="border-b border-line px-3.5 py-2 label-caps">
             gate · bind-time checks
           </div>
           <ul className="px-3.5 py-2">
             {b.checks.slice(0, Math.max(1, p.gateN)).map((c, j) => (
-              <li key={j} className="flex items-baseline gap-2.5 border-b border-line/60 py-1.5 last:border-b-0 font-mono text-[11px]">
-                <span className={cn("shrink-0 font-semibold", j < p.gateN ? "text-cleared" : "text-inksoft")}>✓</span>
+              <li key={j} className="flex items-baseline gap-2.5 border-b border-line/60 py-1.5 last:border-b-0 text-[12.5px]">
+                <span className={cn("shrink-0 font-mono font-semibold", j < p.gateN ? "text-cleared" : "text-inksoft")}>✓</span>
                 <span className="text-inksoft">{c}</span>
               </li>
             ))}
@@ -362,11 +365,11 @@ function BeatView({ p, last }: { p: Played; last: boolean }) {
       );
     case "ledger":
       return (
-        <div className={cn(cls, "row-fresh flex items-center justify-between border-y border-line bg-paper2/50 px-3.5 py-2 font-mono text-[11px]")}>
-          <span className="text-inksoft">{new Date(Date.now() - 1000).toLocaleTimeString("en-IN", { hour12: false })} · {b.order}</span>
+        <div className={cn(cls, "row-fresh flex items-center justify-between border-y border-line bg-paper2/50 px-3.5 py-2 text-[12.5px]")}>
+          <span className="font-mono text-[11px] text-inksoft">{new Date(Date.now() - 1000).toLocaleTimeString("en-IN", { hour12: false })} · {b.order}</span>
           <span className="flex items-center gap-3">
-            <span className="tnum text-ink">{b.amount}</span>
-            <span className="font-semibold uppercase tracking-[0.1em] text-cleared">{b.status}</span>
+            <span className="tnum font-mono text-ink">{b.amount}</span>
+            <span className="font-mono font-semibold uppercase tracking-[0.1em] text-cleared">{b.status}</span>
           </span>
         </div>
       );
@@ -375,15 +378,16 @@ function BeatView({ p, last }: { p: Played; last: boolean }) {
   }
 }
 
-/** the tool line's text — the call in soft ink, the arrow and its
-    result reach full ink, so the outcome is what your eye lands on */
+/** the tool line's text — a machine call in the ledger's own mono: the
+    call in soft ink, the arrow and its result reach full ink, so the
+    outcome is what your eye lands on. Black and white, like a receipt. */
 function ToolText({ text }: { text: string }) {
   const at = text.indexOf("\u2192");
   if (at === -1) return <span className="truncate font-mono text-[11px] text-inksoft">{text}</span>;
   return (
     <span className="truncate font-mono text-[11px]">
       <span className="text-inksoft">{text.slice(0, at)}</span>
-      <span className="text-cleared">{text.slice(at, at + 1)}</span>
+      <span className="text-ink">{text.slice(at, at + 1)}</span>
       <span className="text-ink">{text.slice(at + 1)}</span>
     </span>
   );

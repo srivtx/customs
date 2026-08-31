@@ -3,18 +3,19 @@
 import { cn } from "@/lib/utils";
 
 /**
- * hero-bot.tsx — the customs bot, the desk's little officer.
+ * hero-bot.tsx — the customs bot, v2: a smooth little officer.
  *
- * x.ai keeps its hero typographic but animates it: their grid shimmer.
- * We take the same idea and give it a body — a small customs officer
- * drawn in the house language (hairlines, ink, the one sage accent)
- * with a mandate ring orbiting it. Everything moves on transform and
- * opacity only, so it stays at 60fps, and every color is a token —
- * the bot re-inks itself when the desk lamp flips. It blinks, it
- * floats, it stamps the ledger every few seconds; hover it and its
- * eyes turn sage. Reduced motion: it stands still, quietly on duty.
+ * Not line-art — a soft rounded body inked with gradients (lit from
+ * above, like anything with mass), a glossy crown highlight, a visor
+ * face that blinks, and one mandate chip orbiting it. The ground
+ * shadow breathes with the float, so the bot reads as sitting in
+ * space, not drawn on the page. Everything moves on transform and
+ * opacity only (60fps, no layout), every color is a token — the bot
+ * re-inks itself when the desk lamp flips. Hover it and its eyes turn
+ * sage. The chip's type is the site's own label mono — one type
+ * system, even inside the picture. Reduced motion: it stands still,
+ * quietly on duty.
  */
-
 export function HeroBot({ className }: { className?: string }) {
   return (
     <svg
@@ -24,103 +25,65 @@ export function HeroBot({ className }: { className?: string }) {
       role="img"
     >
       <defs>
-        <linearGradient id="hb-shimmer" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="var(--cleared)" stopOpacity="0" />
-          <stop offset="0.45" stopColor="var(--cleared)" stopOpacity="0.9" />
-          <stop offset="0.6" stopColor="var(--ink)" stopOpacity="0.5" />
-          <stop offset="1" stopColor="var(--ink)" stopOpacity="0" />
+        {/* the body's light — lit from above, falling away below: this
+            is what makes a flat shape read as a volume */}
+        <linearGradient id="hb-body" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="var(--ink)" stopOpacity="0.13" />
+          <stop offset="1" stopColor="var(--ink)" stopOpacity="0.03" />
         </linearGradient>
+        {/* the glass crown — a gloss catching the desk light */}
+        <linearGradient id="hb-glass" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#ffffff" stopOpacity="0.16" />
+          <stop offset="1" stopColor="#ffffff" stopOpacity="0" />
+        </linearGradient>
+        {/* the ground shadow's softness */}
+        <filter id="hb-blur" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="9" />
+        </filter>
       </defs>
 
-      {/* ---------------- the shimmer — x.ai's moving hairlines ---------------- */}
-      <g className="hb-shimmer-group">
-        <rect className="hb-shimmer hb-shimmer-a" x="0" y="74" width="180" height="1" fill="url(#hb-shimmer)" />
-        <rect className="hb-shimmer hb-shimmer-b" x="0" y="196" width="150" height="1" fill="url(#hb-shimmer)" opacity="0.7" />
-        <rect className="hb-shimmer hb-shimmer-c" x="0" y="330" width="200" height="1" fill="url(#hb-shimmer)" opacity="0.55" />
-        {/* the resting rails the sweeps ride on */}
-        <line className="hb-rail" x1="24" y1="74" x2="456" y2="74" strokeWidth="1" />
-        <line className="hb-rail" x1="24" y1="196" x2="456" y2="196" strokeWidth="1" opacity="0.55" />
-        <line className="hb-rail" x1="24" y1="330" x2="456" y2="330" strokeWidth="1" opacity="0.4" />
-      </g>
-
-      {/* ---------------- the mandate ring — what orbits the bot ---------------- */}
+      {/* ---------------- the mandate orbit — one ring, one chip ----------------
+          The ring group rotates about the bot's center; the chip rides it
+          and counter-rotates about its own center, so it stays upright.
+          The chip is the signed envelope: ed25519, ₹5,000. */}
       <g className="hb-ring">
-        <circle className="hb-rail" cx="240" cy="205" r="138" fill="none" strokeWidth="1" />
-        {/* the three bounds, riding the ring, staying upright */}
-        <g className="hb-chip" style={{ transformOrigin: "359px 274px" }}>
-          <g className="hb-chip-lean">
-            <rect className="hb-strong" x="322" y="263" width="74" height="22" rx="3" fill="var(--paper)" strokeWidth="1" />
-            <text x="359" y="277" textAnchor="middle" fill="var(--ink-soft)" className="hb-mono">
-              ₹ cap 5,000
-            </text>
-          </g>
-        </g>
-        <g className="hb-chip" style={{ transformOrigin: "240px 67px" }}>
-          <g className="hb-chip-lean">
-            <rect className="hb-strong" x="196" y="56" width="88" height="22" rx="3" fill="var(--paper)" strokeWidth="1" />
-            <text x="240" y="70" textAnchor="middle" fill="var(--ink-soft)" className="hb-mono">
-              ✓ ed25519
-            </text>
-          </g>
-        </g>
-        <g className="hb-chip" style={{ transformOrigin: "121px 274px" }}>
-          <g className="hb-chip-lean">
-            <rect className="hb-strong" x="84" y="263" width="74" height="22" rx="3" fill="var(--paper)" strokeWidth="1" />
-            <text x="121" y="277" textAnchor="middle" fill="var(--ink-soft)" className="hb-mono">
-              10 checks
-            </text>
-          </g>
+        <circle cx="240" cy="206" r="136" fill="none" stroke="var(--ink)" strokeOpacity="0.12" strokeWidth="1" />
+        <g className="hb-chip">
+          <rect x="178" y="57" width="124" height="26" rx="5" fill="var(--paper)" stroke="var(--ink)" strokeOpacity="0.28" strokeWidth="1" />
+          <text x="240" y="73.5" textAnchor="middle" className="hb-mono">
+            <tspan fill="var(--cleared)">✓</tspan>
+            <tspan fill="var(--ink-soft)" dx="6">ED25519 · ₹5,000</tspan>
+          </text>
         </g>
       </g>
 
-      {/* ---------------- the floating evidence ---------------- */}
-      <g className="hb-bob hb-bob-a">
-        <rect className="hb-strong" x="372" y="52" width="62" height="80" rx="4" fill="var(--paper)" strokeWidth="1" />
-        <line className="hb-rail" x1="382" y1="66" x2="424" y2="66" strokeWidth="1" />
-        <line className="hb-rail" x1="382" y1="76" x2="418" y2="76" strokeWidth="1" opacity="0.7" />
-        <line className="hb-rail" x1="382" y1="86" x2="424" y2="86" strokeWidth="1" opacity="0.7" />
-        <line className="hb-rail" x1="382" y1="96" x2="410" y2="96" strokeWidth="1" opacity="0.7" />
-        <circle cx="386" cy="118" r="4" fill="var(--cleared)" />
-        <line x1="388.5" y1="118" x2="392" y2="121.5" stroke="var(--cleared-contrast)" strokeWidth="1.4" />
-        <line x1="392" y1="121.5" x2="397" y2="113" stroke="var(--cleared-contrast)" strokeWidth="1.4" />
-      </g>
-      <g className="hb-bob hb-bob-b">
-        <rect className="hb-strong" x="18" y="288" width="136" height="26" rx="3" fill="var(--paper)" strokeWidth="1" />
-        <circle cx="34" cy="301" r="3" fill="var(--cleared)" />
-        <text x="46" y="304" fill="var(--ink-soft)" className="hb-mono">
-          ord_7f3k · ₹6,998
-        </text>
-      </g>
+      {/* ---------------- the ground shadow — breathes with the float ---------------- */}
+      <ellipse className="hb-shadow" cx="240" cy="318" rx="82" ry="13" fill="var(--ink)" filter="url(#hb-blur)" />
 
       {/* ---------------- the customs bot ---------------- */}
       <g className="hb-bot">
-        {/* antenna + the gate diamond, keeping watch */}
-        <line className="hb-rail" x1="240" y1="120" x2="240" y2="138" strokeWidth="1" />
-        <path d="M240 106 L250 116 L240 126 L230 116 Z" fill="var(--cleared)" />
+        {/* the antenna — the desk light, softly pulsing */}
+        <line x1="240" y1="142" x2="240" y2="118" stroke="var(--ink)" strokeWidth="2" strokeOpacity="0.4" strokeLinecap="round" />
+        <circle cx="240" cy="111" r="12" fill="none" stroke="var(--cleared)" strokeOpacity="0.28" strokeWidth="1" />
+        <circle className="hb-bead" cx="240" cy="111" r="6" fill="var(--cleared)" />
 
-        {/* head */}
-        <rect className="hb-strong" x="192" y="138" width="96" height="68" rx="16" fill="var(--ink)" fillOpacity="0.04" strokeWidth="1" />
-        {/* eyes — they blink, and they turn sage when you visit */}
-        <rect className="hb-eye" x="218" y="158" width="11" height="17" rx="3.5" fill="var(--ink)" />
-        <rect className="hb-eye" x="251" y="158" width="11" height="17" rx="3.5" fill="var(--ink)" />
+        {/* the side pods — little ears, same light as the body */}
+        <rect x="162" y="186" width="11" height="32" rx="5.5" fill="url(#hb-body)" stroke="var(--ink)" strokeOpacity="0.24" strokeWidth="1" />
+        <rect x="307" y="186" width="11" height="32" rx="5.5" fill="url(#hb-body)" stroke="var(--ink)" strokeOpacity="0.24" strokeWidth="1" />
 
-        {/* body */}
-        <rect className="hb-strong" x="203" y="210" width="74" height="46" rx="10" fill="var(--ink)" fillOpacity="0.03" strokeWidth="1" />
-        {/* the chest diamond — the mandate slot */}
-        <g className="hb-chest">
-          <path d="M240 222 L251 233 L240 244 L229 233 Z" fill="var(--cleared)" />
-        </g>
-        {/* the stamp — a verdict ring leaving the chest */}
-        <circle className="hb-stamp" cx="240" cy="233" r="14" fill="none" stroke="var(--cleared)" strokeWidth="1" />
-        <circle className="hb-stamp hb-stamp-b" cx="240" cy="233" r="14" fill="none" stroke="var(--cleared)" strokeWidth="1" />
+        {/* the body — one smooth capsule, lit from above */}
+        <rect x="172" y="142" width="136" height="118" rx="42" fill="url(#hb-body)" stroke="var(--ink)" strokeOpacity="0.3" strokeWidth="1" />
+        {/* the glass crown — the gloss that sells the volume */}
+        <path d="M196 150 H284 Q288 150 288 154 V172 Q288 178 282 178 H198 Q192 178 192 172 V154 Q192 150 196 150 Z" fill="url(#hb-glass)" />
 
-        {/* arms */}
-        <rect className="hb-strong" x="182" y="216" width="9" height="28" rx="4.5" fill="var(--ink)" fillOpacity="0.05" strokeWidth="1" transform="rotate(18 186 230)" />
-        <rect className="hb-strong" x="289" y="216" width="9" height="28" rx="4.5" fill="var(--ink)" fillOpacity="0.05" strokeWidth="1" transform="rotate(-18 293 230)" />
+        {/* the visor — the face, a shade darker than the body */}
+        <rect x="198" y="178" width="84" height="54" rx="17" fill="var(--ink)" fillOpacity="0.06" stroke="var(--ink)" strokeOpacity="0.2" strokeWidth="1" />
+        {/* the eyes — they blink, and they turn sage when you visit */}
+        <rect className="hb-eye" x="224" y="194" width="10" height="17" rx="5" fill="var(--ink)" />
+        <rect className="hb-eye" x="246" y="194" width="10" height="17" rx="5" fill="var(--ink)" />
+        {/* the smile — one small, pleased arc */}
+        <path d="M232 221 Q240 227 248 221" fill="none" stroke="var(--ink)" strokeWidth="2.4" strokeOpacity="0.5" strokeLinecap="round" />
       </g>
-
-      {/* the desk line the bot stands above */}
-      <line className="hb-rail" x1="150" y1="330" x2="330" y2="330" strokeWidth="1" opacity="0.6" />
     </svg>
   );
 }

@@ -28,8 +28,8 @@
 Built for the **Razorpay AI Buildathon 2026** · Track 1 (AI Growth & Agentic
 Commerce) · **test mode only — no live keys, no real money.**
 
-**The whole golden path, rendered live by the page itself** — the customs bot
-on stamp duty, the agent checkout played in code (intent → search → tier
+**The whole golden path, rendered live by the page itself** — the customs
+bot keeping watch, the agent checkout played in code (intent → search → tier
 refusal → attestation → mandate → approval → the ten-check gate → capture →
 the ledger line landing), and the live ledger ticking:
 
@@ -66,8 +66,10 @@ principle, with the architecture diagram), **the Paper** (a working paper
 rendered as a clean document page — §5–§6 numbers read live from the running
 ledger), and **the live demo** on the landing page (the golden path plays
 itself in code — the GIF above is a recording of that page, not a separate
-asset). One design system, two themes (the night ledger default, the day
-ledger one click away in the footer — x.ai's desk lamp).
+asset). One design system, two themes (the night ledger default, a pure-white
+day ledger one click away in the footer — x.ai's desk lamp), and one type
+system: the house sans carries every human sentence, the mono carries only
+what a machine would read.
 
 ## The gate in one look
 

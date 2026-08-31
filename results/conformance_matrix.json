@@ -1,6 +1,6 @@
 {
   "status": "pass",
-  "measured_at": "2026-08-31T21:42:42.833Z",
+  "measured_at": "2026-08-31T22:29:11.291Z",
   "summary": {
     "passed": 12,
     "total": 12
@@ -14,7 +14,7 @@
       "code": "AMOUNT_OVER_TIER",
       "expected": "AMOUNT_OVER_TIER",
       "matched": true,
-      "ms": 13
+      "ms": 4
     },
     {
       "attackId": "overspend-cap",

@@ -2,14 +2,13 @@
 
 /**
  * paper.tsx — "Customs: a signed-mandate checkpoint for agentic payments,"
- * as a clean document page. Not a paper prop: no sheet floating on the
- * desk, no cream artifact — the page IS the document, set in the same
- * Geist, the same hairlines, the same tokens as every other surface,
- * so it re-inks with the desk lamp like the rest of the site (x.ai
- * renders its documents in whatever theme you are in; so do we).
- * §5–§6 numbers are read from the live ledger on page load — the paper
- * cites the running system, not a PDF. PAPER.md in the repo is this
- * page's machine-legible twin.
+ * as a real document: a WHITE sheet in both themes, exactly like a working
+ * paper — x.ai's dark site still shows white documents, and so does the
+ * night desk here. The .sheet class scopes the ledger tokens back to
+ * ink-on-white, so every child (hairlines, tables, pre blocks, stamps)
+ * re-inks itself with no per-element overrides. §5–§6 numbers are read
+ * from the live ledger on page load — the paper cites the running system,
+ * not a PDF. PAPER.md in the repo is this page's machine-legible twin.
  */
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -55,8 +54,10 @@ export function PaperPage({ onEnter }: { onEnter: (v: View) => void }) {
 
   return (
     <div className="mx-auto max-w-[760px]">
-      {/* ------------------------------ the document ------------------------------ */}
-      <article>
+      {/* ------------------------------ the document ------------------------------
+          A white sheet on the night desk (hairline + lift), the page itself
+          on the day desk. One class carries the whole flip. */}
+      <article className="sheet rounded-[6px] px-6 py-10 sm:px-14 sm:py-12">
         {/* masthead */}
         <header className="border-b border-line pb-8">
           <p className="label-caps">razorpay ai buildathon 2026 · track 1 · test mode</p>
@@ -338,17 +339,17 @@ export function PaperPage({ onEnter }: { onEnter: (v: View) => void }) {
         {/* references */}
         <section aria-label="references" className="mt-10 border-t border-line pt-8">
           <div className="label-caps">references</div>
-          <ul className="mt-3 space-y-1.5 font-mono text-[10.5px] leading-relaxed text-inksoft">
-            <li>[1] Razorpay AI Buildathon 2026 — brief and evaluation criteria. https://razorpay.com/buildathon/</li>
-            <li>[2] Customs, JUDGE.md — every claim mapped to a file and a regeneration command. (this repo)</li>
-            <li>[3] Customs, ARCHITECTURE.md — the decision table and the P&amp;L formula. (this repo)</li>
-            <li>[4] Customs, ENGINEERING_LOG.md — dated incidents, including D5-1. (this repo)</li>
-            <li>[5] Customs, results/ — measured artifacts: conformance_matrix, ablation, cost_meter, project, audit_chain. (this repo)</li>
+          <ul className="mt-3 space-y-1.5 text-[12.5px] leading-relaxed text-inksoft">
+            <li>[1] Razorpay AI Buildathon 2026 — brief and evaluation criteria. <span className="font-mono text-[11px]">https://razorpay.com/buildathon/</span></li>
+            <li>[2] Customs, <span className="font-mono text-[11px]">JUDGE.md</span> — every claim mapped to a file and a regeneration command. (this repo)</li>
+            <li>[3] Customs, <span className="font-mono text-[11px]">ARCHITECTURE.md</span> — the decision table and the P&amp;L formula. (this repo)</li>
+            <li>[4] Customs, <span className="font-mono text-[11px]">ENGINEERING_LOG.md</span> — dated incidents, including D5-1. (this repo)</li>
+            <li>[5] Customs, <span className="font-mono text-[11px]">results/</span> — measured artifacts: conformance_matrix, ablation, cost_meter, project, audit_chain. (this repo)</li>
           </ul>
         </section>
       </article>
 
-      {/* ------------------------------ continue ------------------------------ */}
+      {/* ------------------------------ continue — off the sheet, on the desk ------------------------------ */}
       <Reveal>
         <section className="flex flex-wrap items-center gap-3 pt-10" aria-label="continue">
           <InkButton onClick={() => onEnter("agent")} arrow>
@@ -377,10 +378,10 @@ function PaperSection({ n, title, children }: { n: string; title: string; childr
 
 function LiveStat({ label, value, hint }: { label: string; value: string; hint: string }) {
   return (
-    <div className="bg-card px-4 py-3.5">
-      <div className="font-mono text-[9.5px] font-semibold uppercase tracking-[0.1em] text-inksoft">{label}</div>
-      <div className="tnum mt-1 font-mono text-[20px] font-semibold text-ink">{value}</div>
-      {hint && <div className="mt-0.5 font-mono text-[9.5px] text-inksoft">{hint}</div>}
+    <div className="bg-ink/[0.03] px-4 py-3.5">
+      <div className="label-caps">{label}</div>
+      <div className="tnum mt-1.5 font-display text-[20px] font-medium tracking-[-0.02em] text-ink">{value}</div>
+      {hint && <div className="mt-1 text-[11.5px] text-inksoft">{hint}</div>}
     </div>
   );
 }

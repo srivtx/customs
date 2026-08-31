@@ -166,7 +166,7 @@ export function ControlRoom() {
   if (!state) {
     return (
       <div className="doc flex min-h-[480px] items-center justify-center">
-        <span className="font-mono text-[12px] text-inksoft">opening the ledger…</span>
+        <span className="text-[13px] text-inksoft">opening the ledger…</span>
       </div>
     );
   }
@@ -182,27 +182,31 @@ export function ControlRoom() {
         );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       {/* ------------------------------ header ------------------------------ */}
-      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
         <div>
           <div className="label-caps">fieldnote supply · merchant desk</div>
-          <h2 className="font-display text-2xl font-medium tracking-[-0.02em]">Control Room</h2>
+          <h2 className="mt-1.5 font-display text-2xl font-medium tracking-[-0.02em]">Control Room</h2>
+          <p className="mt-2 max-w-[52ch] text-[14px] leading-relaxed text-inksoft">
+            The desk a payments company needs before it lets agents spend — live P&amp;L,
+            the human approval queue, and every order replayable span by span.
+          </p>
         </div>
-        {/* the desk's state — one quiet mono strip, not a wall of chips:
-            rail · brain · chain, each key muted and each value inked */}
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 font-mono text-[10.5px] uppercase tracking-[0.08em]">
+        {/* the desk's state — one quiet strip: human words in the house
+            sans, machine values (the fingerprint, the brain id) in mono */}
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[12.5px]">
           <span className="text-inksoft">
-            rail <span className="text-ink">{state.rail.simulated ? "simulated" : "razorpay test"}</span>
+            rail <span className="font-medium text-ink">{state.rail.simulated ? "simulated" : "razorpay test"}</span>
           </span>
           <span className="text-inksoft">
-            brain <span className="text-ink">{state.brain}</span>
+            brain <span className="font-mono text-[11.5px] font-medium text-ink">{state.brain}</span>
           </span>
-          <span className={cn("inline-flex items-center gap-1.5", state.chain.ok ? "text-cleared" : "text-refused")}>
+          <span className={cn("inline-flex items-center gap-1.5 font-medium", state.chain.ok ? "text-cleared" : "text-refused")}>
             <span className={cn("h-1.5 w-1.5 rounded-full", state.chain.ok ? "bg-cleared" : "bg-refused")} aria-hidden />
-            chain {state.chain.ok ? "ok" : "broken"} · {state.chain.length}
+            chain {state.chain.ok ? "ok" : "broken"} · <span className="tnum font-mono text-[11.5px]">{state.chain.length}</span>
           </span>
-          {state.ephemeral && <span className="text-held">ephemeral state</span>}
+          {state.ephemeral && <span className="font-medium text-held">ephemeral state</span>}
           <GhostButton
             onClick={async () => {
               setBusy("reset");
@@ -220,78 +224,72 @@ export function ControlRoom() {
       {/* ------------------------------ meter ------------------------------ */}
       <section className="doc overflow-hidden" aria-label="channel P&L meter">
         <div className="grid gap-px bg-line md:grid-cols-[1.25fr_1fr_1fr_1fr]">
-          <div className="bg-card px-4 py-4 md:col-span-1">
+          <div className="bg-card px-5 py-5 md:col-span-1">
             <div className="label-caps">agent GMV — cleared &amp; captured</div>
-            <div className="mt-1 flex items-baseline gap-2">
-              <CountUp value={m.gmvPaise} format={(n) => inr(Math.round(n), { decimals: false })} className="font-display text-[34px] font-medium leading-none text-ink" />
-              {gmvDelta > 0 && <span className="font-mono text-[10px] text-cleared">+{inr(gmvDelta)} live</span>}
+            <div className="mt-1.5 flex items-baseline gap-2.5">
+              <CountUp value={m.gmvPaise} format={(n) => inr(Math.round(n), { decimals: false })} className="font-display text-[38px] font-medium leading-none tracking-[-0.02em] text-ink" />
+              {gmvDelta > 0 && <span className="text-[12px] font-medium text-cleared">+{inr(gmvDelta)} live</span>}
             </div>
-            <div className="mt-2 font-mono text-[10px] text-inksoft">
+            <div className="mt-2.5 text-[12px] text-inksoft">
               {m.capturedCount} captured · {m.refusedCount} refused · {m.attackCount} attacks blocked
             </div>
           </div>
-          <div className="bg-card px-4 py-4">
+          <div className="bg-card px-5 py-5">
             <div className="label-caps">channel revenue (MDR {m.assumptions.mdrPct}%)</div>
-            <CountUp value={m.channelRevenuePaise} format={(n) => inr(Math.round(n))} className="font-display text-[26px] font-medium text-ink" />
-            <div className="mt-1 font-mono text-[10px] text-inksoft">assumed list price</div>
+            <CountUp value={m.channelRevenuePaise} format={(n) => inr(Math.round(n))} className="font-display text-[26px] font-medium tracking-[-0.02em] text-ink" />
+            <div className="mt-1.5 text-[12px] text-inksoft">assumed list price</div>
           </div>
-          <div className="bg-card px-4 py-4">
+          <div className="bg-card px-5 py-5">
             <div className="label-caps">AI serving cost</div>
-            <CountUp value={m.aiCostPaise} format={(n) => inr(Math.round(n), { decimals: true })} className="font-display text-[26px] font-medium text-ink" />
-            <div className="mt-1 font-mono text-[10px] text-inksoft">
-              {m.tokensIn + m.tokensOut} tokens · {m.assumptions.model.name}
+            <CountUp value={m.aiCostPaise} format={(n) => inr(Math.round(n), { decimals: true })} className="font-display text-[26px] font-medium tracking-[-0.02em] text-ink" />
+            <div className="mt-1.5 text-[12px] text-inksoft">
+              <span className="tnum font-mono">{m.tokensIn + m.tokensOut}</span> tokens · {m.assumptions.model.name}
             </div>
           </div>
-          <div className="bg-card px-4 py-4">
+          <div className="bg-card px-5 py-5">
             <div className="label-caps">channel P&amp;L — net</div>
-            <CountUp value={m.netPaise} format={(n) => inr(Math.round(n), { decimals: true })} className={cn("font-display text-[26px] font-medium", m.netPaise >= 0 ? "text-cleared" : "text-refused")} />
-            <div className="mt-1 font-mono text-[10px] text-inksoft">
-              ₹{(m.aiCostPerCapturedPaise / 100).toFixed(2)} AI / captured payment
+            <CountUp value={m.netPaise} format={(n) => inr(Math.round(n), { decimals: true })} className={cn("font-display text-[26px] font-medium tracking-[-0.02em]", m.netPaise >= 0 ? "text-cleared" : "text-refused")} />
+            <div className="mt-1.5 text-[12px] text-inksoft">
+              <span className="tnum font-mono">₹{(m.aiCostPerCapturedPaise / 100).toFixed(2)}</span> AI / captured payment
             </div>
           </div>
         </div>
-        {/* at-scale projection */}
-        <div className="grid gap-px border-t border-line bg-line md:grid-cols-[1.25fr_1fr_1fr_1fr]">
-          <div className="flex flex-col justify-center bg-paper2/60 px-4 py-3">
-            <div className="label-caps">at 1M payments / month</div>
-            <p className="mt-1 font-mono text-[10px] leading-relaxed text-inksoft">
-              every input declared — regenerates with <span className="text-ink">make project</span>
-            </p>
-          </div>
-          <div className="bg-paper2/60 px-4 py-3">
-            <div className="label-caps">revenue / mo</div>
-            <div className="tnum font-display text-[19px] font-medium text-ink">
-              ₹{state.projection.revenueInrPerMonth.toLocaleString("en-IN")}
-            </div>
-          </div>
-          <div className="bg-paper2/60 px-4 py-3">
-            <div className="label-caps">AI cost / mo</div>
-            <div className="tnum font-display text-[19px] font-medium text-ink">
-              ₹{state.projection.aiCostInrPerMonth.toLocaleString("en-IN")}
-            </div>
-          </div>
-          <div className="bg-paper2/60 px-4 py-3">
-            <div className="label-caps">net / mo</div>
-            <div className="tnum font-display text-[19px] font-medium text-cleared">
-              ₹{state.projection.netInrPerMonth.toLocaleString("en-IN")}
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center justify-between px-4 py-2">
-          <span className="font-mono text-[9px] text-inksoft">
-            avg ticket {inr(state.projection.avgTicketPaise)} · measured from the live ledger · assumptions declared in results/project.json
+        {/* at-scale projection — one quiet row, the numbers carried inline;
+            padded like its own summary layer, not a footer bolted on */}
+        <div className="flex flex-wrap items-center gap-x-8 gap-y-2.5 border-t border-line bg-paper2/50 px-5 py-4">
+          <span className="text-[12.5px] text-inksoft">
+            at <span className="font-medium text-ink">1M payments / month</span> — every input declared, regenerates with <span className="font-mono text-[11.5px] text-ink">make project</span>
           </span>
-          <span className="font-mono text-[9px] text-inksoft">desk fingerprint {state.fingerprint}</span>
+          <span className="ml-auto flex flex-wrap items-baseline gap-x-8 gap-y-1.5">
+            <span className="flex items-baseline gap-2">
+              <span className="text-[12px] text-inksoft">revenue</span>
+              <span className="tnum font-display text-[17px] font-medium text-ink">₹{state.projection.revenueInrPerMonth.toLocaleString("en-IN")}</span>
+            </span>
+            <span className="flex items-baseline gap-2">
+              <span className="text-[12px] text-inksoft">AI cost</span>
+              <span className="tnum font-display text-[17px] font-medium text-ink">₹{state.projection.aiCostInrPerMonth.toLocaleString("en-IN")}</span>
+            </span>
+            <span className="flex items-baseline gap-2">
+              <span className="text-[12px] text-inksoft">net</span>
+              <span className="tnum font-display text-[17px] font-medium text-cleared">₹{state.projection.netInrPerMonth.toLocaleString("en-IN")}</span>
+            </span>
+          </span>
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-1 px-5 py-2.5 text-[11px] text-inksoft">
+          <span>
+            avg ticket <span className="tnum font-mono">{inr(state.projection.avgTicketPaise)}</span> · measured from the live ledger · assumptions in <span className="font-mono">results/project.json</span>
+          </span>
+          <span className="font-mono">desk fingerprint {state.fingerprint}</span>
         </div>
       </section>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)]">
-        <div className="space-y-6">
+      <div className="grid gap-7 xl:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)]">
+        <div className="space-y-7">
           {/* ------------------------------ approvals ------------------------------ */}
-          <section className="doc px-4 py-4" aria-label="approval queue">
+          <section className="doc px-5 py-5" aria-label="approval queue">
             <SectionLabel>human desk — orders over ₹10,000 waiting</SectionLabel>
             {state.approvals.length === 0 ? (
-              <p className="mt-3 font-mono text-[12px] text-inksoft">
+              <p className="mt-3.5 text-[13px] leading-relaxed text-inksoft">
                 Queue clear. Orders at or above ₹10,000 hold here until a human decides — the gate
                 never lets a mandate spend it silently.
               </p>
@@ -323,18 +321,18 @@ export function ControlRoom() {
           </section>
 
           {/* ------------------------------ orders ------------------------------ */}
-          <section className="doc overflow-hidden px-4 py-4" aria-label="order ledger">
+          <section className="doc overflow-hidden px-5 py-5" aria-label="order ledger">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-3">
                 <SectionLabel>order ledger — live</SectionLabel>
                 <LiveDot label="ticking" />
               </div>
-              <span className="font-mono text-[10px] text-inksoft">
+              <span className="text-[12px] text-inksoft">
                 auto-refresh 6s · click a row to replay its spans
               </span>
             </div>
-            {/* status filters — the desk clerk's tabs */}
-            <div className="mt-3 flex flex-wrap items-center gap-1.5" role="tablist" aria-label="filter orders by status">
+            {/* status filters — the desk clerk's tabs, in the house sans */}
+            <div className="mt-3.5 flex flex-wrap items-center gap-1.5" role="tablist" aria-label="filter orders by status">
               {LEDGER_FILTERS.map((f) => {
                 const n =
                   f === "ALL"
@@ -347,13 +345,13 @@ export function ControlRoom() {
                     aria-selected={ledgerFilter === f}
                     onClick={() => setLedgerFilter(f)}
                     className={cn(
-                      "btn-ghost h-7 rounded-[4px] border px-2.5 font-mono text-[9.5px] font-semibold uppercase tracking-[0.1em]",
+                      "btn-ghost h-7 rounded-[4px] border px-2.5 text-[12px] font-medium capitalize",
                       ledgerFilter === f
                         ? "border-transparent bg-ink text-paper"
                         : "border-line2 bg-transparent text-inksoft hover:border-ink/30 hover:text-ink"
                     )}
                   >
-                    {f === "ALL" ? "all" : f.toLowerCase()} <span className="tnum opacity-70">{n}</span>
+                    {f === "ALL" ? "all" : f.toLowerCase()} <span className="tnum font-mono text-[11px] opacity-70">{n}</span>
                   </button>
                 );
               })}
@@ -425,11 +423,11 @@ export function ControlRoom() {
                             <div className="mt-0.5 font-mono text-[9px] text-refused">{o.code}</div>
                           )}
                           {o.rail === "simulation" && o.status === "CAPTURED" && (
-                            <div className="mt-0.5 font-mono text-[9px] text-inksoft">simulated</div>
+                            <div className="mt-0.5 text-[10.5px] text-inksoft">simulated</div>
                           )}
                         </td>
                         <td className="py-3 pr-3 text-right">
-                          <span className="font-mono text-[9px] text-inksoft underline decoration-dotted underline-offset-2">replay</span>
+                          <span className="text-[11.5px] font-medium text-inksoft underline decoration-dotted underline-offset-2">replay</span>
                         </td>
                       </tr>
                     );
@@ -437,43 +435,43 @@ export function ControlRoom() {
                 </tbody>
               </table>
               {ledgerRows.length === 0 && (
-                <p className="py-6 text-center font-mono text-[11px] text-inksoft">
+                <p className="py-6 text-center text-[13px] text-inksoft">
                   no orders with status {ledgerFilter.toLowerCase()} — fire a chat or the corpus and the ledger ticks
                 </p>
               )}
             </div>
             {/* the ledger's own footer — a summary rule, like a real book */}
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-x-6 gap-y-1 border-t border-line pt-2.5 font-mono text-[10px] text-inksoft">
+            <div className="mt-3.5 flex flex-wrap items-center justify-between gap-x-6 gap-y-1.5 border-t border-line pt-3 text-[12px] text-inksoft">
               <span>
                 {ledgerRows.length} of {state.orders.length} rows · {state.meter.capturedCount} captured · {state.meter.refusedCount} refused · {state.meter.attackCount} attacks blocked
               </span>
-              <span className="tnum">Σ shown {inr(ledgerRows.reduce((s, o) => s + o.totalPaise, 0))} · chain {state.chain.ok ? "intact" : "BROKEN"} · {state.eventsTotal} events</span>
+              <span className="tnum">Σ shown {inr(ledgerRows.reduce((s, o) => s + o.totalPaise, 0))} · chain {state.chain.ok ? "intact" : "BROKEN"} · <span className="font-mono">{state.eventsTotal}</span> events</span>
             </div>
           </section>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-7">
           {/* ------------------------------ conformance ------------------------------ */}
-          <section className="doc px-4 py-4" aria-label="conformance">
+          <section className="doc px-5 py-5" aria-label="conformance">
             <SectionLabel>conformance — attack me</SectionLabel>
-            <div className="mt-3 flex items-center justify-between">
+            <div className="mt-3.5 flex items-center justify-between">
               {state.conformance?.summary ? (
-                <span className="tnum font-display text-[22px] font-medium text-cleared">
+                <span className="tnum font-display text-[22px] font-medium tracking-[-0.02em] text-cleared">
                   {state.conformance.summary.passed}/{state.conformance.summary.total}
                 </span>
               ) : (
-                <span className="font-mono text-[12px] text-inksoft">run `make fuzz`</span>
+                <span className="text-[13px] text-inksoft">run <span className="font-mono text-[12px]">make fuzz</span></span>
               )}
-              <span className="font-mono text-[10px] text-inksoft">
-                {state.conformance?.status === "pass" ? "authored attacks, expected codes" : "results/conformance_matrix.json"}
+              <span className="text-[12px] text-inksoft">
+                {state.conformance?.status === "pass" ? "authored attacks, expected codes" : <span className="font-mono text-[11px]">results/conformance_matrix.json</span>}
               </span>
             </div>
-            <p className="mt-2 text-[12px] leading-relaxed text-inksoft">
+            <p className="mt-2.5 text-[12.5px] leading-relaxed text-inksoft">
               Fire the same corpus against the running gate — each attempt is refused (or held)
               with a reason code and logged to the chain.
             </p>
             <InkButton
-              className="mt-3 w-full"
+              className="mt-4"
               disabled={busy === "fuzz"}
               onClick={async () => {
                 setBusy("fuzz");
@@ -490,7 +488,7 @@ export function ControlRoom() {
           </section>
 
           {/* ------------------------------ ablation ------------------------------ */}
-          <section className="doc px-4 py-4" aria-label="ablation matrix">
+          <section className="doc px-5 py-5" aria-label="ablation matrix">
             <SectionLabel>ablation — protocol overhead, measured</SectionLabel>
             {state.ablation?.arms ? (
               <>
@@ -517,26 +515,26 @@ export function ControlRoom() {
                   ))}
                   <ManifestRow left="est tokens (same shapes)" right={`${(state.ablation.arms[0]?.estTokensIn ?? 0) + (state.ablation.arms[0]?.estTokensOut ?? 0)}`} mono />
                 </div>
-                <p className="mt-2 font-mono text-[9px] leading-relaxed text-inksoft">
+                <p className="mt-2.5 text-[11.5px] leading-relaxed text-inksoft">
                   {state.ablation.llmArm?.status === "skipped-no-key"
-                    ? "LLM arm: skipped, never simulated — no LLM key present (OPENAI / GROQ / GEMINI / XAI _API_KEY). see results/ablation.json"
+                    ? "LLM arm: skipped, never simulated — no LLM key present. See results/ablation.json."
                     : state.ablation.llmArm?.note}
                 </p>
               </>
             ) : (
-              <p className="mt-3 font-mono text-[12px] text-inksoft">run `make ablation`</p>
+              <p className="mt-3.5 text-[13px] text-inksoft">run <span className="font-mono text-[12px]">make ablation</span></p>
             )}
           </section>
 
           {/* ------------------------------ attack log ------------------------------ */}
-          <section className="doc px-4 py-4" aria-label="attack log">
+          <section className="doc px-5 py-5" aria-label="attack log">
             <SectionLabel>blocks — red-team log</SectionLabel>
-            <div className="chat-scroll mt-3 max-h-[300px] space-y-2.5 overflow-y-auto">
+            <div className="chat-scroll mt-3.5 max-h-[300px] space-y-2.5 overflow-y-auto">
               {state.attacks.map((a, i) => (
                 <div key={i} className="animate-rise flex items-center justify-between gap-2 border-b border-line/60 pb-2.5 last:border-b-0 last:pb-0">
                   <div className="min-w-0">
-                    <div className="truncate font-mono text-[11px] text-ink">{a.label}</div>
-                    <div className="font-mono text-[9px] text-inksoft">
+                    <div className="truncate text-[12.5px] font-medium text-ink">{a.label}</div>
+                    <div className="mt-0.5 font-mono text-[10px] text-inksoft">
                       {a.code} · expected {a.expected}
                     </div>
                   </div>
@@ -562,17 +560,17 @@ export function ControlRoom() {
           }}
         >
           <div className="doc animate-rise max-h-[86vh] w-full max-w-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between border-b border-line px-4 py-3">
+            <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
               <div>
                 <div className="label-caps">trace replay</div>
-                <div className="font-mono text-[12px] text-ink">{traceFor}</div>
+                <div className="mt-1 font-mono text-[12px] text-ink">{traceFor}</div>
               </div>
               <GhostButton onClick={closeTrace}>close</GhostButton>
             </div>
-            <div className="chat-scroll max-h-[70vh] overflow-y-auto px-4 py-3">
-              {!trace && <p className="font-mono text-[12px] text-inksoft">loading spans…</p>}
+            <div className="chat-scroll max-h-[70vh] overflow-y-auto px-5 py-4">
+              {!trace && <p className="text-[13px] text-inksoft">loading spans…</p>}
               {trace && trace.spans.length === 0 && (
-                <p className="font-mono text-[12px] text-inksoft">
+                <p className="text-[13px] leading-relaxed text-inksoft">
                   No spans recorded for this order (historical seed entries carry the ledger line; live
                   turns carry spans).
                 </p>

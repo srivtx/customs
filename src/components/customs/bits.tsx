@@ -106,12 +106,10 @@ export function StatusChip({ status }: { status: string }) {
 }
 
 export function TierChip({ tier }: { tier: string }) {
-  const style: Record<string, string> = {
-    UNVERIFIED: "border-ink/25 text-ink/80 bg-ink/[0.04]",
-    ATTESTED: "border-held/50 text-held bg-held/15",
-    MANDATED: "border-cleared/50 text-cleared bg-cleared/15",
-  };
-  return <span className={cn("stamp", style[tier] ?? style.UNVERIFIED)}>{tier}</span>;
+  /* tiers are classifications, not verdicts — so they set in ink,
+     black on white like every neutral chip on the desk. The verdict
+     colors stay reserved for verdicts. */
+  return <span className={cn("stamp", "border-ink/25 text-ink/80 bg-ink/[0.04]")}>{tier}</span>;
 }
 
 export function SectionLabel({ children, className }: { children: ReactNode; className?: string }) {
@@ -263,7 +261,9 @@ export function InkButton({
   );
 }
 
-/** The ghost: one hairline, brightens on approach, fills when active. */
+/** The ghost: one hairline, brightens on approach, fills when active.
+ * Set in the house sans — a button is UI text, not machine text; the
+ * mono voice is reserved for strings a machine would read. */
 export function GhostButton({
   children,
   onClick,
@@ -291,7 +291,7 @@ export function GhostButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "btn-ghost inline-flex h-8 items-center justify-center gap-1.5 rounded-[4px] border bg-transparent px-3 font-mono text-[11px] font-medium tracking-[-0.01em]",
+        "btn-ghost inline-flex h-8 items-center justify-center gap-1.5 rounded-[4px] border bg-transparent px-3 text-[12.5px] font-medium tracking-[-0.01em]",
         "hover:-translate-y-px active:translate-y-[0.5px]",
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink",
         "disabled:pointer-events-none disabled:opacity-40",
@@ -423,20 +423,21 @@ export function LiveDot({ label, className }: { label: string; className?: strin
   );
 }
 
-/* ---------------- the manifest ticker ---------------- */
+/* ---------------- the live ledger — recently through customs ---------------- */
 
 /**
- * One long strip sliding left — recent ledger lines on the landing page.
- * Each line is a real ledger row — id, amount, status, rail — set in the
- * same mono the control room's ledger uses, the status wearing its verdict
- * color. Duplicated once for the seamless loop; pauses on hover; collapses
- * to a static line under reduced motion.
+ * The landing's ledger card: the latest real rows, one per line, hairline
+ * separated — ids and amounts in the ledger's own mono, status wearing
+ * its verdict color, the rail in soft ink. New rows rise and flash once,
+ * the same confirmation the control room's ledger gives. A quiet data
+ * table, not a marquee — x.ai shows live data sitting still.
  */
 export interface TickerItem {
   orderId: string;
   totalPaise: number;
   status: string;
   adapter: string;
+  createdAtMs?: number;
 }
 
 const TICKER_STATUS: Record<string, { dot: string; text: string; label: string }> = {
@@ -447,32 +448,46 @@ const TICKER_STATUS: Record<string, { dot: string; text: string; label: string }
   PROPOSED: { dot: "bg-ink/40", text: "text-inksoft", label: "proposed" },
 };
 
-export function Ticker({ items, duration = 46 }: { items: TickerItem[]; duration?: number }) {
-  if (items.length === 0) return null;
-  const line = (it: TickerItem) => {
-    const s = TICKER_STATUS[it.status] ?? { dot: "bg-ink/40", text: "text-inksoft", label: it.status.replace(/_/g, " ").toLowerCase() };
-    return (
-      <span className="mx-5 inline-flex items-center gap-2.5 font-mono text-[11px]">
-        <span className={cn("h-1 w-1 shrink-0 rounded-full", s.dot)} aria-hidden />
-        <span className="text-inksoft">{monoId(it.orderId, 14)}</span>
-        <span className="tnum text-ink">{inr(it.totalPaise)}</span>
-        <span className={s.text}>{s.label}</span>
-        <span className="text-inksoft/70">{it.adapter}</span>
-      </span>
-    );
-  };
-  const row = (key: string, hidden: boolean) => (
-    <span key={key} aria-hidden={hidden} className="inline-flex items-center">
-      {items.map((it, i) => (
-        <span key={i}>{line(it)}</span>
-      ))}
-    </span>
-  );
+export function LiveLedger({
+  items,
+  flashIds,
+}: {
+  items: TickerItem[];
+  flashIds?: Set<string>;
+}) {
+  const rows = items.slice(0, 6);
+  const shown = rows.reduce((s, it) => s + it.totalPaise, 0);
   return (
-    <div className="ticker overflow-hidden py-3" role="marquee" aria-label="recent ledger lines">
-      <div className="ticker-track" style={{ ["--ticker-dur" as string]: `${duration}s` }}>
-        {row("a", false)}
-        {row("b", true)}
+    <div>
+      <ul className="divide-y divide-line">
+        {rows.map((it) => {
+          const s = TICKER_STATUS[it.status] ?? { dot: "bg-ink/40", text: "text-inksoft", label: it.status.replace(/_/g, " ").toLowerCase() };
+          const fresh = flashIds?.has(it.orderId);
+          return (
+            <li
+              key={it.orderId}
+              className={cn(
+                "flex items-center gap-3 px-4 py-[11px] sm:px-5",
+                fresh ? "row-fresh" : "animate-rise"
+              )}
+            >
+              <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", s.dot)} aria-hidden />
+              <span className="tnum w-[104px] shrink-0 font-mono text-[11px] text-inksoft">
+                {it.createdAtMs
+                  ? new Date(it.createdAtMs).toLocaleTimeString("en-IN", { hour12: false })
+                  : monoId(it.orderId, 12)}
+              </span>
+              <span className="min-w-0 flex-1 truncate font-mono text-[11.5px] text-ink">{monoId(it.orderId, 16)}</span>
+              <span className="tnum shrink-0 font-mono text-[12.5px] font-semibold text-ink">{inr(it.totalPaise)}</span>
+              <span className={cn("shrink-0 text-[12px] font-medium", s.text)}>{s.label}</span>
+              <span className="hidden w-10 shrink-0 text-right font-mono text-[10px] uppercase text-inksoft sm:block">{it.adapter}</span>
+            </li>
+          );
+        })}
+      </ul>
+      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-1 border-t border-line px-4 py-2.5 text-[11.5px] text-inksoft sm:px-5">
+        <span className="tnum">{rows.length} rows shown · Σ {inr(shown)}</span>
+        <span>same lines the control room shows · hash-chained</span>
       </div>
     </div>
   );

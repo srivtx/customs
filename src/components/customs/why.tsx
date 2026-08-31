@@ -92,7 +92,7 @@ export function WhyPage({ onEnter }: { onEnter: (v: View) => void }) {
             {(["UNVERIFIED", "ATTESTED", "MANDATED"] as const).map((t) => (
               <TierChip key={t} tier={t} />
             ))}
-            <span className="font-mono text-[11px] text-inksoft">
+            <span className="text-[12.5px] text-inksoft">
               {`walk-in ≤ ${TRUST_TIERS.UNVERIFIED.maxAmountPaise / 100} · attested ≤ ${TRUST_TIERS.ATTESTED.maxAmountPaise / 100} · mandated ≤ ${TRUST_TIERS.MANDATED.maxAmountPaise / 100} · a human decides ≥ 10,000, always`}
             </span>
           </div>
@@ -106,7 +106,7 @@ export function WhyPage({ onEnter }: { onEnter: (v: View) => void }) {
             <h2 className="font-display text-[clamp(24px,3vw,34px)] font-semibold tracking-[-0.025em] text-ink">
               One gate, two counters.
             </h2>
-            <span className="font-mono text-[11px] text-inksoft">
+            <span className="text-[12.5px] text-inksoft">
               the full decision table lives in ARCHITECTURE.md · every box is code you can open
             </span>
           </div>

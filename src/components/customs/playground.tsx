@@ -137,7 +137,7 @@ export function Playground() {
               {ADAPTERS[a].label}
             </GhostButton>
           ))}
-          <span className="ml-auto hidden font-mono text-[10px] text-inksoft sm:block">
+          <span className="ml-auto hidden text-[12px] text-inksoft sm:block">
             same gate · same rails · measured overhead
           </span>
         </div>
@@ -169,7 +169,7 @@ export function Playground() {
             <div className="flex items-center gap-3 px-1 py-2">
               <LogoMark size={16} className="text-inksoft" />
               <Typing />
-              <span className="font-mono text-[10px] text-inksoft">
+              <span className="text-[12px] text-inksoft">
                 parsing intent · calling tools through {ADAPTERS[adapter].label} · gate checks pending
               </span>
             </div>

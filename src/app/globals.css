@@ -82,8 +82,8 @@
 
   --paper: #050505;
   --paper2: #0c0c0c;
-  --ink: #f4f4f0;
-  --ink-soft: rgba(244, 244, 240, 0.6);
+  --ink: #f5f5f5;
+  --ink-soft: rgba(245, 245, 245, 0.62);
   --line: rgba(255, 255, 255, 0.08);
   --line-strong: rgba(255, 255, 255, 0.18);
 
@@ -102,10 +102,10 @@
   --selection: rgba(162, 192, 169, 0.28);
 
   /* diagram inks (the why-page SVG reads these, so it re-inks itself) */
-  --di-ink: #f4f4f0;
-  --di-soft: rgba(244, 244, 240, 0.55);
-  --di-line: rgba(244, 244, 240, 0.28);
-  --di-hair: rgba(244, 244, 240, 0.14);
+  --di-ink: #f5f5f5;
+  --di-soft: rgba(245, 245, 245, 0.55);
+  --di-line: rgba(245, 245, 245, 0.28);
+  --di-hair: rgba(245, 245, 245, 0.14);
   --di-fill: rgba(255, 255, 255, 0.03);
   --di-fill2: rgba(255, 255, 255, 0.045);
 
@@ -150,15 +150,17 @@
 html.light {
   color-scheme: light;
 
-  --paper: #faf9f7;
-  --paper2: #f1efe9;
-  --ink: #16130e;
-  --ink-soft: rgba(22, 19, 14, 0.62);
-  --line: rgba(22, 19, 14, 0.12);
-  --line-strong: rgba(22, 19, 14, 0.28);
+  /* x.ai's light mode is pure white — no cream, no warm cast. The desk
+     under daylight: white ground, near-black ink, neutral hairlines. */
+  --paper: #ffffff;
+  --paper2: #f5f5f5;
+  --ink: #0a0a0a;
+  --ink-soft: rgba(10, 10, 10, 0.58);
+  --line: rgba(10, 10, 10, 0.1);
+  --line-strong: rgba(10, 10, 10, 0.2);
 
-  --cleared: #2f6b47;
-  --cleared-ink: rgba(47, 107, 71, 0.08);
+  --cleared: #0f7a4d;
+  --cleared-ink: rgba(15, 122, 77, 0.09);
   --cleared-contrast: #eef5f0;
   --refused: #b3492f;
   --refused-ink: rgba(179, 73, 47, 0.07);
@@ -166,17 +168,17 @@ html.light {
   --held: #916a1e;
   --held-ink: rgba(145, 106, 30, 0.07);
 
-  --sb-thumb: rgba(22, 19, 14, 0.22);
-  --sb-thumb-hover: rgba(22, 19, 14, 0.4);
-  --card-hover: #fdfcfa;
-  --selection: rgba(47, 107, 71, 0.16);
+  --sb-thumb: rgba(10, 10, 10, 0.22);
+  --sb-thumb-hover: rgba(10, 10, 10, 0.4);
+  --card-hover: #fafafa;
+  --selection: rgba(47, 107, 71, 0.14);
 
-  --di-ink: #16130e;
-  --di-soft: rgba(22, 19, 14, 0.6);
-  --di-line: rgba(22, 19, 14, 0.3);
-  --di-hair: rgba(22, 19, 14, 0.16);
-  --di-fill: rgba(22, 19, 14, 0.03);
-  --di-fill2: rgba(22, 19, 14, 0.045);
+  --di-ink: #0a0a0a;
+  --di-soft: rgba(10, 10, 10, 0.6);
+  --di-line: rgba(10, 10, 10, 0.3);
+  --di-hair: rgba(10, 10, 10, 0.16);
+  --di-fill: rgba(10, 10, 10, 0.03);
+  --di-fill2: rgba(10, 10, 10, 0.045);
 
   --card: #ffffff;
   --popover: #ffffff;
@@ -230,6 +232,36 @@ html.light {
 
   .hairline {
     @apply border-t border-line;
+  }
+
+  /* the paper — a white document sheet in BOTH themes, exactly like a
+     real working paper: x.ai's dark site still shows white documents.
+     Scoped tokens flip every child back to ink-on-white, so the article
+     needs no per-element overrides. On the white day desk it is the page
+     itself; on the night desk it sits as a lit sheet. */
+  .sheet {
+    --paper: #ffffff;
+    --paper2: #f5f5f5;
+    --ink: #0a0a0a;
+    --ink-soft: rgba(10, 10, 10, 0.58);
+    --line: rgba(10, 10, 10, 0.12);
+    --line-strong: rgba(10, 10, 10, 0.26);
+    --cleared: #2f6b47;
+    --cleared-ink: rgba(47, 107, 71, 0.08);
+    --cleared-contrast: #eef5f0;
+    --refused: #b3492f;
+    --refused-ink: rgba(179, 73, 47, 0.07);
+    --refused-contrast: #f8efe9;
+    --held: #916a1e;
+    --held-ink: rgba(145, 106, 30, 0.07);
+    --sb-thumb: rgba(10, 10, 10, 0.22);
+    color-scheme: light;
+    background: #ffffff;
+    color: var(--ink);
+  }
+  html:not(.light) .sheet {
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 24px 60px -32px rgba(0, 0, 0, 0.9);
   }
 
   /* a panel: one hairline on the black ground. No second style. */
@@ -367,16 +399,6 @@ html.light {
     animation: pulsering 1.8s cubic-bezier(0.25, 1, 0.5, 1) infinite;
   }
 
-  /* the manifest ticker — ledger lines sliding left on black */
-  .ticker-track {
-    display: inline-flex;
-    white-space: nowrap;
-    animation: marquee var(--ticker-dur, 42s) linear infinite;
-  }
-  .ticker:hover .ticker-track {
-    animation-play-state: paused;
-  }
-
   /* card lift — the border brightens, the card rises one pixel. that's it. */
   .card-lift {
     transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
@@ -411,54 +433,32 @@ html.light {
   }
 
   /* ------------------------------------------------------------------
-   * the customs bot — the desk's little officer. Everything moves on
+   * the customs bot, v2 — a smooth little officer. One gradient body
+   * (3D-inked, not line-art), a soft ground shadow that breathes with
+   * the float, a single mandate chip orbiting it. Everything moves on
    * transform and opacity only (60fps, no layout), every color is a
-   * token (the bot re-inks under the desk lamp), and reduced motion
-   * stands it still on duty. x.ai animates its hero with shimmering
-   * hairlines; we borrowed the shimmer and gave it a body.
+   * token (it re-inks under the desk lamp), and the chip's type is the
+   * site's own label mono — one type system, even inside the picture.
+   * Reduced motion stands it still, quietly on duty.
    * ------------------------------------------------------------------ */
   .hero-bot {
     display: block;
   }
   .hb-mono {
     font-family: var(--font-geist-mono), ui-monospace, monospace;
-    font-size: 9.5px;
-    letter-spacing: 0.02em;
+    font-size: 10px;
+    letter-spacing: 0.06em;
   }
 
-  /* the illustration inks — UI chrome may whisper, but a hero
-     illustration needs real ink to hold its shape; a touch stronger
-     under the day lamp so the bot never washes out on white */
-  .hb-strong {
-    stroke: var(--ink);
-    stroke-opacity: 0.44;
+  /* the bot itself: a quiet float — the shadow beneath breathes with it,
+   * smaller and fainter as it rises, fuller as it settles */
+  .hb-bot {
+    animation: hb-float 6s ease-in-out infinite alternate;
   }
-  html.light .hb-strong {
-    stroke-opacity: 0.62;
-  }
-  .hb-rail {
-    stroke: var(--ink);
-    stroke-opacity: 0.18;
-  }
-  html.light .hb-rail {
-    stroke-opacity: 0.32;
-  }
-
-  /* the mandate ring: rotates slowly; each bound riding it
-     counter-rotates about its own center so it stays upright */
-  .hb-ring {
+  .hb-shadow {
     transform-box: fill-box;
     transform-origin: center;
-    animation: hb-spin 46s linear infinite;
-  }
-  .hb-chip {
-    animation: hb-spin-rev 46s linear infinite;
-  }
-
-  /* the bot itself: a quiet float, blinking eyes, the stamp leaving
-     the chest diamond every few seconds */
-  .hb-bot {
-    animation: hb-float 7s ease-in-out infinite alternate;
+    animation: hb-shadow-breathe 6s ease-in-out infinite alternate;
   }
   .hb-eye {
     transform-box: fill-box;
@@ -469,34 +469,25 @@ html.light {
   .hero-bot:hover .hb-eye {
     fill: var(--cleared);
   }
-  .hb-stamp {
+
+  /* the antenna bead — the desk light, softly pulsing */
+  .hb-bead {
     transform-box: fill-box;
     transform-origin: center;
-    animation: hb-stamp 3.8s cubic-bezier(0.25, 1, 0.5, 1) infinite;
-  }
-  .hb-stamp-b {
-    animation-delay: 1.9s;
+    animation: hb-bead-pulse 3.2s ease-in-out infinite;
   }
 
-  /* the floating evidence — receipts bob out of phase */
-  .hb-bob-a {
-    animation: hb-bob 5.6s ease-in-out infinite alternate;
+  /* the mandate orbit: one thin ring; the chip rides it and
+     counter-rotates about its own center so it stays upright */
+  .hb-ring {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: hb-spin 26s linear infinite;
   }
-  .hb-bob-b {
-    animation: hb-bob 6.8s ease-in-out infinite alternate-reverse;
-  }
-
-  /* the shimmer — a verdict-colored sweep riding a resting hairline */
-  .hb-shimmer {
-    animation: hb-sweep 4.6s linear infinite;
-  }
-  .hb-shimmer-b {
-    animation-duration: 5.4s;
-    animation-delay: 1.4s;
-  }
-  .hb-shimmer-c {
-    animation-duration: 6.6s;
-    animation-delay: 2.8s;
+  .hb-chip {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: hb-spin-rev 26s linear infinite;
   }
 }
 
@@ -566,15 +557,6 @@ html.light {
   }
 }
 
-@keyframes marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-
 /* ---------------- the customs bot's moves ---------------- */
 @keyframes hb-spin {
   from {
@@ -594,10 +576,31 @@ html.light {
 }
 @keyframes hb-float {
   from {
-    transform: translateY(-6px);
+    transform: translateY(-7px);
   }
   to {
-    transform: translateY(6px);
+    transform: translateY(7px);
+  }
+}
+@keyframes hb-shadow-breathe {
+  from {
+    transform: scale(0.88);
+    opacity: 0.16;
+  }
+  to {
+    transform: scale(1.06);
+    opacity: 0.3;
+  }
+}
+@keyframes hb-bead-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 1;
   }
 }
 @keyframes hb-blink {
@@ -613,33 +616,6 @@ html.light {
     transform: scaleY(1);
   }
 }
-@keyframes hb-stamp {
-  0% {
-    transform: scale(0.55);
-    opacity: 0.55;
-  }
-  70%,
-  100% {
-    transform: scale(1.7);
-    opacity: 0;
-  }
-}
-@keyframes hb-bob {
-  from {
-    transform: translateY(-4px);
-  }
-  to {
-    transform: translateY(5px);
-  }
-}
-@keyframes hb-sweep {
-  from {
-    transform: translateX(-200px);
-  }
-  to {
-    transform: translateX(500px);
-  }
-}
 
 @media (prefers-reduced-motion: reduce) {
   .animate-rise,
@@ -652,14 +628,11 @@ html.light {
   .hb-chip,
   .hb-bot,
   .hb-eye,
-  .hb-stamp,
-  .hb-bob-a,
-  .hb-bob-b,
-  .hb-shimmer {
+  .hb-shadow,
+  .hb-bead {
     animation: none !important;
   }
-  .pulse-dot::after,
-  .ticker-track {
+  .pulse-dot::after {
     animation: none !important;
   }
   .card-lift,

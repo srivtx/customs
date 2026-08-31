@@ -111,7 +111,7 @@ any one LLM key (`GROQ_API_KEY` / `GEMINI_API_KEY` have free tiers) with
 - Do **not** edit any file under `results/` by hand — regeneration only.
 - Do **not** add a live Razorpay key; the app refuses them at construction and
   so should you.
-- Do **not** delete `ENGINEERING_LOG.md` entries — the incidents (D1-1 … D8-1)
+- Do **not** delete `ENGINEERING_LOG.md` entries — the incidents (D1-1 … D10-1)
   are the honesty artifact.
 - Do **not** let `PAPER.md` and the paper view drift apart — they are twins
   (AGENTS.md invariant 11); edit both or neither.

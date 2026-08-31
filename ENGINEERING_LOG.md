@@ -423,3 +423,70 @@ premium" (dark + light), demo panel "one consistent system", paper
 badge wall". The new GIF (960×600, 322 frames, 2.7MB, palette-
 optimized) records the live page: hero + bot, the golden path playing,
 the ticker ticking.
+
+## D10-1 — the white desk: one type system, pure white, the smooth bot
+
+**Date:** 2026-09-01 · **Round:** v3.2 design-accuracy pass.
+
+**What the round fixed (all user-flagged, all verified in-browser):**
+
+- **The mono was everywhere.** Measured x.ai and grok.com directly
+  (page_reader; Cloudflare blocks both curl and headless browsing):
+  both set their UI in **Universal Sans Text/Display 400+550** with
+  **Geist Mono only for code-ish spans** — and our control room alone
+  carried 39 `font-mono` usages. That was "the weird font." The fix is
+  a rule, not a font swap: the house sans carries every human sentence
+  (labels, sub-captions, buttons, filter tabs, gate checks, chain
+  lines, captions); mono is reserved for what a machine would read
+  (ids, tool calls, code, the caps label line — the masthead
+  "razorpay ai buildathon 2026 · track 1 · test mode" style, which
+  was always right). `GhostButton`, `TierChip`, inline code chips, the
+  demo loop bar, and every small caption reset in the sans.
+- **Light mode was cream.** x.ai's light ground is `#ffffff` (verified
+  from the fetched HTML: `background-color:#fff`); ours was `#faf9f7`
+  with warm inks. The day ledger is now pure white with neutral
+  near-black ink and neutral hairlines; `--cleared` sharpened to
+  `#0f7a4d` after VLM flagged the forest green as muddy; themeColor
+  follows.
+- **The paper page went black in dark mode.** The working paper is a
+  **white sheet in both themes** again: `.sheet` scopes the whole
+  ledger token set back to ink-on-white, so one class re-inks every
+  child (tables, pre blocks, stamps) — the document is a lit sheet on
+  the night desk (border + lift) and the page itself on the day desk.
+- **The bot was a diamond pile.** Rebuilt as one smooth body —
+  gradient fill lit from above, glass crown, visor face with blinking
+  eyes + a tiny smile, side pods, a ground shadow that breathes with
+  the float, and ONE mandate chip (`✓ ED25519 · ₹5,000`, set in the
+  site's own label mono) orbiting a single ring. The stamp rings,
+  receipt, ledger line, chest diamond, antenna diamond and shimmer
+  rails are gone. VLM: "premium, smooth, distinctly 3D-ish."
+- **The live ledger was a marquee.** Now a quiet data list — the
+  latest rows (time · id · amount · status · rail) hairline-separated,
+  polling every 8s, new rows rising with the same flash the control
+  room gives. x.ai shows live data sitting still.
+- **Control room redesigned properly:** a real page intro under the
+  h2, a sans status strip, GMV promoted to a 38px hero stat, the
+  at-1M four-cell band collapsed into one breathing summary row, sans
+  filter tabs, quieter trace dialog.
+- **Demo badges back to black-and-white:** AGENT/ATTESTED chips and
+  tool lines are strictly ink; verdict color stays reserved for
+  verdicts (refusal red, capture sage).
+
+**Bugs found and fixed along the way:**
+
+- A JSX comment in control-room.tsx lost its closing brace in the
+  rewrite (`in mono */` instead of `*/}`) — tsc caught it in one pass.
+- The GIF pipeline: two-pass palette conversion via PNG frame
+  intermediates timed out at 600s (PNG-encoding 355 frames is the slow
+  path, not the palette); `scripts/make-gif.sh` now runs palettegen/
+  paletteuse straight off the video — the whole GIF builds in ~6s
+  (ffmpeg exits 255 on the last frame flush but the file is complete
+  and ffprobe-valid).
+
+**Validation:** tsc clean (app), eslint clean, `next build` green,
+`make verify` green, `make test` green (fuzz 12/12, ablation 8/8×3,
+audit chain ok + tamper@129, meter, project). Browser walkthrough both
+themes with VLM verdicts: landing dark SHIP, landing light SHIP (pure
+white confirmed), control room SHIP (after the projection-row and
+green fixes), demo badges SHIP, paper sheet SHIP, live ledger SHIP,
+GIF frames SHIP. Zero console errors.

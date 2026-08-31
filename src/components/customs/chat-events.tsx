@@ -23,7 +23,7 @@ function rich(text: string): ReactNode[] {
     if (m[1]) parts.push(<strong key={key++} className="font-semibold text-ink">{m[1]}</strong>);
     else if (m[2])
       parts.push(
-        <code key={key++} className="rounded-[3px] border border-line bg-paper2 px-1 font-mono text-[0.85em]">
+        <code key={key++} className="rounded-[3px] bg-ink/[0.05] px-1 py-px font-mono text-[0.85em] text-ink">
           {m[2]}
         </code>
       );
@@ -94,13 +94,13 @@ export function ChatEventView({
                   <div className="truncate text-[12px] font-medium text-ink">{p.name}</div>
                   <div className="flex items-baseline justify-between">
                     <span className="tnum font-mono text-[13px] font-semibold text-ink">{inr(p.pricePaise)}</span>
-                    <span className="font-mono text-[9.5px] uppercase tracking-[0.1em] text-inksoft opacity-0 transition-opacity group-hover:opacity-100">add to cart</span>
+                    <span className="text-[11px] font-medium text-inksoft opacity-0 transition-opacity group-hover:opacity-100">add to cart →</span>
                   </div>
                 </div>
               </button>
             ))}
           </div>
-          {event.note && <div className="mt-1.5 font-mono text-[10px] text-inksoft">{event.note}</div>}
+          {event.note && <div className="mt-1.5 text-[12px] text-inksoft">{event.note}</div>}
         </div>
       );
     case "cart":
@@ -141,12 +141,12 @@ export function ChatEventView({
         <div className="animate-rise my-3 rounded-[4px] border border-line bg-card">
           <div className="flex items-start justify-between border-b border-line px-4 py-3">
             <div>
-              <div className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-inksoft">fieldnote supply · manifest of entry</div>
-              <div className="mt-0.5 font-display text-lg font-medium text-ink">Receipt</div>
+              <div className="label-caps">fieldnote supply · manifest of entry</div>
+              <div className="mt-1 font-display text-lg font-medium text-ink">Receipt</div>
             </div>
             <div className="text-right">
               <div className="font-mono text-[11px] text-inksoft">{event.manifestNo}</div>
-              <div className="font-mono text-[10px] text-inksoft">{monoId(event.orderId, 20)}</div>
+              <div className="mt-0.5 font-mono text-[10px] text-inksoft">{monoId(event.orderId, 20)}</div>
             </div>
           </div>
           <div className="px-4 py-2">
@@ -161,7 +161,7 @@ export function ChatEventView({
             />
           </div>
           <div className="flex items-center justify-between border-t border-line px-4 py-3">
-            <span className="font-mono text-[9px] leading-tight text-inksoft">
+            <span className="text-[11.5px] leading-relaxed text-inksoft">
               cleared by customs · hash-chained in ledger
               <br />
               replay span-by-span from the control room
@@ -174,20 +174,20 @@ export function ChatEventView({
       return (
         <div className="animate-rise my-2 rounded-[4px] border border-refused/30 bg-refused-ink px-3.5 py-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-refused">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-refused">
               RED TEAM · {event.label}
             </span>
             <Stamp kind={event.verdict === "BLOCKED" ? "cleared" : "refused"}>{event.verdict}</Stamp>
           </div>
           {event.code && (
-            <div className="mt-1 font-mono text-[10px] text-inksoft">
+            <div className="mt-1 font-mono text-[10.5px] text-inksoft">
               reason code: <span className="font-semibold text-refused">{event.code}</span>
             </div>
           )}
           <ul className="mt-2 grid gap-1">
             {event.checks.map((c: { label: string; pass: boolean | null; detail: string }, i: number) => (
-              <li key={i} className="flex items-baseline gap-2 font-mono text-[10px] text-inksoft">
-                <span className={cn("w-3 shrink-0", c.pass === true && "text-cleared", c.pass === false && "text-refused")}>
+              <li key={i} className="flex items-baseline gap-2 text-[12px] text-inksoft">
+                <span className={cn("w-3 shrink-0 text-center font-mono font-semibold", c.pass === true && "text-cleared", c.pass === false && "text-refused")}>
                   {c.pass === true ? "✓" : c.pass === false ? "✕" : "·"}
                 </span>
                 <span className="truncate">{c.label}</span>
@@ -219,11 +219,11 @@ function StepChip({ event }: { event: Extract<ChatEventT, { kind: "step" }> }) {
       >
         {/* the adapter rides as a chip — the same token the demo player
             renders; adapters are not verdicts, so they stay uncolored */}
-        <span className="shrink-0 rounded-[3px] border border-line bg-ink/[0.04] px-1.5 py-px font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-inksoft">
+        <span className="shrink-0 rounded-[3px] border border-ink/25 bg-ink/[0.05] px-1.5 py-px font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-ink">
           {event.adapter}
         </span>
-        <span className="font-mono text-[11px] text-ink">{event.tool}</span>
-        <span className="truncate font-mono text-[10px] text-inksoft">{event.summary}</span>
+        <span className="font-mono text-[11.5px] text-ink">{event.tool}</span>
+        <span className="truncate text-[11.5px] text-inksoft">{event.summary}</span>
         <span className="ml-auto flex items-center gap-2">
           <span className="tnum font-mono text-[10px] text-inksoft">{event.ms}ms</span>
           <span className={cn("text-[9px] text-inksoft transition-transform", open && "rotate-90")}>▸</span>
@@ -251,8 +251,8 @@ function MandateCard({
     <div className="animate-rise my-3 rounded-[4px] border border-line bg-card">
       <div className="flex items-start justify-between border-b border-line px-4 py-3">
         <div>
-          <div className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-inksoft">merchant desk · spending mandate</div>
-          <div className="mt-0.5 font-display text-lg font-medium text-ink">{inr(m.amountCapPaise)} envelope</div>
+          <div className="label-caps">merchant desk · spending mandate</div>
+          <div className="mt-1 font-display text-lg font-medium text-ink">{inr(m.amountCapPaise)} envelope</div>
         </div>
         <TierChip tier={m.tier} />
       </div>
@@ -270,7 +270,7 @@ function MandateCard({
       </div>
       {event.pendingApproval && (
         <div className="flex items-center justify-between border-t border-line px-4 py-3">
-          <span className="font-mono text-[10px] text-inksoft">buyer principal must approve the envelope</span>
+          <span className="text-[12.5px] text-inksoft">buyer principal must approve the envelope</span>
           <InkButton
             onClick={() => onSend("approve")}
             title="Approve the mandate envelope and bind"
@@ -312,7 +312,7 @@ function GateCard({ event }: { event: Extract<ChatEventT, { kind: "gate" }> }) {
       </div>
       <ul className="px-3.5 py-2">
         {d.checks.map((c, i) => (
-          <li key={i} className="flex items-baseline gap-2 border-b border-line/60 py-1.5 last:border-b-0">
+          <li key={i} className="flex items-baseline gap-2.5 border-b border-line/60 py-1.5 last:border-b-0">
             <span
               className={cn(
                 "w-4 shrink-0 text-center font-mono text-[11px] font-bold",
@@ -323,8 +323,8 @@ function GateCard({ event }: { event: Extract<ChatEventT, { kind: "gate" }> }) {
             >
               {c.pass === true ? "✓" : c.pass === false ? "✕" : "·"}
             </span>
-            <span className="shrink-0 font-mono text-[11px] font-medium text-ink">{c.label}</span>
-            <span className="min-w-0 truncate font-mono text-[10px] text-inksoft">{c.detail}</span>
+            <span className="shrink-0 text-[12px] font-medium text-ink">{c.label}</span>
+            <span className="min-w-0 truncate text-[11.5px] text-inksoft">{c.detail}</span>
           </li>
         ))}
       </ul>

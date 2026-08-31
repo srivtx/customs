@@ -1,13 +1,14 @@
 "use client";
 
 /**
- * landing.tsx — the overview, v2: typography does the work. A huge
+ * landing.tsx — the overview: typography does the work. A huge
  * sentence-case claim, the golden path played live by the page, the
- * trust ladder, the transports, the proof layer. One device — the
- * hairline — and one accent.
+ * live ledger, the trust ladder, the transports, the proof layer.
+ * One device — the hairline — and one accent. Captions and notes set
+ * in the house sans (the mono voice is for machine strings).
  */
-import { useEffect, useState } from "react";
-import { GhostButton, InkButton, inr, CountUp, Reveal, Ticker, LiveDot } from "./bits";
+import { useEffect, useRef, useState } from "react";
+import { GhostButton, InkButton, inr, CountUp, LiveDot, LiveLedger, Reveal, TickerItem } from "./bits";
 import { DemoPlayer } from "./demo-player";
 import { HeroBot } from "./hero-bot";
 import { TRUST_TIERS } from "@/lib/customs/gate/types";
@@ -23,18 +24,16 @@ interface LandingStats {
   eventsTotal: number;
 }
 
-interface TickerOrder {
-  orderId: string;
-  totalPaise: number;
-  status: string;
-  adapter: string;
-}
-
 export function Landing({ onEnter }: { onEnter: (view: View) => void }) {
   const [stats, setStats] = useState<LandingStats | null>(null);
-  const [tickerItems, setTickerItems] = useState<TickerOrder[]>([]);
+  const [ledgerItems, setLedgerItems] = useState<TickerItem[]>([]);
+  const [flashIds, setFlashIds] = useState<Set<string>>(new Set());
+  const seen = useRef<Set<string>>(new Set());
 
+  /* the ledger card is live: poll the desk, flash the rows that just
+     landed — the same confirmation the control room's ledger gives */
   useEffect(() => {
+    let alive = true;
     const load = async () => {
       try {
         const res = await fetch("/api/state", { cache: "no-store" });
@@ -43,29 +42,42 @@ export function Landing({ onEnter }: { onEnter: (view: View) => void }) {
           meter: LandingStats;
           chain: { ok: boolean };
           eventsTotal: number;
-          orders: TickerOrder[];
+          orders: (TickerItem & { createdAtMs: number })[];
         };
-        if (d.ok) {
-          setStats({
-            gmvPaise: d.meter.gmvPaise,
-            capturedCount: d.meter.capturedCount,
-            attackCount: d.meter.attackCount,
-            netPaise: d.meter.netPaise,
-            chainOk: d.chain.ok,
-            eventsTotal: d.eventsTotal,
-          });
-          setTickerItems((d.orders ?? []).slice(0, 14).map((o) => ({
-            orderId: o.orderId,
-            totalPaise: o.totalPaise,
-            status: o.status,
-            adapter: o.adapter,
-          })));
+        if (!alive || !d.ok) return;
+        const orders = d.orders ?? [];
+        setStats({
+          gmvPaise: d.meter.gmvPaise,
+          capturedCount: d.meter.capturedCount,
+          attackCount: d.meter.attackCount,
+          netPaise: d.meter.netPaise,
+          chainOk: d.chain.ok,
+          eventsTotal: d.eventsTotal,
+        });
+        setLedgerItems(orders.slice(0, 14).map((o) => ({
+          orderId: o.orderId,
+          totalPaise: o.totalPaise,
+          status: o.status,
+          adapter: o.adapter,
+          createdAtMs: o.createdAtMs,
+        })));
+        const current = new Set(orders.map((o) => o.orderId));
+        const fresh = new Set([...current].filter((id) => !seen.current.has(id)));
+        if (seen.current.size > 0 && fresh.size > 0) {
+          setFlashIds(fresh);
+          window.setTimeout(() => setFlashIds(new Set()), 2200);
         }
+        seen.current = current;
       } catch {
-        /* stats strip is optional garnish */
+        /* the desk is unreachable — the page stands without it */
       }
     };
     void load();
+    const i = setInterval(() => void load(), 8000);
+    return () => {
+      alive = false;
+      clearInterval(i);
+    };
   }, []);
 
   return (
@@ -129,7 +141,7 @@ export function Landing({ onEnter }: { onEnter: (view: View) => void }) {
             <h2 className="font-display text-[clamp(24px,3vw,34px)] font-semibold tracking-[-0.025em] text-ink">
               Watch it clear.
             </h2>
-            <span className="font-mono text-[11px] text-inksoft">
+            <span className="text-[12.5px] text-inksoft">
               rendered live by this page — not a recording · hover holds it
             </span>
           </div>
@@ -139,17 +151,18 @@ export function Landing({ onEnter }: { onEnter: (view: View) => void }) {
         </section>
       </Reveal>
 
-      {/* ------------------------------ live manifest ticker ------------------------------ */}
-      {tickerItems.length > 0 && (
+      {/* ------------------------------ recently through customs — the live ledger ------------------------------ */}
+      {ledgerItems.length > 0 && (
         <section aria-label="recent ledger lines" className="pb-16">
           <div className="doc overflow-hidden">
-            <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
-              <LiveDot label="recently through customs — live ledger" />
-              <span className="hidden font-mono text-[10.5px] text-inksoft sm:block">
-                same lines the control room shows · hash-chained
-              </span>
+            <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-1.5 border-b border-line px-4 py-3 sm:px-5">
+              <div className="flex items-center gap-3">
+                <LiveDot label="" className="[&>span:last-child]:hidden" />
+                <h3 className="text-[13.5px] font-medium text-ink">Recently through customs</h3>
+              </div>
+              <span className="hidden text-[12.5px] text-inksoft sm:block">the live ledger · hash-chained</span>
             </div>
-            <Ticker items={tickerItems} />
+            <LiveLedger items={ledgerItems} flashIds={flashIds} />
           </div>
         </section>
       )}
@@ -187,7 +200,7 @@ export function Landing({ onEnter }: { onEnter: (view: View) => void }) {
                   <span className="font-mono text-[11px] text-inksoft">{s.n}</span>
                 </div>
                 <p className="mt-2.5 text-[13.5px] leading-relaxed text-inksoft">{s.d}</p>
-                <div className="mt-4 rounded-[4px] border border-line bg-paper2 px-2.5 py-1.5 font-mono text-[11px] text-ink">{s.code}</div>
+                <div className="mt-4 rounded-[4px] bg-ink/[0.05] px-2.5 py-1.5 font-mono text-[11.5px] text-ink">{s.code}</div>
               </div>
             </Reveal>
           ))}
@@ -200,7 +213,7 @@ export function Landing({ onEnter }: { onEnter: (view: View) => void }) {
           <h2 className="font-display text-[clamp(24px,3vw,34px)] font-semibold tracking-[-0.025em] text-ink">
             What an agent may spend.
           </h2>
-          <span className="font-mono text-[11px] text-inksoft">a human desk over ₹10,000, always</span>
+          <span className="text-[12.5px] text-inksoft">a human desk over ₹10,000, always</span>
         </div>
         <div className="mt-8 grid gap-px bg-line md:grid-cols-3">
           {(["UNVERIFIED", "ATTESTED", "MANDATED"] as const).map((tier, i) => {
@@ -213,14 +226,14 @@ export function Landing({ onEnter }: { onEnter: (view: View) => void }) {
                     {inr(t.maxAmountPaise)}
                   </div>
                   <p className="mt-2 text-[13px] leading-relaxed text-inksoft">{t.blurb}</p>
-                  <div className="mt-4 space-y-1.5 border-t border-line pt-3 font-mono text-[11px]">
+                  <div className="mt-4 space-y-1.5 border-t border-line pt-3 text-[12px]">
                     <div className="flex justify-between">
                       <span className="text-inksoft">mandate lifetime</span>
-                      <span className="tnum text-ink">{Math.round(t.mandateTtlMs / 60000)} min</span>
+                      <span className="tnum font-mono text-ink">{Math.round(t.mandateTtlMs / 60000)} min</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-inksoft">distinct items</span>
-                      <span className="tnum text-ink">{t.maxItems}</span>
+                      <span className="tnum font-mono text-ink">{t.maxItems}</span>
                     </div>
                   </div>
                 </div>
@@ -241,7 +254,7 @@ export function Landing({ onEnter }: { onEnter: (view: View) => void }) {
               <div className="card-lift h-full rounded-[4px] p-5">
                 <div className="flex items-center justify-between">
                   <span className="font-display text-[17px] font-semibold tracking-[-0.02em] text-ink">{ADAPTERS[a].label}</span>
-                  <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-inksoft">
+                  <span className="text-[11.5px] text-inksoft">
                     {a === "naive" ? "baseline" : a === "mcp" ? "json-rpc 2.0" : "envelopes"}
                   </span>
                 </div>
@@ -250,8 +263,8 @@ export function Landing({ onEnter }: { onEnter: (view: View) => void }) {
             </Reveal>
           ))}
         </div>
-        <p className="mt-3 font-mono text-[11px] text-inksoft">
-          conformance-fuzzed per adapter · overhead measured in results/ablation.json · x402 pre-declared as a stretch, not a promise
+        <p className="mt-3 text-[12.5px] text-inksoft">
+          conformance-fuzzed per adapter · overhead measured in <span className="font-mono">results/ablation.json</span> · x402 pre-declared as a stretch, not a promise
         </p>
       </section>
 
@@ -275,7 +288,7 @@ export function Landing({ onEnter }: { onEnter: (view: View) => void }) {
                 ["make project", "the at-1M-payments projection, assumptions declared"],
               ].map(([cmd, d]) => (
                 <div key={cmd} className="flex items-baseline gap-3.5">
-                  <code className="shrink-0 rounded-[4px] border border-line bg-paper2 px-2 py-0.5 font-mono text-[11px] font-medium text-ink">
+                  <code className="shrink-0 rounded-[4px] bg-ink/[0.05] px-2 py-0.5 font-mono text-[11.5px] font-medium text-ink">
                     {cmd}
                   </code>
                   <span className="text-[12.5px] leading-relaxed text-inksoft">{d}</span>
