@@ -1,5 +1,8 @@
 {
-  "status": "not-run",
-  "requires": "RAZORPAY_KEY_ID + RAZORPAY_KEY_SECRET (test keys only — live keys are refused by the script)",
-  "notes": "Populated only by scripts/spike-d1-1.mjs (make spike-d1-1). Carries the payment-mechanism decision receipts."
+  "status": "blocked-no-keys",
+  "started_at": "2026-08-31T18:54:01.497Z",
+  "key": null,
+  "steps": {},
+  "verdict": null,
+  "notes": "Spike code shipped and ready; awaiting rzp_test_* keys from the operator. Until then the app runs the labeled simulation rail (path C). Set the keys and re-run `make spike-d1-1` to execute paths A/B and flip the live rail."
 }

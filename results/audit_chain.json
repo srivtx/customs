@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "measured_at": "2026-08-31T18:57:16.344Z",
+  "metrics": {
+    "length": 257,
+    "headHash": "f5ab0c3a7334f0cc3bf13651f8b8f7a1b48eb08ce2347a771c2379bfe4dfefa6",
+    "tamperDetected": true,
+    "tamperBreakSeq": 129
+  },
+  "notes": "The deterministic seed ledger is re-walked link by link (sha256 over canonical JSON of each entry and its predecessor). The negative control mutates one historical entry by one paise and must break the chain at that seq.",
+  "regenerate": "make audit"
+}

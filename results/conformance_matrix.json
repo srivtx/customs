@@ -1,7 +1,132 @@
 {
-  "status": "pending",
-  "measured_at": null,
-  "attacks": [],
-  "notes": "authored attacks x protocol adapters, pass/fail with reason codes. Populated only by the conformance suite (make fuzz).",
+  "status": "pass",
+  "measured_at": "2026-08-31T18:57:16.208Z",
+  "summary": {
+    "passed": 12,
+    "total": 12
+  },
+  "attacks": [
+    {
+      "attackId": "overspend-tier",
+      "label": "Overspend the tier",
+      "tier": "UNVERIFIED",
+      "verdict": "BLOCKED",
+      "code": "AMOUNT_OVER_TIER",
+      "expected": "AMOUNT_OVER_TIER",
+      "matched": true,
+      "ms": 4
+    },
+    {
+      "attackId": "overspend-cap",
+      "label": "Overspend the mandate cap",
+      "tier": "ATTESTED",
+      "verdict": "BLOCKED",
+      "code": "AMOUNT_OVER_CAP",
+      "expected": "AMOUNT_OVER_CAP",
+      "matched": true,
+      "ms": 1
+    },
+    {
+      "attackId": "expired-mandate",
+      "label": "Replay an expired mandate",
+      "tier": "ATTESTED",
+      "verdict": "BLOCKED",
+      "code": "MANDATE_EXPIRED",
+      "expected": "MANDATE_EXPIRED",
+      "matched": true,
+      "ms": 1
+    },
+    {
+      "attackId": "tampered-signature",
+      "label": "Tamper the signature",
+      "tier": "ATTESTED",
+      "verdict": "BLOCKED",
+      "code": "SIGNATURE_INVALID",
+      "expected": "SIGNATURE_INVALID",
+      "matched": true,
+      "ms": 1
+    },
+    {
+      "attackId": "price-drift",
+      "label": "Price drift at bind",
+      "tier": "MANDATED",
+      "verdict": "BLOCKED",
+      "code": "PRICE_CHANGED_AT_BIND",
+      "expected": "PRICE_CHANGED_AT_BIND",
+      "matched": true,
+      "ms": 1
+    },
+    {
+      "attackId": "item-substitution",
+      "label": "Substitute the item",
+      "tier": "ATTESTED",
+      "verdict": "BLOCKED",
+      "code": "ITEM_NOT_IN_MANDATE",
+      "expected": "ITEM_NOT_IN_MANDATE",
+      "matched": true,
+      "ms": 1
+    },
+    {
+      "attackId": "quantity-overrun",
+      "label": "Overrun the quantity",
+      "tier": "ATTESTED",
+      "verdict": "BLOCKED",
+      "code": "QUANTITY_OVER_MANDATE",
+      "expected": "QUANTITY_OVER_MANDATE",
+      "matched": true,
+      "ms": 1
+    },
+    {
+      "attackId": "currency-swap",
+      "label": "Swap the currency",
+      "tier": "MANDATED",
+      "verdict": "BLOCKED",
+      "code": "CURRENCY_UNSUPPORTED",
+      "expected": "CURRENCY_UNSUPPORTED",
+      "matched": true,
+      "ms": 1
+    },
+    {
+      "attackId": "float-amount",
+      "label": "Float in the paise field",
+      "tier": "ATTESTED",
+      "verdict": "BLOCKED",
+      "code": "MALFORMED_MANDATE",
+      "expected": "MALFORMED_MANDATE",
+      "matched": true,
+      "ms": 1
+    },
+    {
+      "attackId": "over-50k",
+      "label": "Break the ₹50,000 ceiling",
+      "tier": "MANDATED",
+      "verdict": "BLOCKED",
+      "code": "AMOUNT_OVER_TIER",
+      "expected": "AMOUNT_OVER_TIER",
+      "matched": true,
+      "ms": 1
+    },
+    {
+      "attackId": "replay-payment",
+      "label": "Replay the payment confirmation",
+      "tier": "ATTESTED",
+      "verdict": "BLOCKED",
+      "code": "REPLAY_DETECTED",
+      "expected": "REPLAY_DETECTED",
+      "matched": true,
+      "ms": 1
+    },
+    {
+      "attackId": "human-threshold",
+      "label": "Sneak past the ₹10,000 desk",
+      "tier": "MANDATED",
+      "verdict": "BLOCKED",
+      "code": "OVER_HUMAN_THRESHOLD_UNAPPROVED",
+      "expected": "OVER_HUMAN_THRESHOLD_UNAPPROVED",
+      "matched": true,
+      "ms": 1
+    }
+  ],
+  "notes": "Authored attacks run against the production gate (src/lib/customs/gate) on a fresh in-memory chain. Attacks on legitimately-issued mandates keep valid signatures so the intended bound fires; only the tampering case mutates bytes after signing. Latency is machine-dependent. Regeneration-only: never hand-edit.",
   "regenerate": "make fuzz"
 }

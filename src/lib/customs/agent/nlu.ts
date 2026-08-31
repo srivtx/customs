@@ -1,0 +1,97 @@
+/**
+ * The rules brain — deterministic intent parsing for the buyer agent.
+ *
+ * Design decision (ENGINEERING_LOG, D2): the default brain is rules-only and
+ * deterministic. Every demo is replayable bit-for-bit, every number in
+ * results/ regenerates identically, and the ablation can hold the LLM arm
+ * honest ("what did the model actually buy us over these rules?"). An LLM
+ * brain is one env var away (AGENT_BRAIN=llm + key) and is measured, never
+ * trusted: whichever brain parses intent, the gate decides money in plain
+ * code (AGENTS.md invariant 5).
+ */
+import { parsePriceCeiling, searchCatalog, Product } from "../store/catalog";
+
+export type Intent =
+  | { kind: "greeting" }
+  | { kind: "help" }
+  | { kind: "search"; query: string; maxPricePaise: number | null; results: Product[] }
+  | { kind: "add"; productId: string | null; query: string; quantity: number }
+  | { kind: "remove"; productId: string }
+  | { kind: "cart" }
+  | { kind: "checkout" }
+  | { kind: "confirm" }
+  | { kind: "attack"; attackId: string }
+  | { kind: "status" }
+  | { kind: "attest" }
+  | { kind: "unknown"; query: string };
+
+const ATTACK_RE = /^attack[:\s]+([a-z0-9-]+)/i;
+
+function quantityOf(text: string): number {
+  const m = text.match(/(?:x|qty|quantity)?\s*(\d{1,2})\s*(?:x|qty|pcs|pieces|units)?\b/i);
+  if (!m) return 1;
+  const n = Number(m[1]);
+  return n >= 1 && n <= 10 ? n : 1;
+}
+
+export function parseIntent(raw: string): Intent {
+  const text = raw.trim();
+  const lower = text.toLowerCase();
+
+  if (!text) return { kind: "unknown", query: "" };
+
+  const atk = lower.match(ATTACK_RE);
+  if (atk) return { kind: "attack", attackId: atk[1] };
+  if (/^(hi|hello|hey|namaste|yo|good (morning|evening|afternoon))\b/.test(lower))
+    return { kind: "greeting" };
+  if (/^(help|what can you do|commands|how does this work)/.test(lower)) return { kind: "help" };
+  if (/\b(attest|verify me|otp|upgrade (my )?(tier|identity)|get me attested)\b/.test(lower))
+    return { kind: "attest" };
+  if (/\b(status|balance|mandate status|my tier|who am i)\b/.test(lower)) return { kind: "status" };
+  if (/\b(checkout|pay now|buy now|place the order|complete (the )?purchase|bind and pay)\b/.test(lower))
+    return { kind: "checkout" };
+  if (/^(yes|y|confirm|go ahead|do it|approve|proceed|continue)\b/.test(lower))
+    return { kind: "confirm" };
+
+  const remove = lower.match(/(?:remove|drop|delete|take out)\s+(?:the\s+)?([a-z0-9-]+)/);
+  if (remove) {
+    const tok = remove[1];
+    const hit = searchCatalog(tok, 1)[0];
+    return { kind: "remove", productId: hit ? hit.id : tok };
+  }
+
+  const add = lower.match(
+    /(?:add|buy|get|i(?:'| a)?ll take|i want|i need|order|put in)\s+(.+?)(?:\s+to\s+cart)?$/
+  );
+  if (add) {
+    const rest = add[1];
+    const qty = quantityOf(rest);
+    // find an explicit product id mention
+    const idHit = rest.match(/[a-z]+(?:-[a-z0-9]+){1,3}/g)?.find((t) =>
+      searchCatalog(t, 1).some((p) => p.id === t)
+    );
+    if (idHit) return { kind: "add", productId: idHit, query: rest, quantity: qty };
+    const hits = searchCatalog(rest, 1);
+    return { kind: "add", productId: hits[0]?.id ?? null, query: rest, quantity: qty };
+  }
+
+  if (/\b(cart|basket|what am i buying|my items)\b/.test(lower)) return { kind: "cart" };
+
+  if (/\b(search|find|show|look(?:ing)? for|browse|list|what.*do you have|any)\b/.test(lower) || parsePriceCeiling(lower)) {
+    const query = text
+      .replace(/\b(under|below|less than|max|upto|up to)\s*[₹\s]*[\d,.]+k?/gi, "")
+      .replace(/\b(search|find|show|me|for|looking|browse|list|do you have|any|some|good)\b/gi, "")
+      .replace(/[₹]/g, "")
+      .trim();
+    const maxPricePaise = parsePriceCeiling(lower);
+    const results = searchCatalog(query || lower, 3);
+    return { kind: "search", query: query || text, maxPricePaise, results };
+  }
+
+  // last resort: try it as a product query
+  const results = searchCatalog(lower, 3);
+  if (results.length > 0) {
+    return { kind: "search", query: text, maxPricePaise: parsePriceCeiling(lower), results };
+  }
+  return { kind: "unknown", query: text };
+}

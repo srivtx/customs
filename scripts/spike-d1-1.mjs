@@ -34,7 +34,15 @@ const out = {
 
 function fail(msg) { console.error("SPIKE ABORT: " + msg); process.exit(1); }
 
-if (!KEY_ID || !KEY_SECRET) fail("set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET (test keys). Get them from dashboard > settings > API keys, test mode.");
+if (!KEY_ID || !KEY_SECRET) {
+  out.status = "blocked-no-keys";
+  out.started_at = new Date().toISOString();
+  out.notes = "Spike code shipped and ready; awaiting rzp_test_* keys from the operator. Until then the app runs the labeled simulation rail (path C). Set the keys and re-run `make spike-d1-1` to execute paths A/B and flip the live rail.";
+  try {
+    writeFileSync(join(ROOT, "results", "d1_1_spike.json"), JSON.stringify(out, null, 2) + "\n");
+  } catch {}
+  fail("set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET (test keys). Get them from dashboard > settings > API keys, test mode.");
+}
 if (KEY_ID.startsWith("rzp_live")) fail("LIVE KEY REFUSED. Test keys only (AGENTS.md invariant 8).");
 if (!KEY_ID.startsWith("rzp_test")) fail("key does not look like a test key (rzp_test_...).");
 

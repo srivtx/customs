@@ -1,8 +1,241 @@
 {
-  "status": "pending",
-  "measured_at": null,
-  "batch": null,
-  "arms": {},
-  "notes": "rules-only vs rules+LLM on the same checkout batch; per decision class. Populated only by the ablation harness (make ablation).",
+  "status": "measured",
+  "measured_at": "2026-08-31T18:57:16.271Z",
+  "arms": [
+    {
+      "adapter": "naive",
+      "verdictsMatched": "8/8",
+      "totalMs": 15,
+      "toolCalls": 34,
+      "wireBytes": 443,
+      "estTokensIn": 114,
+      "estTokensOut": 1506,
+      "scenarios": [
+        {
+          "id": "s1-cheap",
+          "outcome": "ALLOW",
+          "expected": "ALLOW",
+          "matched": true,
+          "ms": 7,
+          "wireBytes": 44
+        },
+        {
+          "id": "s2-attested",
+          "outcome": "ALLOW",
+          "expected": "ALLOW",
+          "matched": true,
+          "ms": 1,
+          "wireBytes": 86
+        },
+        {
+          "id": "s3-mandated",
+          "outcome": "ALLOW",
+          "expected": "ALLOW",
+          "matched": true,
+          "ms": 2,
+          "wireBytes": 85
+        },
+        {
+          "id": "s4-tier-refuse",
+          "outcome": "REFUSE",
+          "expected": "REFUSE",
+          "matched": true,
+          "ms": 1,
+          "wireBytes": 42
+        },
+        {
+          "id": "s5-drift",
+          "outcome": "REFUSE",
+          "expected": "REFUSE",
+          "matched": true,
+          "ms": 1,
+          "wireBytes": 44
+        },
+        {
+          "id": "s6-tamper",
+          "outcome": "REFUSE",
+          "expected": "REFUSE",
+          "matched": true,
+          "ms": 1,
+          "wireBytes": 46
+        },
+        {
+          "id": "s7-expiry",
+          "outcome": "REFUSE",
+          "expected": "REFUSE",
+          "matched": true,
+          "ms": 1,
+          "wireBytes": 45
+        },
+        {
+          "id": "s8-hold",
+          "outcome": "HOLD_FOR_APPROVAL",
+          "expected": "HOLD_FOR_APPROVAL",
+          "matched": true,
+          "ms": 1,
+          "wireBytes": 51
+        }
+      ]
+    },
+    {
+      "adapter": "mcp",
+      "verdictsMatched": "8/8",
+      "totalMs": 8,
+      "toolCalls": 34,
+      "wireBytes": 4150,
+      "estTokensIn": 114,
+      "estTokensOut": 1506,
+      "scenarios": [
+        {
+          "id": "s1-cheap",
+          "outcome": "ALLOW",
+          "expected": "ALLOW",
+          "matched": true,
+          "ms": 1,
+          "wireBytes": 472
+        },
+        {
+          "id": "s2-attested",
+          "outcome": "ALLOW",
+          "expected": "ALLOW",
+          "matched": true,
+          "ms": 1,
+          "wireBytes": 652
+        },
+        {
+          "id": "s3-mandated",
+          "outcome": "ALLOW",
+          "expected": "ALLOW",
+          "matched": true,
+          "ms": 1,
+          "wireBytes": 650
+        },
+        {
+          "id": "s4-tier-refuse",
+          "outcome": "REFUSE",
+          "expected": "REFUSE",
+          "matched": true,
+          "ms": 1,
+          "wireBytes": 468
+        },
+        {
+          "id": "s5-drift",
+          "outcome": "REFUSE",
+          "expected": "REFUSE",
+          "matched": true,
+          "ms": 1,
+          "wireBytes": 472
+        },
+        {
+          "id": "s6-tamper",
+          "outcome": "REFUSE",
+          "expected": "REFUSE",
+          "matched": true,
+          "ms": 1,
+          "wireBytes": 476
+        },
+        {
+          "id": "s7-expiry",
+          "outcome": "REFUSE",
+          "expected": "REFUSE",
+          "matched": true,
+          "ms": 1,
+          "wireBytes": 474
+        },
+        {
+          "id": "s8-hold",
+          "outcome": "HOLD_FOR_APPROVAL",
+          "expected": "HOLD_FOR_APPROVAL",
+          "matched": true,
+          "ms": 1,
+          "wireBytes": 486
+        }
+      ]
+    },
+    {
+      "adapter": "acp",
+      "verdictsMatched": "8/8",
+      "totalMs": 8,
+      "toolCalls": 34,
+      "wireBytes": 9862,
+      "estTokensIn": 114,
+      "estTokensOut": 1506,
+      "scenarios": [
+        {
+          "id": "s1-cheap",
+          "outcome": "ALLOW",
+          "expected": "ALLOW",
+          "matched": true,
+          "ms": 1,
+          "wireBytes": 1144
+        },
+        {
+          "id": "s2-attested",
+          "outcome": "ALLOW",
+          "expected": "ALLOW",
+          "matched": true,
+          "ms": 1,
+          "wireBytes": 1492
+        },
+        {
+          "id": "s3-mandated",
+          "outcome": "ALLOW",
+          "expected": "ALLOW",
+          "matched": true,
+          "ms": 1,
+          "wireBytes": 1490
+        },
+        {
+          "id": "s4-tier-refuse",
+          "outcome": "REFUSE",
+          "expected": "REFUSE",
+          "matched": true,
+          "ms": 1,
+          "wireBytes": 1140
+        },
+        {
+          "id": "s5-drift",
+          "outcome": "REFUSE",
+          "expected": "REFUSE",
+          "matched": true,
+          "ms": 1,
+          "wireBytes": 1144
+        },
+        {
+          "id": "s6-tamper",
+          "outcome": "REFUSE",
+          "expected": "REFUSE",
+          "matched": true,
+          "ms": 1,
+          "wireBytes": 1148
+        },
+        {
+          "id": "s7-expiry",
+          "outcome": "REFUSE",
+          "expected": "REFUSE",
+          "matched": true,
+          "ms": 1,
+          "wireBytes": 1146
+        },
+        {
+          "id": "s8-hold",
+          "outcome": "HOLD_FOR_APPROVAL",
+          "expected": "HOLD_FOR_APPROVAL",
+          "matched": true,
+          "ms": 1,
+          "wireBytes": 1158
+        }
+      ]
+    }
+  ],
+  "llmArm": {
+    "status": "skipped-no-key",
+    "note": "No OPENAI_API_KEY in env — the LLM arm is skipped rather than simulated. Rules arm measured; run `OPENAI_API_KEY=… make ablation` to fill it."
+  },
+  "batch": {
+    "scenarios": 8,
+    "ts": 1788202636271
+  },
+  "notes": "Same shopping batch through naive / MCP-style / ACP-style transports over identical tool implementations. Wire bytes are deterministic envelope sizes; latency is machine-dependent; token counts are deterministic estimates (chars/4) over identical payload shapes. The LLM arm requires OPENAI_API_KEY — it is skipped, never simulated, when absent.",
   "regenerate": "make ablation"
 }

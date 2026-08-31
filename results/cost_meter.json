@@ -1,7 +1,39 @@
 {
-  "status": "pending",
-  "measured_at": null,
-  "metrics": {},
-  "notes": "tokens/decision, INR per successful payment, p50/p99 latency. Populated only by the measurement harness (make meter). Never hand-written.",
+  "status": "measured",
+  "measured_at": "2026-08-31T18:53:48.797Z",
+  "metrics": {
+    "gmvPaise": 6373200,
+    "capturedCount": 12,
+    "refusedCount": 6,
+    "attackCount": 12,
+    "refusalRate": 0.3333,
+    "tokensIn": 679,
+    "tokensOut": 6635,
+    "aiCostPaise": 34,
+    "aiCostPerCapturedPaise": 3,
+    "channelRevenuePaise": 127464,
+    "netPaise": 127430,
+    "p50DecisionMs": 1,
+    "p99DecisionMs": 1
+  },
+  "assumptions": {
+    "mdrPct": 2,
+    "model": {
+      "name": "gpt-4o-mini-class (assumed)",
+      "inputUsdPer1M": 0.15,
+      "outputUsdPer1M": 0.6
+    },
+    "usdToInr": 83,
+    "projectionPaymentsPerMonth": 1000000
+  },
+  "projection": {
+    "paymentsPerMonth": 1000000,
+    "avgTicketPaise": 531100,
+    "revenueInrPerMonth": 106220000,
+    "aiCostInrPerMonth": 30000,
+    "netInrPerMonth": 106190000,
+    "formula": "revenue = avgTicket × N × MDR% ; aiCost = measured ₹/captured-payment × N ; net = revenue − aiCost"
+  },
+  "notes": "Meter over the deterministic 48h seed ledger (the same history the live app boots with). Token counts are deterministic estimates for the rules brain (chars/4); with AGENT_BRAIN=llm the live app meters real provider tokens instead. Latency is machine-dependent. MDR and model prices are labeled assumptions, not claims.",
   "regenerate": "make meter"
 }

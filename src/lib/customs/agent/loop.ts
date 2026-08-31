@@ -1,0 +1,425 @@
+/**
+ * The agent loop — one chat turn, end to end, with every tool call visible.
+ *
+ * Transparency is the product: each turn emits a step-by-step trace the UI
+ * renders inline (intent → tool calls with wire formats → gate checklist →
+ * rail), the same spans land in the ledger, and the Control Room can replay
+ * the whole thing span-by-span. Nothing the agent does is invisible.
+ */
+import { randomUUID, createHmac } from "node:crypto";
+import { CustomsRuntime, BuyerSession } from "../runtime";
+import { parseIntent, Intent } from "./nlu";
+import { adapterCall, AdapterId, ADAPTERS } from "../adapters";
+import { getLlmBrain, brainMode } from "./llm";
+import { Product, searchCatalog, parsePriceCeiling } from "../store/catalog";
+import { GateDecision, TrustTier, TRUST_TIERS, Mandate } from "../gate/types";
+import { signMandate, buildMandateBody } from "../gate/mandate";
+import { runTransaction, newSpan } from "../engine";
+import { ATTACK_CORPUS, AttackCase, attackTxInput } from "../fuzz/corpus";
+import { railInfo } from "../payments";
+
+export type ChatEvent =
+  | { id: string; ts: number; role: "agent" | "user"; text: string }
+  | { id: string; ts: number; kind: "step"; tool: string; adapter: AdapterId; summary: string; detail: string; ms: number }
+  | { id: string; ts: number; kind: "products"; products: Product[]; note: string | null }
+  | { id: string; ts: number; kind: "cart"; lines: { productId: string; name: string; quantity: number; unitPricePaise: number }[]; totalPaise: number }
+  | { id: string; ts: number; kind: "mandate"; mandate: MandateView; pendingApproval: boolean }
+  | { id: string; ts: number; kind: "gate"; orderId: string; decision: GateDecision; adapter: AdapterId }
+  | { id: string; ts: number; kind: "payment"; orderId: string; totalPaise: number; status: "captured" | "held" | "refused"; rail: string; simulated: boolean }
+  | { id: string; ts: number; kind: "receipt"; orderId: string; manifestNo: string; lines: { name: string; quantity: number; unitPricePaise: number }[]; totalPaise: number; rail: string; simulated: boolean }
+  | { id: string; ts: number; kind: "attack"; attackId: string; label: string; verdict: string; code: string | null; checks: { label: string; pass: boolean | null; detail: string }[] }
+  | { id: string; ts: number; kind: "tier"; tier: TrustTier; note: string };
+
+export interface MandateView {
+  id: string;
+  tier: TrustTier;
+  amountCapPaise: number;
+  items: { productId: string; name: string; quantity: number; unitPricePaise: number }[];
+  expiresAtMs: number;
+  humanApproved: boolean;
+  fingerprint: string;
+  signature: string;
+}
+
+let eventCounter = 0;
+const eid = () => `ev_${(eventCounter += 1).toString(36)}`;
+
+export function newSession(rt: CustomsRuntime, tier: TrustTier = "UNVERIFIED"): BuyerSession {
+  const sessionId = `ses_${randomUUID().slice(0, 8)}`;
+  const session: BuyerSession = {
+    sessionId,
+    buyerId: `buyer-${sessionId.slice(-6)}`,
+    tier,
+    cart: new Map(),
+    mandate: null,
+    awaitingMandateApproval: false,
+    lastOrderId: null,
+    createdAtMs: Date.now(),
+  };
+  rt.sessions.set(sessionId, session);
+  rt.ledger.append("session.opened", { sessionId, buyerId: session.buyerId, tier, adapter: null });
+  return session;
+}
+
+export interface TurnResult {
+  events: ChatEvent[];
+  session: BuyerSession;
+  needCheckoutRefresh: boolean;
+}
+
+export async function agentTurn(
+  rt: CustomsRuntime,
+  sessionId: string,
+  message: string,
+  adapter: AdapterId,
+  opts?: { sessionless?: boolean }
+): Promise<TurnResult> {
+  const events: ChatEvent[] = [];
+  const say = (text: string) => events.push({ id: eid(), ts: Date.now(), role: "agent", text });
+  const session = opts?.sessionless
+    ? { sessionId: "ses_adhoc", buyerId: "buyer-adhoc", tier: "UNVERIFIED" as TrustTier, cart: new Map<string, number>(), mandate: null, awaitingMandateApproval: false, lastOrderId: null, createdAtMs: Date.now() }
+    : rt.sessions.get(sessionId) ?? newSession(rt);
+  const now = () => Date.now();
+
+  events.push({ id: eid(), ts: now(), role: "user", text: message });
+
+  // LLM brain (optional): parse intent via model, fall back to rules
+  let intent: Intent = parseIntent(message);
+  let tokensIn = 0;
+  let tokensOut = 0;
+  const llm = brainMode() === "llm" ? getLlmBrain() : null;
+  if (llm) {
+    const t0 = performance.now();
+    const { intent: parsed, usage } = await llm.parseIntent(message);
+    tokensIn = usage.tokensIn;
+    tokensOut = usage.tokensOut;
+    if (parsed) intent = llmToIntent(parsed, message);
+    newSpan(rt.deps, `tr_ses_${session.sessionId}`, session.lastOrderId ?? "none", "llm.parseIntent", Math.round(performance.now() - t0), adapter, { tokensIn, tokensOut, model: llm.name });
+  }
+
+  // adapter transport context: tools are injected, wire is logged
+  const toolLog: { name: string; ms: number; wire: { dir: string; bytes: number; body: string }[] }[] = [];
+  const callTool = async (name: string, args: Record<string, unknown>) => {
+    const t0 = performance.now();
+    const value = await executeTool(rt, session, name, args, events, say, adapter);
+    const ms = Math.max(1, Math.round(performance.now() - t0));
+    const est = Math.ceil(JSON.stringify({ name, args }).length / 4) + Math.ceil(JSON.stringify(value ?? "").length / 4);
+    newSpan(rt.deps, `tr_ses_${session.sessionId}`, session.lastOrderId ?? "none", `tool:${name}`, ms, adapter, {
+      tokensIn: tokensIn > 0 ? 0 : Math.ceil(JSON.stringify(args).length / 4),
+      tokensOut: tokensIn > 0 ? tokensOut : est,
+    });
+    return value;
+  };
+  const signCtx = (payload: string) => createHmac("sha256", rt.keys.fingerprint).update(payload).digest("hex").slice(0, 32);
+
+  switch (intent.kind) {
+    case "greeting": {
+      say(
+        `Customs desk, open. I'm your buying agent for Fieldnote Supply — 20 items in the catalog. ` +
+          `Tell me what you need ("noise cancelling headphones under ₹5,000") and I'll search, build a cart, and ask the desk for a bounded mandate. ` +
+          `Your trust tier is **${TRUST_TIERS[session.tier].label}** (${TRUST_TIERS[session.tier].blurb}).`
+      );
+      break;
+    }
+    case "help": {
+      say(
+        `I can: **search** (" ANC headphones under 3k"), **add** ("add the ridge mouse"), **cart**, ` +
+          `**checkout** (requests a signed mandate and pays within its bounds), **status**. ` +
+          `The desk can also red-team itself: type "attack: overspend-tier" or use the Red Team panel. ` +
+          `Escalation: type "attest" to raise your trust tier.`
+      );
+      break;
+    }
+    case "status": {
+      const lines = cartLines(rt, session);
+      say(
+        `Passport: **${TRUST_TIERS[session.tier].label}** — cap ${rupees(TRUST_TIERS[session.tier].maxAmountPaise)} per transaction, ` +
+          `${TRUST_TIERS[session.tier].maxItems} item(s). Cart: ${lines.length ? lines.map((l) => `${l.name} ×${l.quantity}`).join(", ") : "empty"}. ` +
+          (session.mandate ? `Mandate ${session.mandate.id} active until ${new Date(session.mandate.expiresAtMs).toLocaleTimeString("en-IN")}.` : `No active mandate.`)
+      );
+      break;
+    }
+    case "attest": {
+      const next: TrustTier = session.tier === "UNVERIFIED" ? "ATTESTED" : "MANDATED";
+      if (session.tier === "MANDATED") {
+        say(`You already hold the highest tier — ${TRUST_TIERS.MANDATED.blurb}`);
+        break;
+      }
+      session.tier = next;
+      rt.ledger.append("tier.raised", { sessionId: session.sessionId, buyerId: session.buyerId, to: next, via: "attest (OTP-bound in production)" });
+      events.push({ id: eid(), ts: now(), kind: "tier", tier: next, note: `attested — ${TRUST_TIERS[next].blurb}` });
+      say(`Attested. You now clear as **${TRUST_TIERS[next].label}**: ${TRUST_TIERS[next].blurb}`);
+      break;
+    }
+    case "search": {
+      await runTool("search_catalog", { query: intent.query }, "Searched the catalog");
+      break;
+    }
+    case "add": {
+      if (!intent.productId) {
+        say(`I couldn't find "${intent.query}" in the catalog. Try "search <what you need>" first.`);
+        break;
+      }
+      await runTool("add_to_cart", { productId: intent.productId, quantity: intent.quantity }, "Added to cart");
+      break;
+    }
+    case "remove": {
+      session.cart.delete(intent.productId);
+      const lines = cartLines(rt, session);
+      events.push({ id: eid(), ts: now(), kind: "cart", lines, totalPaise: lines.reduce((s, l) => s + l.unitPricePaise * l.quantity, 0) });
+      say(`Removed. The cart now holds ${lines.length} line(s).`);
+      break;
+    }
+    case "cart": {
+      const lines = cartLines(rt, session);
+      events.push({ id: eid(), ts: now(), kind: "cart", lines, totalPaise: lines.reduce((s, l) => s + l.unitPricePaise * l.quantity, 0) });
+      say(lines.length ? `That's the cart. Say **checkout** and I'll request a mandate from the desk.` : `The cart is empty — search for something first.`);
+      break;
+    }
+    case "checkout": {
+      const lines = cartLines(rt, session);
+      if (!lines.length) {
+        say(`Nothing to check out yet. Search and add something first.`);
+        break;
+      }
+      const total = lines.reduce((s, l) => s + l.unitPricePaise * l.quantity, 0);
+      if (total > TRUST_TIERS[session.tier].maxAmountPaise) {
+        say(
+          `The cart totals ${rupees(total)}, over the ${rupees(TRUST_TIERS[session.tier].maxAmountPaise)} bound for a ${TRUST_TIERS[session.tier].label}. ` +
+            `I won't ask the desk — it would be refused on sight. Remove something, or type "attest" to raise your tier.`
+        );
+        break;
+      }
+      await runTool("request_mandate", {}, "Requested a mandate from the desk");
+      break;
+    }
+    case "confirm": {
+      if (session.awaitingMandateApproval && session.cart.size > 0) {
+        session.awaitingMandateApproval = false;
+        await runTool("bind_and_pay", {}, "Bound the order and paid");
+      } else {
+        say(`Nothing is waiting on your approval right now.`);
+      }
+      break;
+    }
+    case "attack": {
+      const attack = ATTACK_CORPUS.find((a) => a.id === intent.attackId);
+      if (!attack) {
+        say(`Unknown attack "${intent.attackId}". The corpus: ${ATTACK_CORPUS.map((a) => a.id).join(", ")}.`);
+        break;
+      }
+      executeAttack(rt, session, attack, events);
+      break;
+    }
+    case "unknown": {
+      say(
+        `I couldn't map that to the catalog. I'm a deterministic agent — try "search <item>", e.g. "search keyboard". ` +
+          `For free-form conversation, set AGENT_BRAIN=llm with a key (the ablation measures both brains).`
+      );
+      break;
+    }
+  }
+
+  async function runTool(name: string, args: Record<string, unknown>, summary: string) {
+    const t0 = performance.now();
+    const res = await adapterCall(adapter, name, args, { callTool, sign: signCtx, sessionId: session.sessionId });
+    const ms = Math.max(1, Math.round(performance.now() - t0));
+    const detail = res.wire.map((w) => `${w.dir === "out" ? "→" : "←"} ${w.method ?? ""} ${w.body.slice(0, 220)}`).join("\n");
+    toolLog.push({ name, ms, wire: res.wire.map((w) => ({ dir: w.dir, bytes: w.bytes, body: w.body })) });
+    events.push({ id: eid(), ts: now(), kind: "step", tool: name, adapter, summary: `${summary} · ${ADAPTERS[adapter].label}`, detail, ms });
+  }
+
+  return { events, session, needCheckoutRefresh: toolLog.some((t) => t.name === "bind_and_pay" || t.name === "request_mandate") };
+}
+
+/* ------------------------- tool implementations ------------------------- */
+
+async function executeTool(
+  rt: CustomsRuntime,
+  session: BuyerSession,
+  name: string,
+  args: Record<string, unknown>,
+  events: ChatEvent[],
+  say: (t: string) => void,
+  _adapter: AdapterId
+): Promise<unknown> {
+  switch (name) {
+    case "search_catalog": {
+      const query = String(args.query ?? "");
+      let results = searchCatalog(query, 3);
+      const ceiling = parsePriceCeiling(query);
+      if (ceiling) results = results.filter((p) => p.pricePaise <= ceiling);
+      const note = ceiling ? `filtered to ≤ ${rupees(ceiling)}` : null;
+      events.push({ id: eid(), ts: Date.now(), kind: "products", products: results, note });
+      say(
+        results.length
+          ? `Found ${results.length} match${results.length > 1 ? "es" : ""}${note ? ` (${note})` : ""}. I can add any of them — "add ${results[0].id.split("-")[0]} ${results[0].id.split("-").slice(1).join("-")}".`
+          : `Nothing matched. Try a broader search.`
+      );
+      return results.map((p) => ({ id: p.id, name: p.name, pricePaise: p.pricePaise, stock: p.stock }));
+    }
+    case "get_product": {
+      const p = rt.catalog.byId.get(String(args.productId));
+      return p ? { id: p.id, name: p.name, pricePaise: p.pricePaise, stock: p.stock } : null;
+    }
+    case "add_to_cart": {
+      const p = rt.catalog.byId.get(String(args.productId));
+      if (!p) return { added: false, reason: "unknown product" };
+      const qty = Math.max(1, Math.min(10, Number(args.quantity ?? 1)));
+      session.cart.set(p.id, (session.cart.get(p.id) ?? 0) + qty);
+      const lines = cartLines(rt, session);
+      const total = lines.reduce((s, l) => s + l.unitPricePaise * l.quantity, 0);
+      events.push({ id: eid(), ts: Date.now(), kind: "cart", lines, totalPaise: total });
+      say(`Cart: ${lines.map((l) => `${l.name} ×${l.quantity}`).join(", ")} — ${rupees(total)} total. Say **checkout** to request a mandate.`);
+      return { added: true, cartLines: lines.length, totalPaise: total };
+    }
+    case "request_mandate": {
+      const lines = cartLines(rt, session);
+      const total = lines.reduce((s, l) => s + l.unitPricePaise * l.quantity, 0);
+      const body = buildMandateBody(
+        {
+          buyerId: session.buyerId,
+          tier: session.tier,
+          items: lines.map((l) => ({ productId: l.productId, quantity: l.quantity, unitPricePaise: l.unitPricePaise })),
+          nowMs: Date.now(),
+          humanApproved: false,
+          amountCapPaise: total,
+        },
+        `man_${randomUUID().slice(0, 8)}`
+      );
+      const mandate = signMandate(body, rt.deps.privateKeyPem);
+      session.mandate = { id: mandate.id, amountCapPaise: mandate.amountCapPaise, expiresAtMs: mandate.expiresAtMs };
+      session.awaitingMandateApproval = true;
+      rt.ledger.append("mandate.issued", {
+        mandateId: mandate.id,
+        buyerId: session.buyerId,
+        tier: mandate.tier,
+        amountCapPaise: mandate.amountCapPaise,
+        liveSession: session.sessionId,
+      });
+      const view: MandateView = {
+        id: mandate.id,
+        tier: mandate.tier,
+        amountCapPaise: mandate.amountCapPaise,
+        items: lines,
+        expiresAtMs: mandate.expiresAtMs,
+        humanApproved: false,
+        fingerprint: rt.keys.fingerprint,
+        signature: mandate.signature.slice(0, 24) + "…",
+      };
+      events.push({ id: eid(), ts: Date.now(), kind: "mandate", mandate: view, pendingApproval: true });
+      const over10k = total >= 1_000_000;
+      say(
+        `The desk signed a mandate for ${rupees(total)} — cap, items, and a ${Math.round((mandate.expiresAtMs - Date.now()) / 60000)}-minute expiry, Ed25519 over canonical JSON. ` +
+          `Approve it and I bind and pay within those bounds.` +
+          (over10k ? ` Note: over ₹10,000 also waits for the merchant desk's human approval before capture.` : ``)
+      );
+      return { mandateId: mandate.id, cap: mandate.amountCapPaise, expiresAtMs: mandate.expiresAtMs };
+    }
+    case "bind_and_pay": {
+      const lines = cartLines(rt, session);
+      if (!lines.length || !session.mandate) return { bound: false, reason: "no pending mandate" };
+      const tx = runTransaction(rt.deps, {
+        buyerId: session.buyerId,
+        tier: session.tier,
+        items: lines.map((l) => ({ productId: l.productId, quantity: l.quantity })),
+        adapter: _adapter,
+        nowMs: Date.now(),
+      });
+      session.lastOrderId = tx.orderId;
+      events.push({ id: eid(), ts: Date.now(), kind: "gate", orderId: tx.orderId, decision: tx.decision, adapter: _adapter });
+      if (tx.decision.kind === "ALLOW" && tx.payment) {
+        const rail = railInfo();
+        events.push({ id: eid(), ts: Date.now(), kind: "payment", orderId: tx.orderId, totalPaise: tx.decision.totalPaise, status: "captured", rail: rail.id, simulated: rail.simulated });
+        const manifestNo = `FN-MA-${String(rt.ledger.all().length).padStart(6, "0")}`;
+        events.push({ id: eid(), ts: Date.now(), kind: "receipt", orderId: tx.orderId, manifestNo, lines: lines.map((l) => ({ name: l.name, quantity: l.quantity, unitPricePaise: l.unitPricePaise })), totalPaise: tx.decision.totalPaise, rail: rail.id, simulated: rail.simulated });
+        say(
+          `Cleared and ${rail.simulated ? "captured (SIMULATED — no keys configured)" : "captured on Razorpay test mode"}: ${rupees(tx.decision.totalPaise)}. ` +
+            `Every check passed — the checklist is above, the spans are in the ledger, and the manifest is ${manifestNo}. The cart is empty again.`
+        );
+        session.cart.clear();
+        session.mandate = null;
+        return { bound: true, captured: true, orderId: tx.orderId, manifestNo };
+      }
+      if (tx.decision.kind === "HOLD_FOR_APPROVAL") {
+        events.push({ id: eid(), ts: Date.now(), kind: "payment", orderId: tx.orderId, totalPaise: tx.decision.totalPaise, status: "held", rail: "none", simulated: false });
+        say(`${rupees(tx.decision.totalPaise)} is over the ₹10,000 human-approval threshold. The order is HELD at the merchant desk — approve it in the Control Room and I'll capture on the next bind.`);
+        return { bound: true, held: true, orderId: tx.orderId };
+      }
+      events.push({ id: eid(), ts: Date.now(), kind: "payment", orderId: tx.orderId, totalPaise: 0, status: "refused", rail: "none", simulated: false });
+      say(`The gate refused: ${tx.decision.reason}. The audit entry is written; the Control Room's Blocks panel has the one-liner.`);
+      return { bound: false, refused: true, code: tx.decision.code, orderId: tx.orderId };
+    }
+    default:
+      return { error: `unknown tool ${name}` };
+  }
+}
+
+/* ------------------------------ attacks ------------------------------ */
+
+export function executeAttack(
+  rt: CustomsRuntime,
+  session: BuyerSession,
+  attack: AttackCase,
+  events: ChatEvent[]
+): void {
+  const tx = runTransaction(
+    rt.deps,
+    attackTxInput(attack, { orderId: `ord_atk_live_${randomUUID().slice(0, 6)}`, nowMs: Date.now(), adapter: "acp", buyerPrefix: `attacker-${session.sessionId}` })
+  );
+  const blocked = tx.decision.kind !== "ALLOW";
+  rt.ledger.append("attack.blocked", {
+    attackId: attack.id,
+    label: attack.label,
+    orderId: tx.orderId,
+    tier: attack.tier,
+    verdict: blocked ? "BLOCKED" : "PASSED",
+    code: tx.decision.code,
+    reason: tx.decision.reason,
+    expected: attack.expect.code,
+    matched: blocked && tx.decision.code === attack.expect.code,
+    live: true,
+  });
+  events.push({
+    id: eid(),
+    ts: Date.now(),
+    kind: "attack",
+    attackId: attack.id,
+    label: attack.label,
+    verdict: blocked ? "BLOCKED" : "PASSED",
+    code: tx.decision.code,
+    checks: tx.decision.checks.map((c) => ({ label: c.label, pass: c.pass, detail: c.detail })),
+  });
+}
+
+export function cartLines(rt: CustomsRuntime, session: BuyerSession) {
+  return [...session.cart.entries()].map(([productId, quantity]) => {
+    const p = rt.catalog.byId.get(productId)!;
+    return { productId, name: p.name, quantity, unitPricePaise: p.pricePaise };
+  });
+}
+
+export function rupees(paise: number): string {
+  return `₹${(paise / 100).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
+}
+
+function llmToIntent(parsed: { action: string; query?: string; productId?: string; quantity?: number; maxPriceInr?: number }, raw: string): Intent {
+  switch (parsed.action) {
+    case "search":
+      return { kind: "search", query: parsed.query ?? raw, maxPricePaise: parsed.maxPriceInr ? Math.round(parsed.maxPriceInr * 100) : parsePriceCeiling(raw), results: searchCatalog(parsed.query ?? raw, 3) };
+    case "add":
+      return { kind: "add", productId: parsed.productId ?? null, query: parsed.query ?? raw, quantity: parsed.quantity ?? 1 };
+    case "remove":
+      return { kind: "remove", productId: parsed.productId ?? "" };
+    case "cart":
+      return { kind: "cart" };
+    case "checkout":
+      return { kind: "checkout" };
+    case "confirm":
+      return { kind: "confirm" };
+    case "status":
+      return { kind: "status" };
+    default:
+      return { kind: "unknown", query: raw };
+  }
+}

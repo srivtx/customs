@@ -1,10 +1,12 @@
 name: verify
+
 on:
   push:
   pull_request:
 
 jobs:
-  verify:
+  # Job 1 — zero-install evidence checks: any judge can run this with node alone.
+  evidence:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,3 +17,45 @@ jobs:
         run: node scripts/verify.mjs
       - name: Judge tour (same as `make triage`)
         run: node scripts/triage.mjs
+
+  # Job 2 — the harnesses that regenerate every number in results/.
+  # Requires bun (scripts are TypeScript over the real engine).
+  harnesses:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - name: Conformance corpus (make fuzz)
+        run: bun scripts/fuzz.ts
+      - name: Ablation matrix (make ablation)
+        run: bun scripts/ablation.ts
+      - name: Cost meter (make meter)
+        run: bun scripts/meter.ts
+      - name: Projection (make project)
+        run: bun scripts/project.ts
+      - name: Audit chain + tamper control (make audit)
+        run: bun scripts/audit.ts
+      - name: Re-run evidence checks against fresh results
+        run: node scripts/verify.mjs
+
+  # Job 3 — the app itself compiles and lints clean.
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - name: Lint
+        run: bun run lint
+      - name: Build
+        run: bun run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: standalone-build
+          path: .next/standalone
+          retention-days: 7
