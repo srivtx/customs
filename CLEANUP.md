@@ -1,80 +1,105 @@
-# CLEANUP.md — the operator's runbook before this repo goes public
+# CLEANUP.md — the operator's runbook for this repo (post-push)
 
-You (or your agent) downloaded the `customs` tar, and you're about to push it
-to GitHub and deploy it. This file tells you exactly what to delete, what to
-check, and in what order. Follow it top to bottom; every step is a command.
+The repo is **already live at https://github.com/srivtx/customs** (pushed from
+the build machine with a fine-grained PAT). This file tells you (or your agent)
+exactly what stays, what goes, how to re-push, and how to keep it standing on
+the free tier. Follow it top to bottom; every step is a command.
 
-## 0. What you received
+## 0. What exists where
 
-A tar of the Customs repo **including `.git` history** (the skeleton commits +
-the full build). The working tree is the deliverable; nothing else is needed.
+| Thing | Where | State |
+|---|---|---|
+| Source of truth | the build machine's `repo-out/customs/` + every tar in `download/` | 6 commits, all green locally |
+| Public repo | `https://github.com/srivtx/customs` | `main` pushed, CI: `verify` workflow (3 jobs) |
+| Private research | build machine `download/*.md`, `data/`, `scripts/*.py` | **never** in the repo — assembled by allowlist |
+| Deploy | `DEPLOY.md` (Vercel primary) | run when ready; JUDGE.md line flips from PENDING |
 
-```bash
-tar xzf customs-repo-<date>.tar.gz
-cd customs
-git log --oneline        # you should see the whole story
-```
+If you're starting from a tar: `tar xzf customs-repo-<date>.tar.gz && cd customs`.
 
-## 1. Delete before the first push
+## 1. Delete before any re-push from a fresh tree
 
 | Path | Why delete | Command |
 |---|---|---|
-| `.env` (if you created one) | secrets — never committed, but verify | `rm -f .env` |
-| `data/` | runtime state + test-only keys, regenerated at boot (already gitignored) | `rm -rf data/` |
-| `dev.log`, `server.log` | local run logs (gitignored already) | `rm -f dev.log server.log` |
+| `.env` | secrets — never committed, but verify | `rm -f .env` |
+| `data/` | runtime state + generated keys, regenerated at boot (gitignored) | `rm -rf data/` |
+| `dev.log`, `server.log` | local run logs (gitignored) | `rm -f dev.log server.log` |
 | `.zscripts/` | sandbox dev tooling, not part of the repo | `rm -rf .zscripts/` |
 | `node_modules/`, `.next/` | rebuildable; never commit | `rm -rf node_modules .next` |
 
 **Nothing inside the repo's tracked tree needs deletion** — research notes,
-internal strategy docs and scan data were never copied in. The tar was
-assembled from an allowlist, not a blacklist.
+internal strategy docs, competitor scans and private numbers were never copied
+in. The tar and the repo were assembled from an allowlist, not a blacklist.
+That is the whole privacy model: check `git ls-files`, not your memory.
 
-## 2. Secret scan (do not skip)
+## 2. Secret scan (do not skip before every push)
 
 ```bash
-# no keys, no tokens, no passwords anywhere in what you're about to push:
-grep -rnE "rzp_(live|test)_[A-Za-z0-9]{10,}|sk-[A-Za-z0-9]{20,}|nowayout|password" \
+grep -rnE "rzp_(live|test)_[A-Za-z0-9]{10,}|sk-[A-Za-z0-9]{20,}|github_pat_|nowayout|gsk_[A-Za-z0-9]{20,}|AIza[A-Za-z0-9_-]{30,}" \
   --exclude-dir=node_modules --exclude-dir=.next . || echo CLEAN
 ```
 
-Expect `CLEAN`. Any hit: fix, re-commit, re-run. (`.env.example` contains only
-placeholder `x` runs — that's fine.)
+Expect `CLEAN`. Any hit: fix, commit, re-run. (`.env.example` carries only
+placeholder `x` runs — fine.) The PAT and the old password must never appear.
 
-## 3. Rotate anything shared in chat
+## 3. Rotate what was shared in chat (after the deadline, or now if paranoid)
 
-If any credential was ever pasted into a chat (including the GitHub password
-used while getting this repo online), rotate it now:
-GitHub → Settings → Password / Developer settings → fine-grained PATs.
-Use a **fine-grained PAT scoped to this one repo** for pushes from machines
-you don't fully control. Do not reuse that password anywhere.
+Two credentials were pasted into chat during the build: the account password
+and the fine-grained PAT used for the push. Treat both as burned:
 
-## 4. Create the GitHub repo and push
+1. GitHub → Settings → Password → change it (it was shared, so it's public to
+   anyone who saw the chat).
+2. GitHub → Developer settings → Fine-grained tokens → **revoke** the push PAT.
+3. If you need to push again, mint a new fine-grained PAT scoped to **only
+   `customs`**, permission `Contents: Read and write`, expiry short.
+
+## 4. How to push (token method — passwords are dead)
 
 ```bash
-# on github.com: New repository → name: customs → Public → do NOT init with README
-git remote add origin https://github.com/<you>/customs.git
-git push -u origin main
+cd customs
+git add -A && git commit -m "…"          # or a proper logical commit
+git push https://<user>:<PAT>@github.com/srivtx/customs.git main
+# or: git push origin main               # origin is already set, no token stored
+git remote -v                            # must show the clean URL, no token
 ```
 
-Then confirm Actions goes green (the `verify` workflow runs three jobs:
-zero-dep evidence, harnesses, lint+build — a few minutes).
-Fix nothing unless it's red: the repo was verified green before tarring.
+`git remote -v` must print `https://github.com/srivtx/customs.git` — no token
+in the URL, no token in `.git/config`, no token in any file. If a token ever
+lands in a URL, `git remote set-url origin https://github.com/srivtx/customs.git`.
 
-## 5. Deploy
+After each push: confirm the **Actions tab goes green** (verify workflow:
+zero-dep evidence → bun harnesses → lint+build, a few minutes). Fix nothing
+unless it's red — the tree was verified green before every push so far.
 
-Follow `DEPLOY.md` (Vercel is the primary path — free tier, never sleeps).
-After the deploy answers 200:
+## 5. Deploy (free tier that stays up)
 
-1. In `JUDGE.md`, replace the "Live deployment: PENDING" line with the URL.
-2. In `README.md` (and the form answers), add the live link.
-3. Commit — CI's URL discipline will check the link answers 200 from then on.
+Follow `DEPLOY.md`. The one-liner:
 
-## 6. Optional (only if time before the deadline)
+```
+https://vercel.com/new/clone?repository-url=https://github.com/srivtx/customs
+```
 
-- Record the 5:00 video per `VIDEO_TRANSCRIPT.md` (reset demo first).
-- Set Razorpay test keys in the host's env, run `make spike-d1-1`, and let the
-  D1-1 log entry flip from `blocked-no-keys` to the measured verdict.
-- Paste the final form answers from `docs/FORM_ANSWERS.md`.
+Vercel Hobby = always awake, zero cost, perfect for a judge clicking at 11pm.
+Add env vars in the Vercel dashboard (all optional — the app runs fully on the
+labeled simulation rail with zero keys): Razorpay test keys + webhook secret,
+any one LLM key (`GROQ_API_KEY` / `GEMINI_API_KEY` have free tiers) with
+`AGENT_BRAIN=llm`, and `NEXT_PUBLIC_SITE_URL=https://<your-app>.vercel.app`
+(for correct OG image URLs). After it answers 200:
+
+1. `JUDGE.md`: replace the "Live deployment: PENDING" line with the URL.
+2. `README.md` + `docs/FORM_ANSWERS.md`: add the live link.
+3. Commit + push — CI's URL discipline checks the link from then on.
+
+## 6. Before you submit (the last mile)
+
+- Record the 5:00 video per `VIDEO_TRANSCRIPT.md` (reset the demo first:
+  `curl -X POST <live-url>/api/reset`).
+- Re-record `docs/demo.gif` if the UI changed: `bash scripts/make-demo-gif.sh`
+  (needs the dev server running locally).
+- Razorpay test keys set → run `make spike-d1-1` → the D1-1 log entry flips
+  from `blocked-no-keys` to the measured verdict, and the rail goes live-test.
+- Paste the form answers from `docs/FORM_ANSWERS.md` (claim → evidence file →
+  regenerate command, every line).
+- Final sweep: `make verify && make triage` — both green, then submit.
 
 ## What NOT to do
 
@@ -83,5 +108,7 @@ After the deploy answers 200:
 - Do **not** edit any file under `results/` by hand — regeneration only.
 - Do **not** add a live Razorpay key; the app refuses them at construction and
   so should you.
-- Do **not** delete `ENGINEERING_LOG.md` entries — the incidents are the
-  honesty artifact.
+- Do **not** delete `ENGINEERING_LOG.md` entries — the incidents (D1-1 … D5-1)
+  are the honesty artifact.
+- Do **not** commit `.env`, `data/`, or any tar of the workspace — the repo's
+  whole credibility is that the private layer never leaks.

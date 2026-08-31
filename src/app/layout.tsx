@@ -20,6 +20,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: process.env.NEXT_PUBLIC_SITE_URL ? new URL(process.env.NEXT_PUBLIC_SITE_URL) : undefined,
   title: "Customs — both sides of the agentic counter",
   description:
     "A two-sided agentic checkout: the storefront AI buyers transact on, and the merchant desk that lets a payments company trust them — bounded, metered, replayable, provable in 60 seconds. Razorpay AI Buildathon 2026, Track 1. Test mode only.",
@@ -40,6 +41,14 @@ export const metadata: Metadata = {
       "Signed mandates, trust tiers, a channel P&L meter, and a hash-chained audit trail. Provable to a machine in 60 seconds.",
     siteName: "Customs",
     type: "website",
+    images: [{ url: "/hero-customs.jpg", width: 1920, height: 1280, alt: "Customs — the checkpoint for agentic commerce" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Customs — both sides of the agentic counter",
+    description:
+      "Signed mandates, trust tiers, a channel P&L meter, and a hash-chained audit trail. Test mode only.",
+    images: ["/hero-customs.jpg"],
   },
 };
 

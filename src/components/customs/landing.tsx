@@ -5,7 +5,7 @@
  * the trust ladder, the protocol matrix, and the proof layer commands.
  */
 import { useEffect, useState } from "react";
-import { SectionLabel, Stamp, GhostButton, ManifestRow, inr, CountUp } from "./bits";
+import { SectionLabel, Stamp, GhostButton, ManifestRow, inr, CountUp, Reveal, Ticker, LiveDot } from "./bits";
 import { TRUST_TIERS } from "@/lib/customs/gate/types";
 import { ADAPTERS, AdapterId } from "@/lib/customs/adapters";
 
@@ -18,8 +18,16 @@ interface LandingStats {
   eventsTotal: number;
 }
 
+interface TickerOrder {
+  orderId: string;
+  totalPaise: number;
+  status: string;
+  adapter: string;
+}
+
 export function Landing({ onEnter }: { onEnter: (view: "agent" | "merchant") => void }) {
   const [stats, setStats] = useState<LandingStats | null>(null);
+  const [tickerItems, setTickerItems] = useState<string[]>([]);
 
   useEffect(() => {
     const load = async () => {
@@ -30,6 +38,7 @@ export function Landing({ onEnter }: { onEnter: (view: "agent" | "merchant") => 
           meter: LandingStats;
           chain: { ok: boolean };
           eventsTotal: number;
+          orders: TickerOrder[];
         };
         if (d.ok) {
           setStats({
@@ -40,6 +49,12 @@ export function Landing({ onEnter }: { onEnter: (view: "agent" | "merchant") => 
             chainOk: d.chain.ok,
             eventsTotal: d.eventsTotal,
           });
+          setTickerItems(
+            (d.orders ?? []).slice(0, 14).map(
+              (o) =>
+                `${o.orderId.slice(0, 12)} · ${inr(o.totalPaise)} · ${o.status.replace(/_/g, " ").toLowerCase()} · ${o.adapter}`
+            )
+          );
         }
       } catch {
         /* stats strip is optional garnish */
@@ -69,12 +84,14 @@ export function Landing({ onEnter }: { onEnter: (view: "agent" | "merchant") => 
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <button
                 onClick={() => onEnter("agent")}
+                aria-label="enter the agent playground"
                 className="h-11 border border-ink bg-ink px-6 font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-paper transition-all hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_var(--line-strong)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
               >
                 Enter the agent playground
               </button>
               <button
                 onClick={() => onEnter("merchant")}
+                aria-label="open the control room"
                 className="h-11 border border-line2 bg-transparent px-6 font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-ink transition-colors hover:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
               >
                 Open the control room
@@ -125,6 +142,17 @@ export function Landing({ onEnter }: { onEnter: (view: "agent" | "merchant") => 
         </div>
       </section>
 
+      {/* ------------------------------ live manifest ticker ------------------------------ */}
+      {tickerItems.length > 0 && (
+        <section aria-label="recent ledger lines">
+          <div className="mb-2 flex items-center justify-between">
+            <LiveDot label="recently through customs — live ledger lines" />
+            <span className="font-mono text-[10px] text-inksoft">same lines the control room shows · hash-chained</span>
+          </div>
+          <Ticker items={tickerItems} />
+        </section>
+      )}
+
       {/* ------------------------------ how it clears ------------------------------ */}
       <section aria-label="how it works">
         <SectionLabel>how a transaction clears customs</SectionLabel>
@@ -148,15 +176,17 @@ export function Landing({ onEnter }: { onEnter: (view: "agent" | "merchant") => 
               d: "Capture on the rail (test mode or labeled simulation), manifest issued, every span hash-chained into an audit ledger that can be replayed and tamper-probed.",
               code: "capture(orderId)",
             },
-          ].map((s) => (
-            <article key={s.n} className="doc border-line px-4 py-4">
-              <div className="flex items-baseline justify-between">
-                <span className="font-display text-2xl font-medium text-ink">{s.t}</span>
-                <span className="font-mono text-[10px] text-inksoft">{s.n}</span>
-              </div>
-              <p className="mt-2 text-[13px] leading-relaxed text-inksoft">{s.d}</p>
-              <div className="mt-3 rounded-sm border border-line bg-paper2/60 px-2.5 py-1.5 font-mono text-[10.5px] text-ink">{s.code}</div>
-            </article>
+          ].map((s, i) => (
+            <Reveal key={s.n} delay={i * 90}>
+              <article className="doc card-lift h-full border-line px-4 py-4">
+                <div className="flex items-baseline justify-between">
+                  <span className="font-display text-2xl font-medium text-ink">{s.t}</span>
+                  <span className="font-mono text-[10px] text-inksoft">{s.n}</span>
+                </div>
+                <p className="mt-2 text-[13px] leading-relaxed text-inksoft">{s.d}</p>
+                <div className="mt-3 rounded-sm border border-line bg-paper2/60 px-2.5 py-1.5 font-mono text-[10.5px] text-ink">{s.code}</div>
+              </article>
+            </Reveal>
           ))}
         </div>
       </section>
@@ -168,20 +198,22 @@ export function Landing({ onEnter }: { onEnter: (view: "agent" | "merchant") => 
           <span className="font-mono text-[10px] text-inksoft">+ a human desk over ₹10,000, always</span>
         </div>
         <div className="mt-5 grid gap-4 md:grid-cols-3">
-          {(["UNVERIFIED", "ATTESTED", "MANDATED"] as const).map((tier) => {
+          {(["UNVERIFIED", "ATTESTED", "MANDATED"] as const).map((tier, i) => {
             const t = TRUST_TIERS[tier];
             return (
-              <article key={tier} className="doc border-line px-4 py-4">
-                <div className="flex items-center justify-between">
-                  <span className="label-caps">{t.label}</span>
-                  <span className="tnum font-display text-2xl font-medium text-ink">{inr(t.maxAmountPaise)}</span>
-                </div>
-                <p className="mt-2 text-[13px] leading-relaxed text-inksoft">{t.blurb}</p>
-                <div className="mt-3">
-                  <ManifestRow left="mandate lifetime" right={`${Math.round(t.mandateTtlMs / 60000)} min`} />
-                  <ManifestRow left="distinct items" right={String(t.maxItems)} />
-                </div>
-              </article>
+              <Reveal key={tier} delay={i * 90}>
+                <article className="doc card-lift h-full border-line px-4 py-4">
+                  <div className="flex items-center justify-between">
+                    <span className="label-caps">{t.label}</span>
+                    <span className="tnum font-display text-2xl font-medium text-ink">{inr(t.maxAmountPaise)}</span>
+                  </div>
+                  <p className="mt-2 text-[13px] leading-relaxed text-inksoft">{t.blurb}</p>
+                  <div className="mt-3">
+                    <ManifestRow left="mandate lifetime" right={`${Math.round(t.mandateTtlMs / 60000)} min`} />
+                    <ManifestRow left="distinct items" right={String(t.maxItems)} />
+                  </div>
+                </article>
+              </Reveal>
             );
           })}
         </div>
@@ -191,14 +223,16 @@ export function Landing({ onEnter }: { onEnter: (view: "agent" | "merchant") => 
       <section aria-label="protocol matrix">
         <SectionLabel>one gate, three protocols — the matrix is the point</SectionLabel>
         <div className="mt-5 grid gap-4 md:grid-cols-3">
-          {(["naive", "mcp", "acp"] as AdapterId[]).map((a) => (
-            <article key={a} className="doc border-line px-4 py-4">
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-[12px] font-semibold uppercase tracking-wider text-ink">{ADAPTERS[a].label}</span>
-                <Stamp kind="ink" animate={false}>{a === "naive" ? "BASELINE" : a === "mcp" ? "JSON-RPC 2.0" : "ENVELOPES + RECEIPT"}</Stamp>
-              </div>
-              <p className="mt-2 text-[13px] leading-relaxed text-inksoft">{ADAPTERS[a].blurb}</p>
-            </article>
+          {(["naive", "mcp", "acp"] as AdapterId[]).map((a, i) => (
+            <Reveal key={a} delay={i * 90}>
+              <article className="doc card-lift h-full border-line px-4 py-4">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-[12px] font-semibold uppercase tracking-wider text-ink">{ADAPTERS[a].label}</span>
+                  <Stamp kind="ink" animate={false}>{a === "naive" ? "BASELINE" : a === "mcp" ? "JSON-RPC 2.0" : "ENVELOPES + RECEIPT"}</Stamp>
+                </div>
+                <p className="mt-2 text-[13px] leading-relaxed text-inksoft">{ADAPTERS[a].blurb}</p>
+              </article>
+            </Reveal>
           ))}
         </div>
         <p className="mt-3 font-mono text-[10px] text-inksoft">
@@ -207,7 +241,8 @@ export function Landing({ onEnter }: { onEnter: (view: "agent" | "merchant") => 
       </section>
 
       {/* ------------------------------ built to be judged ------------------------------ */}
-      <section className="doc border-line2 px-5 py-5" aria-label="proof layer">
+      <Reveal>
+        <section className="doc border-line2 px-5 py-5" aria-label="proof layer">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h3 className="font-display text-xl font-medium text-ink">Built to be judged by a machine.</h3>
           <span className="label-caps">the proof layer</span>
@@ -247,7 +282,8 @@ export function Landing({ onEnter }: { onEnter: (view: "agent" | "merchant") => 
           <GhostButton onClick={() => onEnter("agent")}>try the playground →</GhostButton>
           <GhostButton onClick={() => onEnter("merchant")}>see the control room →</GhostButton>
         </div>
-      </section>
+        </section>
+      </Reveal>
     </div>
   );
 }

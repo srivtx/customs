@@ -211,6 +211,48 @@
   .animate-typing span:nth-child(3) {
     animation-delay: 0.4s;
   }
+
+  /* new ledger rows flash once, then settle — the ledger "ticking" */
+  .animate-flash {
+    animation: flash 1.6s ease-out 1 both;
+  }
+
+  /* the live pulse — a desk light, not a glow */
+  .pulse-dot {
+    position: relative;
+    display: inline-block;
+    height: 7px;
+    width: 7px;
+    border-radius: 999px;
+    background: var(--cleared);
+  }
+  .pulse-dot::after {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border-radius: 999px;
+    border: 1px solid var(--cleared);
+    animation: pulsering 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  }
+
+  /* the manifest ticker — one long paper strip sliding left */
+  .ticker-track {
+    display: inline-flex;
+    white-space: nowrap;
+    animation: marquee var(--ticker-dur, 42s) linear infinite;
+  }
+  .ticker:hover .ticker-track {
+    animation-play-state: paused;
+  }
+
+  /* card lift — a few pixels and a hard shadow, like paper picked up */
+  .card-lift {
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+  }
+  .card-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 1px 0 0 var(--line), 4px 5px 0 0 var(--line);
+  }
 }
 
 @keyframes rise {
@@ -234,10 +276,50 @@
   }
 }
 
+@keyframes flash {
+  0% {
+    background-color: rgba(23, 94, 67, 0.14);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+@keyframes pulsering {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  70%,
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-rise,
-  .animate-typing span {
+  .animate-typing span,
+  .animate-flash {
     animation: none !important;
+  }
+  .pulse-dot::after,
+  .ticker-track {
+    animation: none !important;
+  }
+  .card-lift,
+  .card-lift:hover {
+    transition: none !important;
+    transform: none !important;
   }
   html {
     scroll-behavior: auto;

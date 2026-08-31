@@ -8,7 +8,7 @@
  * database, and `cat data/state/ledger.jsonl | head` is a legitimate
  * debugging command.
  */
-import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { LedgerEvent, eventHash, GENESIS_HASH, verifyChain } from "./chain";
 
@@ -53,6 +53,8 @@ export class Ledger {
   private seq = 0;
   readonly persistent: boolean;
   private readonly file: string | null;
+  /** file size as this instance last saw it — detects other writers (D5-1) */
+  private trackedSize = 0;
 
   constructor(stateDir: string | null) {
     if (stateDir) {
@@ -73,6 +75,7 @@ export class Ledger {
         }
         // prove writability with an empty append
         appendFileSync(this.file, "");
+        this.trackedSize = statSync(this.file).size;
         this.persistent = true;
       } catch {
         this.file = null;
@@ -84,7 +87,31 @@ export class Ledger {
     }
   }
 
+  /**
+   * The file IS the database (ARCHITECTURE decision 3) — so before appending,
+   * adopt whatever the file says if another writer touched it since we last
+   * looked. Without this, a hot-reloaded module instance appends from a stale
+   * head and forks the chain (incident D5-1: duplicate seqs 284–295 in the
+   * live demo ledger). Re-reading is the whole point: converge, never fork.
+   */
+  private syncFromDiskIfChanged(): void {
+    if (!this.file) return;
+    try {
+      const size = statSync(this.file).size;
+      if (size === this.trackedSize) return;
+      const raw = readFileSync(this.file, "utf8").trim();
+      this.events = raw ? (raw.split("\n").map((l) => JSON.parse(l) as LedgerEvent)) : [];
+      const last = this.events[this.events.length - 1];
+      this.head = last ? last.hash : GENESIS_HASH;
+      this.seq = last ? last.seq : 0;
+      this.trackedSize = size;
+    } catch {
+      /* keep in-memory state; persistence was already proven at construction */
+    }
+  }
+
   append(type: string, data: Record<string, unknown>): LedgerEvent {
+    this.syncFromDiskIfChanged();
     this.seq += 1;
     const event: Omit<LedgerEvent, "hash"> = {
       seq: this.seq,
@@ -100,6 +127,7 @@ export class Ledger {
     if (this.file) {
       try {
         appendFileSync(this.file, JSON.stringify(full) + "\n");
+        this.trackedSize = statSync(this.file).size;
       } catch {
         /* ephemeral fallback already flagged */
       }
@@ -109,6 +137,7 @@ export class Ledger {
 
   /** Deterministic-clock append for harnesses: same chain rules, fixed time. */
   appendAt(type: string, data: Record<string, unknown>, ts: number): LedgerEvent {
+    this.syncFromDiskIfChanged();
     this.seq += 1;
     const event: Omit<LedgerEvent, "hash"> = { seq: this.seq, ts, type, data, prev: this.head };
     const hash = eventHash(event);
@@ -118,6 +147,7 @@ export class Ledger {
     if (this.file) {
       try {
         appendFileSync(this.file, JSON.stringify(full) + "\n");
+        this.trackedSize = statSync(this.file).size;
       } catch {
         /* ephemeral */
       }
@@ -126,10 +156,12 @@ export class Ledger {
   }
 
   all(): readonly LedgerEvent[] {
+    this.syncFromDiskIfChanged();
     return this.events;
   }
 
   since(seq: number): readonly LedgerEvent[] {
+    this.syncFromDiskIfChanged();
     return this.events.filter((e) => e.seq > seq);
   }
 
@@ -140,6 +172,7 @@ export class Ledger {
     if (this.file) {
       try {
         writeFileSync(this.file, "");
+        this.trackedSize = 0;
       } catch {
         /* ephemeral */
       }
@@ -147,6 +180,7 @@ export class Ledger {
   }
 
   audit(): ReturnType<typeof verifyChain> {
+    this.syncFromDiskIfChanged();
     return verifyChain(this.events);
   }
 

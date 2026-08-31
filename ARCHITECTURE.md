@@ -60,7 +60,7 @@ surfaces halves both, and the ledger keeps them coherent.
 |---|---|---|---|
 | 1 | Payment mechanism: (A) tokenized charge → (B) hosted-checkout completion → (C) labeled simulation | A is the true agent payment; B is real rails; C never silent. Shipped default is C until test keys arrive; A/B code is present and keyed off env | **blocked-no-keys, code ready** (`results/d1_1_spike.json`) |
 | 2 | Ed25519 for mandate signatures | small keys, async verification, no shared secret between buyer↔merchant (HMAC implies a trust model we don't have) | locked |
-| 3 | JSONL ledger instead of SQLite/ORM | the brief's bar is "show the audit trail" — here the audit trail IS the database; `head data/state/ledger.jsonl` is a debugging command; zero native deps; the chain gives tamper evidence an ORM doesn't | locked (logged D1-2) |
+| 3 | JSONL ledger instead of SQLite/ORM | the brief's bar is "show the audit trail" — here the audit trail IS the database; `head data/state/ledger.jsonl` is a debugging command; zero native deps; the chain gives tamper evidence an ORM doesn't. Writers re-read the file before every append/read — concurrent instances converge, never fork (incident D5-1, pinned by `make test`) | locked (logged D1-2, amended D5-1) |
 | 4 | Integer paise end-to-end; canonical JSON refuses floats | floats never touch money; the refusal itself is a fuzz case | locked |
 | 5 | Trust tiers: unverified ₹500/1 item/10 min · attested ₹5,000/3/30 min · mandated ₹50,000/10/24 h | UPI-Circle-style delegated caps; blocks get their most quotable refusal line | locked |
 | 6 | Human approval threshold ₹10,000 | above it, money waits for a human regardless of tier — hold, not refuse | locked |

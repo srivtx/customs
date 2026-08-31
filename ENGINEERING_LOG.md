@@ -153,3 +153,27 @@ Evidence: (file / command / HTTP receipt)
 What we changed:
 The test it became:
 ```
+## 2026-09-01 — D5-1: the ledger forked itself (incident)
+
+**What happened:** the live demo ledger's chain verdict flipped to FAIL mid-session.
+`verifyChain` reported a break at seq 284; the file held duplicate seqs 284–295. Root
+cause: a dev-server hot reload re-instantiated the runtime module while the old
+instance's state lived on — the new instance appended from a stale in-memory head/seq,
+forking the chain onto the same file. The file is the database, but the app was
+trusting its memory over the file.
+**Evidence:** `data/state/ledger.jsonl` with `284..295` twice; `prev` mismatch at line
+296; every individual event's own hash still valid — a *fork*, not a tamper.
+**What we changed:** `Ledger` now tracks the byte size it last saw and re-reads the
+whole file before every append and every read (`all`, `since`, `audit`) whenever
+another writer touched it. Concurrent instances converge onto the file's chain; the
+audit verdict is computed over the file, never over memory. The corrupted demo state
+was reset and reseeded through the normal `/api/reset` path.
+**The test it became:** `scripts/ledger-fork.ts` (wired into `make test`): two Ledger
+instances over one state dir, interleaved writes from a stale head — asserts no
+duplicate seqs, contiguous numbering, chain verifies, heads agree after reset.
+**Why it matters for the pitch:** "the audit trail IS the database" is only credible
+if the database can survive its own writers being restarted underneath it. D5-1 is
+the second incident (after D3-2) where the honesty layer caught a real defect — both
+are in the video's failure beat, both became regression harnesses.
+
+---

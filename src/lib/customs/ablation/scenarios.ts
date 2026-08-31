@@ -14,6 +14,7 @@ import type { AdapterId } from "../adapters";
 import { TrustTier } from "../gate/types";
 import { catalogSnapshot } from "../store/catalog";
 import { ATTACK_CORPUS, attackTxInput } from "../fuzz/corpus";
+import { hasAnyLlmKey, LLM_KEY_ENV_NAMES } from "../agent/llm";
 
 export interface AblationScenario {
   id: string;
@@ -134,12 +135,12 @@ export function runAblation(): {
     };
   });
 
-  const hasKey = !!process.env.OPENAI_API_KEY;
+  const hasKey = hasAnyLlmKey();
   return {
     arms,
     llmArm: hasKey
       ? { status: "measured", note: "LLM intent-parse arm measured over the same batch (tokens billed by provider; see cost_meter)" }
-      : { status: "skipped-no-key", note: "No OPENAI_API_KEY in env — the LLM arm is skipped rather than simulated. Rules arm measured; run `OPENAI_API_KEY=… make ablation` to fill it." },
+      : { status: "skipped-no-key", note: `No LLM key in env (${LLM_KEY_ENV_NAMES.join(" / ")}) — the LLM arm is skipped rather than simulated. Rules arm measured; set any one key and re-run \`make ablation\` to fill it.` },
     batch: { scenarios: ABLATION_SCENARIOS.length, ts: Date.now() },
   };
 }

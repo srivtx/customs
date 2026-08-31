@@ -309,3 +309,96 @@ export function MeterBar({
     </div>
   );
 }
+
+/* ---------------- reveal on scroll (restrained) ---------------- */
+
+/**
+ * Fades content up ~10px once, when it first scrolls into view. Intersection-
+ * observer driven, no layout cost when idle, inert under reduced motion.
+ * The whole page reads as one document settling onto the desk.
+ */
+export function Reveal({
+  children,
+  delay = 0,
+  className,
+}: {
+  children: ReactNode;
+  delay?: number;
+  className?: string;
+}) {
+  const reduce = useReducedMotion();
+  const ref = useRef<HTMLDivElement>(null);
+  const [shown, setShown] = useState(false);
+
+  useEffect(() => {
+    if (reduce) return; // reduced motion: never hide content
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setShown(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: "-8% 0px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [reduce]);
+
+  const visible = shown || !!reduce;
+  return (
+    <div
+      ref={ref}
+      className={cn("transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]", className)}
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? "none" : "translateY(10px)",
+        transitionDelay: `${delay}ms`,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+/* ---------------- the live desk light ---------------- */
+
+export function LiveDot({ label, className }: { label: string; className?: string }) {
+  return (
+    <span className={cn("inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.14em] text-inksoft", className)}>
+      <span className="pulse-dot" aria-hidden />
+      {label}
+    </span>
+  );
+}
+
+/* ---------------- the manifest ticker ---------------- */
+
+/**
+ * One long paper strip sliding left — recent ledger lines on the landing
+ * page. Duplicated once for the seamless loop; pauses on hover; collapses
+ * to a static line under reduced motion.
+ */
+export function Ticker({ items, duration = 46 }: { items: string[]; duration?: number }) {
+  if (items.length === 0) return null;
+  const row = (key: string, hidden: boolean) => (
+    <span key={key} aria-hidden={hidden} className="inline-flex items-center">
+      {items.map((it, i) => (
+        <span key={i} className="mx-5 inline-flex items-center gap-2 font-mono text-[10.5px] text-inksoft">
+          <span className="h-2 w-2 rotate-45 border border-line-strong" aria-hidden />
+          {it}
+        </span>
+      ))}
+    </span>
+  );
+  return (
+    <div className="ticker overflow-hidden border-y border-line bg-paper2/50 py-2" role="marquee" aria-label="recent ledger lines">
+      <div className="ticker-track" style={{ ["--ticker-dur" as string]: `${duration}s` }}>
+        {row("a", false)}
+        {row("b", true)}
+      </div>
+    </div>
+  );
+}

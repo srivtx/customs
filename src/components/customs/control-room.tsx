@@ -12,6 +12,7 @@ import {
   CountUp,
   GhostButton,
   InkButton,
+  LiveDot,
   ManifestRow,
   MeterBar,
   SectionLabel,
@@ -84,6 +85,8 @@ export function ControlRoom() {
   const [traceFor, setTraceFor] = useState<string | null>(null);
   const [trace, setTrace] = useState<TraceResponse | null>(null);
   const prevGmv = useRef(0);
+  const seenIds = useRef<Set<string>>(new Set());
+  const [flashIds, setFlashIds] = useState<Set<string>>(new Set());
 
   const refresh = useCallback(async () => {
     try {
@@ -96,6 +99,18 @@ export function ControlRoom() {
     } catch {
       /* next poll retries */
     }
+  }, [state]);
+
+  /* new rows since the last poll flash once — the ledger visibly ticks */
+  useEffect(() => {
+    if (!state) return;
+    const current = new Set(state.orders.map((o) => o.orderId));
+    const fresh = new Set([...current].filter((id) => !seenIds.current.has(id)));
+    if (seenIds.current.size > 0 && fresh.size > 0) {
+      setFlashIds(fresh);
+      window.setTimeout(() => setFlashIds(new Set()), 2200);
+    }
+    seenIds.current = current;
   }, [state]);
 
   useEffect(() => {
@@ -279,13 +294,18 @@ export function ControlRoom() {
 
           {/* ------------------------------ orders ------------------------------ */}
           <section className="doc overflow-hidden px-4 py-4" aria-label="order ledger">
-            <div className="flex items-center justify-between">
-              <SectionLabel>order ledger — live</SectionLabel>
-              <span className="font-mono text-[10px] text-inksoft">{state.orders.length} shown · click a row to replay its spans</span>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-3">
+                <SectionLabel>order ledger — live</SectionLabel>
+                <LiveDot label="ticking" />
+              </div>
+              <span className="font-mono text-[10px] text-inksoft">
+                {state.orders.length} shown · auto-refresh 6s · click a row to replay its spans
+              </span>
             </div>
-            <div className="chat-scroll mt-3 max-h-[420px] overflow-y-auto">
+            <div className="chat-scroll mt-3 max-h-[460px] overflow-y-auto">
               <table className="w-full border-collapse text-left">
-                <thead className="sticky top-0 bg-card">
+                <thead className="sticky top-0 z-10 bg-card shadow-[0_1px_0_0_var(--line)]">
                   <tr className="border-b border-line2">
                     {["order", "buyer · tier", "items", "total", "protocol", "status", ""].map((h) => (
                       <th key={h} className="label-caps py-2 pr-3 font-mono">{h}</th>
@@ -293,10 +313,17 @@ export function ControlRoom() {
                   </tr>
                 </thead>
                 <tbody>
-                  {state.orders.map((o) => (
+                  {state.orders.map((o) => {
+                    const fresh = flashIds.has(o.orderId);
+                    return (
                     <tr
                       key={o.orderId}
-                      className="animate-rise cursor-pointer border-b border-line/70 align-middle transition-colors hover:bg-paper2/50"
+                      className="cursor-pointer border-b border-line/70 align-middle transition-colors hover:bg-paper2/50"
+                      style={
+                        fresh
+                          ? { animation: "rise .32s cubic-bezier(0.22,1,0.36,1) both, flash 1.6s ease-out 1 both" }
+                          : undefined
+                      }
                       onClick={() => openTrace(o.orderId)}
                     >
                       <td className="py-2 pr-3 font-mono text-[11px] text-inksoft">{monoId(o.orderId, 20)}</td>
@@ -310,7 +337,7 @@ export function ControlRoom() {
                         {o.items.map((i: { name: string; quantity: number }) => `${i.name} ×${i.quantity}`).join(", ")}
                       </td>
                       <td className="tnum py-2 pr-3 font-mono text-[12px] font-semibold text-ink">
-                        {o.status === "REFUSED" || o.status === "PROPOSED" ? inr(o.totalPaise) : inr(o.totalPaise)}
+                        {inr(o.totalPaise)}
                       </td>
                       <td className="py-2 pr-3 font-mono text-[10px] uppercase text-inksoft">{o.adapter}</td>
                       <td className="py-2 pr-3">
@@ -326,7 +353,8 @@ export function ControlRoom() {
                         <span className="font-mono text-[9px] text-inksoft underline decoration-dotted">replay</span>
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -400,7 +428,7 @@ export function ControlRoom() {
                 </div>
                 <p className="mt-2 font-mono text-[9px] leading-relaxed text-inksoft">
                   {state.ablation.llmArm?.status === "skipped-no-key"
-                    ? "LLM arm: skipped, never simulated — OPENAI_API_KEY absent. see results/ablation.json"
+                    ? "LLM arm: skipped, never simulated — no LLM key present (OPENAI / GROQ / GEMINI / XAI _API_KEY). see results/ablation.json"
                     : state.ablation.llmArm?.note}
                 </p>
               </>

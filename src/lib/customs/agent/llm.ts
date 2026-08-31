@@ -1,10 +1,16 @@
 /**
  * LLM brain — optional, metered, never trusted with money.
  *
- * Provider order: OPENAI_API_KEY (any OpenAI-compatible endpoint, incl.
- * self-hosted) → none (the rules brain handles everything). The LLM's ONLY
- * job is intent → structured JSON; the gate still decides (invariant 5), and
- * every call's token counts land in the meter via span attributes.
+ * Provider order (first key present wins, all OpenAI-compatible):
+ *   OPENAI_API_KEY → GROQ_API_KEY (free tier) → GEMINI_API_KEY (free tier)
+ *   → XAI_API_KEY → none (the rules brain handles everything).
+ * LLM_BASE_URL / LLM_MODEL override any provider default, so any
+ * OpenAI-compatible endpoint (incl. self-hosted) works without code changes.
+ *
+ * The LLM's ONLY job is intent → structured JSON; the gate still decides
+ * (invariant 5), and every call's token counts land in the meter via span
+ * attributes. No key is required to run the full product — the deterministic
+ * rules brain is the default and the demo path.
  */
 export interface ParsedIntentJson {
   action: "search" | "add" | "remove" | "cart" | "checkout" | "confirm" | "status" | "help";
@@ -28,19 +34,48 @@ const SYSTEM_PROMPT = `You are the intent parser for a shopping agent. Convert t
 Schema: {"action":"search|add|remove|cart|checkout|confirm|status|help","query":string?,"productId":string?,"quantity":integer?,"maxPriceInr":number?}
 Rules: productId must be a known catalog id if the user references an item clearly, else omit it. Never invent prices. Output JSON only.`;
 
+/* Free-tier-friendly defaults: every one of these has a real free tier today,
+ * so the optional LLM arm of the ablation can run without spending money. */
+const PROVIDERS: { key: string; base: string; model: string }[] = [
+  { key: "OPENAI_API_KEY", base: "https://api.openai.com/v1", model: "gpt-4o-mini" },
+  { key: "GROQ_API_KEY", base: "https://api.groq.com/openai/v1", model: "llama-3.3-70b-versatile" },
+  { key: "GEMINI_API_KEY", base: "https://generativelanguage.googleapis.com/v1beta/openai", model: "gemini-2.0-flash" },
+  { key: "XAI_API_KEY", base: "https://api.x.ai/v1", model: "grok-3-mini" },
+];
+
+function resolveProvider(): { key: string; base: string; model: string } | null {
+  for (const p of PROVIDERS) {
+    const key = process.env[p.key];
+    if (key) {
+      return {
+        key,
+        base: process.env.LLM_BASE_URL ?? p.base,
+        model: process.env.LLM_MODEL ?? p.model,
+      };
+    }
+  }
+  // generic override: any OpenAI-compatible endpoint with its own key name
+  if (process.env.LLM_BASE_URL && process.env.LLM_API_KEY) {
+    return {
+      key: process.env.LLM_API_KEY,
+      base: process.env.LLM_BASE_URL,
+      model: process.env.LLM_MODEL ?? "custom",
+    };
+  }
+  return null;
+}
+
 export function getLlmBrain(): LlmBrain | null {
-  const key = process.env.OPENAI_API_KEY;
-  if (!key) return null;
-  const base = process.env.OPENAI_BASE_URL ?? "https://api.openai.com/v1";
-  const model = process.env.OPENAI_MODEL ?? "gpt-4o-mini";
+  const p = resolveProvider();
+  if (!p) return null;
   return {
-    name: `${model} @ ${new URL(base).host}`,
+    name: `${p.model} @ ${new URL(p.base).host}`,
     async parseIntent(message) {
-      const res = await fetch(base + "/chat/completions", {
+      const res = await fetch(p.base + "/chat/completions", {
         method: "POST",
-        headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
+        headers: { "content-type": "application/json", authorization: `Bearer ${p.key}` },
         body: JSON.stringify({
-          model,
+          model: p.model,
           messages: [
             { role: "system", content: SYSTEM_PROMPT },
             { role: "user", content: message },
@@ -74,5 +109,13 @@ export function getLlmBrain(): LlmBrain | null {
 }
 
 export function brainMode(): "llm" | "rules" {
-  return process.env.AGENT_BRAIN === "llm" && process.env.OPENAI_API_KEY ? "llm" : "rules";
+  return process.env.AGENT_BRAIN === "llm" && resolveProvider() ? "llm" : "rules";
 }
+
+/** true when ANY provider key is present (openai / groq / gemini / xai / generic) */
+export function hasAnyLlmKey(): boolean {
+  return resolveProvider() !== null;
+}
+
+/** the env var names we honor, for honest "why skipped" notes */
+export const LLM_KEY_ENV_NAMES = ["OPENAI_API_KEY", "GROQ_API_KEY", "GEMINI_API_KEY", "XAI_API_KEY", "LLM_API_KEY"];

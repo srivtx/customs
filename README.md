@@ -8,6 +8,14 @@ seconds.
 Built for the Razorpay AI Buildathon 2026 · Track 1 (AI Growth & Agentic Commerce) ·
 test mode only — no live keys, no real money.
 
+**Repo:** https://github.com/srivtx/customs
+
+![Customs — the golden path, recorded from the live app](docs/demo.gif)
+
+*One GIF, the whole story: intent → search → cart → tier refusal → mandate →
+bind-time checks → simulated capture → receipt → the merchant's live P&L and
+ledger. Recorded by driving the real app (`scripts/make-demo-gif.sh`).*
+
 | | |
 |---|---|
 | ![Playground](docs/screenshots/playground.jpg) | ![Control Room](docs/screenshots/control-room.jpg) |
@@ -51,12 +59,15 @@ bun run dev       # → http://localhost:3000 (seeds a deterministic 48h ledger 
 
 make triage       # 60-second self-guided judge tour
 make verify       # the exact evidence checks CI runs (zero deps)
-make test         # fuzz + ablation + audit — exit codes propagate
+make test         # fuzz + ablation + audit + ledger-fork — exit codes propagate
 ```
 
 No keys required: the rail is an honestly-labeled simulation until Razorpay
 test keys are set in `.env` (see `.env.example`). Live keys are refused at
-construction.
+construction. The LLM brain is optional too — set any one of
+`OPENAI_API_KEY` / `GROQ_API_KEY` / `GEMINI_API_KEY` / `XAI_API_KEY` (Groq and
+Gemini have free tiers) plus `AGENT_BRAIN=llm`; without a key the deterministic
+rules brain runs everything, replayable.
 
 ## Proof layer (60 seconds, runs itself)
 
@@ -100,6 +111,8 @@ refusals         twelve authored attacks, each with its reason code
 | `scripts/meter.ts` | cost meter harness → `results/cost_meter.json` |
 | `scripts/project.ts` | at-scale projection → `results/project.json` |
 | `scripts/audit.ts` | hash-chain walk + tamper control → `results/audit_chain.json` |
+| `scripts/ledger-fork.ts` | D5-1 regression: concurrent writers must converge, never fork |
+| `scripts/make-demo-gif.sh` | drives the live app → `docs/demo.gif` |
 | `scripts/spike-d1-1.mjs` | payment-mechanism spike (needs Razorpay test keys) |
 | `results/` | all measured numbers — JSON only, regeneration-only |
 | `src/lib/customs/gate/types.ts` | mandate schema + trust-tier policy (the contract) |
@@ -119,9 +132,11 @@ refusals         twelve authored attacks, each with its reason code
 | `src/lib/customs/runtime.ts` | wiring + deterministic 48h seed history |
 | `src/app/page.tsx` | one route, three surfaces |
 | `src/components/customs/` | the design system + both screens |
+| `src/components/customs/footer.tsx` | the declaration page — what Customs is, in plain words |
 | `src/app/api/` | route handlers: chat, state, decision, fuzz, webhook, health |
 | `docs/FORM_ANSWERS.md` | the 12 submission-form answers, claim → evidence |
 | `docs/screenshots/` | product screenshots (this README) |
+| `docs/demo.gif` | the golden path, recorded from the live app |
 <!-- FILEMAP:END -->
 
 *Built for the Razorpay AI Buildathon 2026. Test-mode only — no live keys, no real money.*

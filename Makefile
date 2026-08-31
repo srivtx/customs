@@ -29,7 +29,7 @@ spike-d1-1: ## payment-mechanism spike (needs RAZORPAY_KEY_ID + RAZORPAY_KEY_SEC
 fuzz: ## regenerate results/conformance_matrix.json
 	$(RUNNER) scripts/fuzz.ts
 
-ablation: ## regenerate results/ablation.json (protocol arms; LLM arm needs OPENAI_API_KEY)
+ablation: ## regenerate results/ablation.json (protocol arms; LLM arm needs any one LLM key)
 	$(RUNNER) scripts/ablation.ts
 
 meter: ## regenerate results/cost_meter.json

@@ -23,7 +23,8 @@ const REQUIRED = [
   "Makefile", ".env.example", ".github/workflows/verify.yml",
   "scripts/verify.mjs", "scripts/triage.mjs", "scripts/spike-d1-1.mjs",
   "scripts/fuzz.ts", "scripts/ablation.ts", "scripts/meter.ts",
-  "scripts/project.ts", "scripts/audit.ts",
+  "scripts/project.ts", "scripts/audit.ts", "scripts/ledger-fork.ts",
+  "scripts/make-demo-gif.sh",
   "src/app/page.tsx", "src/app/layout.tsx",
   "src/app/api/chat/route.ts", "src/app/api/state/route.ts",
   "src/app/api/decision/route.ts", "src/app/api/fuzz/route.ts",
@@ -38,7 +39,7 @@ const REQUIRED = [
   "src/components/customs/shell.tsx", "src/components/customs/playground.tsx",
   "src/components/customs/control-room.tsx", "src/components/customs/landing.tsx",
   "src/components/customs/bits.tsx", "src/components/customs/chat-events.tsx",
-  "docs/FORM_ANSWERS.md",
+  "src/components/customs/footer.tsx", "docs/FORM_ANSWERS.md", "docs/demo.gif",
 ];
 for (const f of REQUIRED) ok(`file: ${f}`, existsSync(join(ROOT, f)));
 

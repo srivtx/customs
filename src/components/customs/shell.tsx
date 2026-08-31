@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { Landing } from "./landing";
 import { Playground } from "./playground";
 import { ControlRoom } from "./control-room";
+import { SiteFooter } from "./footer";
 
 type View = "home" | "agent" | "merchant";
 
@@ -51,6 +52,7 @@ export function CustomsApp() {
                 key={n.id}
                 onClick={() => setView(n.id)}
                 aria-current={view === n.id ? "page" : undefined}
+                aria-label={`view ${n.label}`}
                 className={cn(
                   "h-9 px-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink",
                   view === n.id ? "border-b-2 border-ink text-ink" : "text-inksoft hover:text-ink"
@@ -77,20 +79,7 @@ export function CustomsApp() {
       </main>
 
       {/* ------------------------------ footer ------------------------------ */}
-      <footer className="mt-auto border-t border-line bg-paper2/50">
-        <div className="mx-auto flex max-w-[1320px] flex-wrap items-center justify-between gap-x-8 gap-y-2 px-4 py-5 sm:px-6">
-          <p className="max-w-xl font-mono text-[10px] leading-relaxed text-inksoft">
-            Customs · a two-sided agentic checkout for the Razorpay AI Buildathon 2026 (Track 1).
-            Test mode only; captures without Razorpay keys are labeled SIMULATED and never mixed
-            with real rails. Every number in this repo regenerates — nothing hand-written.
-          </p>
-          <div className="flex flex-wrap gap-2 font-mono text-[10px] text-inksoft">
-            <span className="border border-line px-2 py-1">JUDGE.md</span>
-            <span className="border border-line px-2 py-1">make triage</span>
-            <span className="border border-line px-2 py-1">CI: verify</span>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter onEnter={setView} />
     </div>
   );
 }

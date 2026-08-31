@@ -276,6 +276,7 @@ function MandateCard({
           <span className="font-mono text-[10px] text-inksoft">buyer principal must approve the envelope</span>
           <GhostButton
             onClick={() => onSend("approve")}
+            title="Approve the mandate envelope and bind"
             className="h-9 border-ink bg-ink text-paper hover:text-paper"
           >
             Approve &amp; bind

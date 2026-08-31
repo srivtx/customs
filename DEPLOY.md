@@ -16,20 +16,29 @@ free plan, with the honest-state story intact. Primary path: **Vercel**.
 
 ## Steps (10 minutes)
 
-1. Push the repo to GitHub first (see `CLEANUP.md`).
-2. vercel.com → Add New → Project → import the repo.
+1. The repo is already pushed: `https://github.com/srivtx/customs`.
+2. One-click: open
+   `https://vercel.com/new/clone?repository-url=https://github.com/srivtx/customs`
+   (or: vercel.com → Add New → Project → import `srivtx/customs`).
 3. Framework preset: **Next.js** (auto). Build command: `bun run build`.
    Install command: auto (`bun install`).
 4. Environment variables (Project → Settings → Environment Variables):
 
    | Variable | Value | Required |
    |---|---|---|
+   | `NEXT_PUBLIC_SITE_URL` | `https://<project>.vercel.app` | recommended — makes OG/social image URLs absolute |
    | `RAZORPAY_KEY_ID` | `rzp_test_…` | optional — flips the rail to real test-mode |
    | `RAZORPAY_KEY_SECRET` | from the Razorpay test dashboard | with the above |
    | `RAZORPAY_WEBHOOK_SECRET` | from webhook settings (below) | optional |
-   | `AGENT_BRAIN` | `ll` + `OPENAI_API_KEY` | optional — LLM brain |
+   | `AGENT_BRAIN` | `llm` + one LLM key | optional — LLM brain |
+   | `GROQ_API_KEY` | `gsk_…` (free tier, fast) | one of these fills the LLM arm |
+   | `GEMINI_API_KEY` | `AIza…` (free tier) | likewise |
+   | `OPENAI_API_KEY` / `XAI_API_KEY` | paid tiers | likewise |
+   | `LLM_BASE_URL` + `LLM_MODEL` | any OpenAI-compatible endpoint | advanced override |
 
-   Everything else works with **zero variables**: simulation rail, rules brain.
+   Everything else works with **zero variables**: simulation rail, rules brain,
+   full product. Groq and Gemini free tiers exist specifically so the ablation's
+   LLM arm can be measured without spending anything.
 5. Deploy. Verify: `https://<project>.vercel.app/api/health` →
    `{"ok":true,"rail":…,"chainOk":true,…}`.
 

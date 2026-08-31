@@ -22,7 +22,7 @@ const out = {
   llmArm: run.llmArm,
   batch: run.batch,
   notes:
-    "Same shopping batch through naive / MCP-style / ACP-style transports over identical tool implementations. Wire bytes are deterministic envelope sizes; latency is machine-dependent; token counts are deterministic estimates (chars/4) over identical payload shapes. The LLM arm requires OPENAI_API_KEY — it is skipped, never simulated, when absent.",
+    "Same shopping batch through naive / MCP-style / ACP-style transports over identical tool implementations. Wire bytes are deterministic envelope sizes; latency is machine-dependent; token counts are deterministic estimates (chars/4) over identical payload shapes. The LLM arm requires any one LLM key (OPENAI / GROQ / GEMINI / XAI _API_KEY) — it is skipped, never simulated, when absent.",
   regenerate: "make ablation",
 };
 mkdirSync("results", { recursive: true });
