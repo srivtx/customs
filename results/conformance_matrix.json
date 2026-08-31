@@ -1,6 +1,6 @@
 {
   "status": "pass",
-  "measured_at": "2026-08-31T20:10:55.462Z",
+  "measured_at": "2026-08-31T20:49:19.334Z",
   "summary": {
     "passed": 12,
     "total": 12
@@ -14,7 +14,7 @@
       "code": "AMOUNT_OVER_TIER",
       "expected": "AMOUNT_OVER_TIER",
       "matched": true,
-      "ms": 8
+      "ms": 5
     },
     {
       "attackId": "overspend-cap",
@@ -44,7 +44,7 @@
       "code": "SIGNATURE_INVALID",
       "expected": "SIGNATURE_INVALID",
       "matched": true,
-      "ms": 3
+      "ms": 1
     },
     {
       "attackId": "price-drift",
@@ -64,7 +64,7 @@
       "code": "ITEM_NOT_IN_MANDATE",
       "expected": "ITEM_NOT_IN_MANDATE",
       "matched": true,
-      "ms": 3
+      "ms": 1
     },
     {
       "attackId": "quantity-overrun",
@@ -94,7 +94,7 @@
       "code": "MALFORMED_MANDATE",
       "expected": "MALFORMED_MANDATE",
       "matched": true,
-      "ms": 3
+      "ms": 1
     },
     {
       "attackId": "over-50k",
@@ -114,7 +114,7 @@
       "code": "REPLAY_DETECTED",
       "expected": "REPLAY_DETECTED",
       "matched": true,
-      "ms": 2
+      "ms": 1
     },
     {
       "attackId": "human-threshold",

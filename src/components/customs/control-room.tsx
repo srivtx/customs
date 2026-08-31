@@ -293,7 +293,7 @@ export function ControlRoom() {
             ) : (
               <ul className="mt-3 space-y-2">
                 {state.approvals.map((a) => (
-                  <li key={a.orderId} className="doc flex flex-wrap items-center justify-between gap-3 border-line2 px-3.5 py-3">
+                  <li key={a.orderId} className="flex flex-wrap items-center justify-between gap-3 rounded-[4px] border border-line2 bg-paper2/50 px-3.5 py-3">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="tnum font-mono text-[11px] font-semibold text-ink">{inr(a.totalPaise)}</span>
@@ -342,10 +342,10 @@ export function ControlRoom() {
                     aria-selected={ledgerFilter === f}
                     onClick={() => setLedgerFilter(f)}
                     className={cn(
-                      "btn-ghost h-7 border px-2.5 font-mono text-[9.5px] font-semibold uppercase tracking-[0.12em]",
+                      "btn-ghost h-7 rounded-[4px] border px-2.5 font-mono text-[9.5px] font-semibold uppercase tracking-[0.1em]",
                       ledgerFilter === f
-                        ? "border-ink bg-ink text-paper"
-                        : "border-line2 bg-transparent text-inksoft hover:border-ink hover:text-ink"
+                        ? "border-transparent bg-ink text-paper"
+                        : "border-line2 bg-transparent text-inksoft hover:border-white/30 hover:text-ink"
                     )}
                   >
                     {f === "ALL" ? "all" : f.toLowerCase()} <span className="tnum opacity-70">{n}</span>
@@ -397,24 +397,24 @@ export function ControlRoom() {
                           }
                         }}
                       >
-                        <td className="tnum py-2.5 pr-3 font-mono text-[10px] text-inksoft">
+                        <td className="tnum py-3 pr-3 font-mono text-[10px] text-inksoft">
                           {new Date(o.createdAtMs).toLocaleTimeString("en-IN", { hour12: false })}
                         </td>
-                        <td className="py-2.5 pr-3 font-mono text-[11px] text-inksoft">{monoId(o.orderId, 18)}</td>
-                        <td className="py-2.5 pr-3">
+                        <td className="py-3 pr-3 font-mono text-[11px] text-inksoft">{monoId(o.orderId, 18)}</td>
+                        <td className="py-3 pr-3">
                           <div className="flex items-center gap-1.5 overflow-hidden">
                             <span className="truncate font-mono text-[10px] text-inksoft">{o.buyerId}</span>
                             <TierChip tier={o.tier} />
                           </div>
                         </td>
-                        <td className="truncate py-2.5 pr-3 text-[12px] text-inksoft">
+                        <td className="truncate py-3 pr-3 text-[12px] text-inksoft">
                           {o.items.map((i: { name: string; quantity: number }) => `${i.name} ×${i.quantity}`).join(", ")}
                         </td>
-                        <td className="tnum py-2.5 pr-3 text-right font-mono text-[12px] font-semibold text-ink">
+                        <td className="tnum py-3 pr-3 text-right font-mono text-[12px] font-semibold text-ink">
                           {inr(o.totalPaise)}
                         </td>
-                        <td className="py-2.5 pr-3 font-mono text-[9.5px] uppercase text-inksoft">{o.adapter}</td>
-                        <td className="py-2.5 pr-3">
+                        <td className="py-3 pr-3 font-mono text-[9.5px] uppercase text-inksoft">{o.adapter}</td>
+                        <td className="py-3 pr-3">
                           <StatusChip status={o.status} />
                           {o.code && o.status === "REFUSED" && (
                             <div className="mt-0.5 font-mono text-[9px] text-refused">{o.code}</div>
@@ -423,8 +423,8 @@ export function ControlRoom() {
                             <div className="mt-0.5 font-mono text-[9px] text-inksoft">simulated</div>
                           )}
                         </td>
-                        <td className="py-2.5 pr-1 text-right">
-                          <span className="font-mono text-[9px] text-inksoft underline decoration-dotted">replay</span>
+                        <td className="py-3 pr-3 text-right">
+                          <span className="font-mono text-[9px] text-inksoft underline decoration-dotted underline-offset-2">replay</span>
                         </td>
                       </tr>
                     );
@@ -548,7 +548,7 @@ export function ControlRoom() {
       {/* ------------------------------ trace dialog ------------------------------ */}
       {traceFor && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/30 p-4 backdrop-blur-[2px]"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-label="trace replay"
@@ -556,7 +556,7 @@ export function ControlRoom() {
             closeTrace();
           }}
         >
-          <div className="doc max-h-[86vh] w-full max-w-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div className="doc animate-rise max-h-[86vh] w-full max-w-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-line px-4 py-3">
               <div>
                 <div className="label-caps">trace replay</div>

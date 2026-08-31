@@ -1,18 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400">
-  <!-- Customs — centered lockup: the gate diamond above the wordmark -->
-  <rect x="1" y="1" width="718" height="398" rx="26" fill="#f6f3ec" stroke="#ddd6c4"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300" width="760" height="300">
+  <!-- Customs — the centered lockup: the gate diamond above the wordmark.
+       Night tile: reads on light and dark GitHub alike. -->
+  <rect x="0.5" y="0.5" width="759" height="299" rx="16" fill="#050505" stroke="rgba(255,255,255,0.12)"/>
 
   <!-- the mark -->
-  <path fill="#1b180f" fill-rule="evenodd"
-    d="M360 78 L430 148 L360 218 L290 148 Z M345 118 A8.5 8.5 0 0 1 375 118 L375 166 A8.5 8.5 0 0 1 345 166 Z"/>
+  <path fill="#f4f4f0" fill-rule="evenodd"
+    d="M380 44 L446 110 L380 176 L314 110 Z M363 81 A8 8 0 0 1 397 81 L397 139 A8 8 0 0 1 363 139 Z"/>
 
-  <!-- the wordmark -->
-  <text x="360" y="300" text-anchor="middle"
-    font-family="Fraunces, Georgia, 'Times New Roman', serif"
-    font-weight="600" font-size="86" letter-spacing="-2" fill="#1b180f">customs</text>
+  <!-- the wordmark — tight, quiet, one line -->
+  <text x="380" y="228" text-anchor="middle"
+    font-family="'Geist', -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif"
+    font-weight="600" font-size="64" letter-spacing="-2.5" fill="#f4f4f0">Customs</text>
 
   <!-- the line -->
-  <text x="360" y="348" text-anchor="middle"
-    font-family="'Geist Mono', 'Courier New', monospace"
-    font-size="19" letter-spacing="7" fill="#5c5643">THE CHECKPOINT FOR AGENTIC COMMERCE</text>
+  <text x="380" y="266" text-anchor="middle"
+    font-family="'Geist Mono', 'SFMono-Regular', Consolas, monospace"
+    font-size="15" letter-spacing="5.5" fill="#a2c0a9">THE CHECKPOINT FOR AGENTIC COMMERCE</text>
 </svg>

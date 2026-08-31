@@ -8,7 +8,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --font-display: var(--font-fraunces);
+  --font-display: var(--font-geist-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -38,12 +38,14 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
   --radius-xl: calc(var(--radius) + 4px);
 
-  /* Customs design tokens */
+  /* Customs design tokens (the class names are the ledger metaphor:
+     "paper" is the ground the desk sits on, "ink" is what is written
+     with — the palette is a night ledger, black ground, white ink) */
   --color-paper: var(--paper);
   --color-paper2: var(--paper2);
   --color-ink: var(--ink);
@@ -59,36 +61,38 @@
 }
 
 /*
- * Customs — the design language.
+ * Customs — the design language, v2.
  *
- * A customs house: manifest documents, rubber stamps, ledger lines. Warm
- * paper, ink, hairlines, one serif voice, tabular mono numbers. Verdicts
- * are stamps (double border, uppercase, a degree of rotation). No gradients,
- * no glow, no icon salad — restraint reads as production.
+ * One device: the hairline. A near-black ground, white ink, one accent
+ * (the sage). Geometry is sharp (4px), motion is 300ms ease, typography
+ * is Geist at three scales and Geist Mono for anything that counts.
+ * Verdict color exists to mean something — cleared, refused, held — and
+ * nothing else is allowed to be colored. No grain, no glow, no rotated
+ * stamps, no second border style. Restraint reads as production.
  */
 :root {
   --radius: 0.25rem;
 
-  --paper: #f6f3ec;
-  --paper2: #efeae0;
-  --ink: #1b180f;
-  --ink-soft: #5c5643;
-  --line: #ddd6c4;
-  --line-strong: #c2b9a1;
+  --paper: #050505;
+  --paper2: #0c0c0c;
+  --ink: #f4f4f0;
+  --ink-soft: rgba(244, 244, 240, 0.6);
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.18);
 
-  --cleared: #175e43;
-  --cleared-ink: #f2f7f1;
-  --refused: #a5271c;
-  --refused-ink: #faf1ef;
-  --held: #8f5e0a;
-  --held-ink: #faf6ec;
+  --cleared: #a2c0a9;
+  --cleared-ink: rgba(162, 192, 169, 0.1);
+  --refused: #e5887a;
+  --refused-ink: rgba(229, 136, 122, 0.09);
+  --held: #d6a251;
+  --held-ink: rgba(214, 162, 81, 0.09);
 
-  /* shadcn variables remapped onto the customs palette */
+  /* shadcn variables remapped onto the ledger palette */
   --background: var(--paper);
   --foreground: var(--ink);
-  --card: #fdfbf6;
+  --card: #0a0a0a;
   --card-foreground: var(--ink);
-  --popover: #fdfbf6;
+  --popover: #101010;
   --popover-foreground: var(--ink);
   --primary: var(--ink);
   --primary-foreground: var(--paper);
@@ -101,24 +105,24 @@
   --destructive: var(--refused);
   --border: var(--line);
   --input: var(--line-strong);
-  --ring: var(--ink-soft);
+  --ring: rgba(244, 244, 240, 0.35);
   --chart-1: var(--cleared);
   --chart-2: var(--held);
   --chart-3: var(--refused);
   --chart-4: var(--ink-soft);
   --chart-5: var(--line-strong);
-  --sidebar: #fdfbf6;
+  --sidebar: #0a0a0a;
   --sidebar-foreground: var(--ink);
   --sidebar-primary: var(--ink);
   --sidebar-primary-foreground: var(--paper);
   --sidebar-accent: var(--paper2);
   --sidebar-accent-foreground: var(--ink);
   --sidebar-border: var(--line);
-  --sidebar-ring: var(--ink-soft);
+  --sidebar-ring: var(--ring);
 }
 
-/* Single light editorial theme — deliberate. The customs house is a paper
-   document, not a dashboard; dark mode would break the metaphor. */
+/* One theme, deliberately: the night ledger. The paper view (the working
+   paper) is the single light surface — a document on the desk. */
 
 @layer base {
   * {
@@ -130,64 +134,49 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "ss01" on, "cv11" on;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
   }
   ::selection {
-    background: #d8e8d8;
+    background: rgba(162, 192, 169, 0.28);
+  }
+  ::-webkit-calendar-picker-indicator {
+    filter: invert(1);
   }
 }
 
 @layer utilities {
   .font-display {
-    font-family: var(--font-fraunces), Georgia, serif;
-  }
-
-  /* paper grain — fixed overlay, ~4% opacity */
-  .grain::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 60;
-    opacity: 0.05;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    font-family: var(--font-geist-sans), var(--font-fraunces), Georgia, serif;
+    letter-spacing: -0.02em;
   }
 
   .label-caps {
-    @apply text-[10px] font-semibold uppercase tracking-[0.16em] text-inksoft;
+    @apply font-mono text-[10.5px] font-medium uppercase tracking-[0.1em] text-inksoft;
   }
 
   .tnum {
     font-variant-numeric: tabular-nums;
   }
 
-  /* the customs stamp — double border, uppercase, rotated a degree or two */
+  /* the verdict chip — one border at verdict-strength, a quiet tint,
+     mono type. Upright: a finance system states its verdicts, it does
+     not decorate them. */
   .stamp {
-    @apply inline-flex items-center gap-1.5 border-[2.5px] px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.18em];
-    border-style: double;
-    border-radius: 2px;
-    box-shadow: 0 0 0 1px rgba(27, 24, 15, 0.06) inset;
+    @apply inline-flex items-center gap-1.5 rounded-[3px] border px-2 py-[3px] font-mono text-[10.5px] font-semibold uppercase tracking-[0.1em];
   }
 
   .hairline {
     @apply border-t border-line;
   }
 
+  /* a panel: one hairline on the black ground. No second style. */
   .doc {
-    @apply rounded-sm border border-line bg-card;
-    background-image: linear-gradient(to bottom, rgba(253, 251, 246, 1), rgba(251, 248, 241, 1));
-  }
-
-  /* receipt perforation edge */
-  .perforated {
-    --perf-size: 7px;
-    mask-image: radial-gradient(circle, transparent 0 34%, black 36%);
-    mask-size: var(--perf-size) 200%;
-    mask-position: 0 0;
+    @apply rounded-[4px] border border-line bg-card;
   }
 
   /* ------------------------------------------------------------------
-   * the one scrollbar — thin, ink, quiet.
-   * A finance document scrolls on a rail, not a browser gutter.
+   * the one scrollbar — thin, quiet, on black.
    * Engine split: Firefox gets the standard thin/color props. But
    * Chromium ignores ::-webkit-scrollbar whenever those props are set,
    * so inside a selector only Chromium matches we reset them to auto
@@ -210,13 +199,13 @@
     .chat-scroll::-webkit-scrollbar,
     .rail-scroll::-webkit-scrollbar,
     .ledger-scroll::-webkit-scrollbar {
-      width: 7px;
-      height: 7px;
+      width: 8px;
+      height: 8px;
     }
     .chat-scroll::-webkit-scrollbar-thumb,
     .rail-scroll::-webkit-scrollbar-thumb,
     .ledger-scroll::-webkit-scrollbar-thumb {
-      background: var(--line-strong);
+      background: rgba(255, 255, 255, 0.14);
       background-clip: content-box;
       border: 2px solid transparent;
       border-radius: 999px;
@@ -224,7 +213,7 @@
     .chat-scroll::-webkit-scrollbar-thumb:hover,
     .rail-scroll::-webkit-scrollbar-thumb:hover,
     .ledger-scroll::-webkit-scrollbar-thumb:hover {
-      background: var(--ink-soft);
+      background: rgba(255, 255, 255, 0.28);
       background-clip: content-box;
     }
     .chat-scroll::-webkit-scrollbar-track,
@@ -237,27 +226,27 @@
     }
   }
 
-  /* ---------------- view transitions — the x.ai settle ----------------
-   * Views swap instantly (no exit lag); the incoming surface settles
-   * onto the desk in 260ms. Sections then stagger via their own Reveal.
+  /* ---------------- view transitions — the settle ----------------
+   * Views swap instantly (no exit lag); the incoming surface fades
+   * and rises onto the desk in 300ms — the x.ai pattern.
    * ------------------------------------------------------------------ */
   .view-enter {
-    animation: view-enter 0.26s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: view-enter 0.3s cubic-bezier(0.25, 1, 0.5, 1) both;
   }
 
-  /* new ledger rows: rise, then a green wash drains out of the paper —
-     slower and softer than a blink, the way a real blot dries */
+  /* new ledger rows: rise, then a sage wash drains out — a confirmation
+     settling, not an alert blinking */
   .row-fresh {
-    animation: rise 0.34s cubic-bezier(0.22, 1, 0.36, 1) both,
-      flash 2.4s cubic-bezier(0.22, 1, 0.36, 1) 1 both;
+    animation: rise 0.3s cubic-bezier(0.25, 1, 0.5, 1) both,
+      flash 2.4s cubic-bezier(0.25, 1, 0.5, 1) 1 both;
   }
 
-  /* stamp buttons press into the paper — 140ms, one spring, no jelly */
+  /* buttons — 150ms micro-interactions: lift on hover, press on active */
   .btn-ink,
   .btn-ghost {
-    transition: transform 0.14s cubic-bezier(0.22, 1, 0.36, 1),
-      box-shadow 0.14s cubic-bezier(0.22, 1, 0.36, 1),
-      border-color 0.14s ease, color 0.14s ease, background-color 0.14s ease;
+    transition: transform 0.15s cubic-bezier(0.25, 1, 0.5, 1),
+      box-shadow 0.15s cubic-bezier(0.25, 1, 0.5, 1),
+      border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
   }
   .btn-ink:hover {
     transform: translateY(-1px);
@@ -267,7 +256,7 @@
   }
 
   .animate-rise {
-    animation: rise 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: rise 0.28s cubic-bezier(0.25, 1, 0.5, 1) both;
   }
   .animate-typing span {
     animation: blink 1.2s infinite;
@@ -279,7 +268,6 @@
     animation-delay: 0.4s;
   }
 
-  /* new ledger rows flash once, then settle — the ledger "ticking" */
   .animate-flash {
     animation: flash 1.6s ease-out 1 both;
   }
@@ -288,8 +276,8 @@
   .pulse-dot {
     position: relative;
     display: inline-block;
-    height: 7px;
-    width: 7px;
+    height: 6px;
+    width: 6px;
     border-radius: 999px;
     background: var(--cleared);
   }
@@ -299,10 +287,10 @@
     inset: -3px;
     border-radius: 999px;
     border: 1px solid var(--cleared);
-    animation: pulsering 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+    animation: pulsering 1.8s cubic-bezier(0.25, 1, 0.5, 1) infinite;
   }
 
-  /* the manifest ticker — one long paper strip sliding left */
+  /* the manifest ticker — ledger lines sliding left on black */
   .ticker-track {
     display: inline-flex;
     white-space: nowrap;
@@ -312,20 +300,38 @@
     animation-play-state: paused;
   }
 
-  /* card lift — a few pixels and a hard shadow, like paper picked up */
+  /* card lift — the border brightens, the card rises one pixel. that's it. */
   .card-lift {
-    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
   }
   .card-lift:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 1px 0 0 var(--line), 4px 5px 0 0 var(--line);
+    transform: translateY(-1px);
+    border-color: var(--line-strong);
+    background-color: #0d0d0d;
+  }
+
+  /* the typing caret — a ledger pen waiting (always faintly visible) */
+  .type-caret::after {
+    content: "▍";
+    margin-left: 1px;
+    color: var(--ink);
+    animation: caret 1s ease-in-out infinite;
+  }
+
+  /* the white sheet — the working paper, the one light surface */
+  .sheet {
+    background: #fbfaf7;
+    color: #17150f;
+  }
+  .sheet ::selection {
+    background: rgba(23, 94, 67, 0.16);
   }
 }
 
 @keyframes view-enter {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(14px);
   }
   to {
     opacity: 1;
@@ -354,12 +360,22 @@
   }
 }
 
+@keyframes caret {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
 @keyframes flash {
   0% {
-    background-color: rgba(23, 94, 67, 0.16);
+    background-color: rgba(162, 192, 169, 0.14);
   }
   60% {
-    background-color: rgba(23, 94, 67, 0.07);
+    background-color: rgba(162, 192, 169, 0.06);
   }
   100% {
     background-color: transparent;
@@ -392,7 +408,8 @@
   .animate-typing span,
   .animate-flash,
   .row-fresh,
-  .view-enter {
+  .view-enter,
+  .type-caret::after {
     animation: none !important;
   }
   .pulse-dot::after,

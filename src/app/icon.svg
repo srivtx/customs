@@ -1,7 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <!-- Customs — the gate diamond: value passes only through the mandate slot -->
-  <rect x="0" y="0" width="64" height="64" rx="14" fill="#f6f3ec"/>
-  <rect x="3.5" y="3.5" width="57" height="57" rx="10.5" fill="none" stroke="#c2b9a1" stroke-width="1.5"/>
-  <path fill="#1b180f" fill-rule="evenodd"
-    d="M32 4 L60 32 L32 60 L4 32 Z M27 23 A5 5 0 0 1 37 23 L37 37 A5 5 0 0 1 27 37 Z"/>
+  <rect x="0" y="0" width="64" height="64" rx="12" fill="#050505"/>
+  <path fill="#f4f4f0" fill-rule="evenodd"
+    d="M32 7 L57 32 L32 57 L7 32 Z M27.5 23.5 A4.5 4.5 0 0 1 36.5 23.5 L36.5 40.5 A4.5 4.5 0 0 1 27.5 40.5 Z"/>
 </svg>

@@ -1,9 +1,9 @@
 <p align="center">
-  <img src="public/logo-lockup.svg" alt="Customs — the checkpoint for agentic commerce" width="560" />
+  <img src="public/logo-lockup.svg" alt="Customs — the checkpoint for agentic commerce" width="640" />
 </p>
 
 <p align="center">
-  <strong>AI agents can finally pay. Safely.</strong><br/>
+  <strong>Agents can finally pay. Safely.</strong><br/>
   The checkout AI buyers transact on — and the desk merchants trust.<br/>
   Signed mandates · trust tiers · a hash-chained ledger · a live channel P&amp;L.
 </p>
@@ -11,17 +11,16 @@
 <p align="center">
   <a href="https://github.com/srivtx/customs/actions/workflows/verify.yml"><img src="https://github.com/srivtx/customs/actions/workflows/verify.yml/badge.svg" alt="verify" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-1b180f.svg" alt="license: MIT" /></a>
-  <a href="https://github.com/srivtx/customs"><img src="https://img.shields.io/badge/repo-srivtx%2Fcustoms-1b180f.svg" alt="repo" /></a>
   <img src="https://img.shields.io/badge/next.js-16-1b180f.svg" alt="Next.js 16" />
-  <img src="https://img.shields.io/badge/razorpay-test%20mode%20only-175e43.svg" alt="Razorpay test mode only" />
+  <img src="https://img.shields.io/badge/razorpay-test%20mode%20only-a2c0a9.svg" alt="Razorpay test mode only" />
   <img src="https://img.shields.io/badge/money-integer%20paise-1b180f.svg" alt="integer paise" />
 </p>
 
 <p align="center">
-  <a href="JUDGE.md"><img src="https://img.shields.io/badge/-JUDGE.md-8f5e0a.svg?label=read&logo=github" alt="read JUDGE.md" /></a>
-  <a href="PAPER.md"><img src="https://img.shields.io/badge/-PAPER.md-8f5e0a.svg?label=read" alt="read PAPER.md" /></a>
-  <a href="ARCHITECTURE.md"><img src="https://img.shields.io/badge/-ARCHITECTURE.md-8f5e0a.svg?label=read" alt="read ARCHITECTURE.md" /></a>
-  <a href="DEPLOY.md"><img src="https://img.shields.io/badge/-DEPLOY.md-175e43.svg?label=deploy" alt="read DEPLOY.md" /></a>
+  <a href="JUDGE.md"><img src="https://img.shields.io/badge/-JUDGE.md-1b180f.svg?label=read&logo=github" alt="read JUDGE.md" /></a>
+  <a href="PAPER.md"><img src="https://img.shields.io/badge/-PAPER.md-1b180f.svg?label=read" alt="read PAPER.md" /></a>
+  <a href="ARCHITECTURE.md"><img src="https://img.shields.io/badge/-ARCHITECTURE.md-1b180f.svg?label=read" alt="read ARCHITECTURE.md" /></a>
+  <a href="DEPLOY.md"><img src="https://img.shields.io/badge/-DEPLOY.md-a2c0a9.svg?label=deploy" alt="read DEPLOY.md" /></a>
 </p>
 
 ---
@@ -29,40 +28,37 @@
 Built for the **Razorpay AI Buildathon 2026** · Track 1 (AI Growth & Agentic
 Commerce) · **test mode only — no live keys, no real money.**
 
-![Customs — the golden path, recorded from the live app](docs/demo.gif)
+![Customs — the agent playground](docs/screenshots/playground.jpg)
 
-*One GIF, the whole story: intent → search → cart → tier refusal → mandate →
-bind-time checks → capture → receipt → the merchant's live P&L and ledger.
-Recorded by driving the real app (`scripts/make-demo-gif.sh`).*
+![Customs — the merchant control room](docs/screenshots/control-room.jpg)
 
-## What this is
+## The problem, in one paragraph
 
 Every checkout on the internet assumes a human is paying — PINs, OTPs, faces.
 An AI buying agent has none of those. **Customs** is the checkpoint that lets
-the agent through anyway, on paper terms:
+the agent through anyway, on paper terms: the agent never holds a payment
+credential. It holds a **mandate** — an Ed25519-signed envelope over canonical
+JSON that says how much, for which items, until when, at which trust tier —
+and a deterministic gate re-verifies every bound in plain code at the moment
+of payment. Ten checks. Reason codes. A hash-chained ledger that *is* the
+database. A human desk over ₹10,000, at every tier.
 
-1. **The agent gets a mandate, not a credential.** The buyer's principal signs
-   an Ed25519 envelope over canonical JSON — amount cap, item allowlist,
-   expiry, trust tier. No mandate, no money.
-2. **A deterministic gate decides.** Ten checks in plain code at bind time:
-   signature, tier bounds, cap, allowlist, quantities, live catalog prices,
-   expiry, replay, the ₹10,000 human threshold. Verdicts are reason codes,
-   not vibes.
-3. **The ledger is the database.** Every event appends to a hash-chained JSONL
-   audit trail — replayable span by span, tamper-probed, regenerable by
-   command.
+## What's in the box
 
-## The two surfaces (one app, one gate)
+**One app, two counters, one gate.**
 
-| | |
+| Buyer side — the Agent Playground | Merchant side — the Control Room |
 |---|---|
-| ![Playground](docs/screenshots/playground.jpg) | ![Control Room](docs/screenshots/control-room.jpg) |
-| **Agent Playground** (buyer side): chat intent, tool transparency, mandate approval, protocol switcher (naive / MCP-style / ACP-style), red-team panel | **Control Room** (merchant side): live channel P&L (GMV − AI cost, at-1M projection), ₹10k+ approval queue, the order ledger, span replay, ablation, blocks log |
+| Natural-language buying with tool transparency | Live channel P&amp;L (agent GMV − AI serving cost) |
+| Mandate approval by the principal | ₹10k+ human-approval queue |
+| Protocol switcher — naive / MCP-style / ACP-style | The order ledger — live, hash-chained |
+| Red-team panel — fire the authored attack corpus | Span-by-span replay, ablation, blocks log |
 
-Plus two reading surfaces: **Why it exists** (the problem, the mandate
-principle, the architecture diagram, the honest scope ledger) and **the
-Paper** (the working paper — protocol, economics, evaluation; §5–§6 numbers
-read live from the ledger).
+Plus three reading surfaces: **Why it exists** (the problem and the mandate
+principle, with the architecture diagram), **the Paper** (a working paper
+rendered as a document — §5–§6 numbers read live from the running ledger),
+and **the live demo** on the landing page (the golden path plays itself in
+code — no video, no GIF).
 
 ## The gate in one look
 
@@ -101,7 +97,7 @@ deterministic rules brain runs everything, replayable.
 | attacks blocked / authored | 12/12 — `results/conformance_matrix.json` (`make fuzz`) |
 | agent GMV (deterministic 48h ledger) | ₹63,732 · 12 captures — `make meter` |
 | ₹ AI cost per captured payment | ₹0.03 — `make meter` |
-| channel P&L @ 1M payments/month | net ₹1,06,19,000 — `make project` |
+| channel P&amp;L @ 1M payments/month | net ₹1,06,19,000 — `make project` |
 | audit chain | 257 events · tamper control detected — `make audit` |
 | D1-1 payment spike | `blocked-no-keys` — code ready; set test keys and `make spike-d1-1` |
 | Live deployment | PENDING — `DEPLOY.md` is the runbook; CI enforces every shipped link |
@@ -145,7 +141,6 @@ the **Why it exists** view and `PAPER.md` §7.
 | `scripts/project.ts` | at-scale projection → `results/project.json` |
 | `scripts/audit.ts` | hash-chain walk + tamper control → `results/audit_chain.json` |
 | `scripts/ledger-fork.ts` | D5-1 regression: concurrent writers must converge, never fork |
-| `scripts/make-demo-gif.sh` | drives the live app → `docs/demo.gif` |
 | `scripts/spike-d1-1.mjs` | payment-mechanism spike (needs Razorpay test keys) |
 | `results/` | all measured numbers — JSON only, regeneration-only |
 | `src/lib/customs/gate/types.ts` | mandate schema + trust-tier policy (the contract) |
@@ -164,23 +159,25 @@ the **Why it exists** view and `PAPER.md` §7.
 | `src/lib/customs/store/catalog.ts` | Fieldnote Supply — 20 products, integer paise |
 | `src/lib/customs/runtime.ts` | wiring + deterministic 48h seed history |
 | `src/app/page.tsx` | one route, five surfaces |
-| `src/app/icon.svg` | the gate diamond — favicon |
+| `src/app/icon.svg` | the gate diamond — favicon (night tile) |
+| `src/app/globals.css` | the design system — the night ledger |
 | `src/components/customs/` | the design system + all screens |
 | `src/components/customs/shell.tsx` | the app shell — views, transitions, masthead |
-| `src/components/customs/landing.tsx` | overview: hero, demo GIF, ladder, proof layer |
+| `src/components/customs/landing.tsx` | overview: hero, the live demo, ladder, proof layer |
+| `src/components/customs/demo-player.tsx` | the golden path, played live in code (the GIF's replacement) |
 | `src/components/customs/why.tsx` | why it exists + the architecture diagram + scope ledger |
-| `src/components/customs/paper.tsx` | the working paper view (numbers live) |
+| `src/components/customs/paper.tsx` | the working paper view — a white sheet, numbers live |
 | `src/components/customs/playground.tsx` | buyer side: chat, mandate approval, red team |
 | `src/components/customs/control-room.tsx` | merchant side: P&L, approvals, the order ledger |
-| `src/components/customs/bits.tsx` | design primitives: stamps, buttons, the gate diamond |
+| `src/components/customs/bits.tsx` | design primitives: chips, buttons, the gate diamond |
+| `src/components/customs/chat-events.tsx` | the transcript — tool calls, gate checklist, receipts |
 | `src/components/customs/footer.tsx` | the declaration page — what Customs is, in plain words |
 | `src/app/api/` | route handlers: chat, state, decision, fuzz, webhook, health |
-| `public/logo.svg` | the gate diamond (badge) |
+| `public/logo.svg` | the gate diamond (badge, night tile) |
 | `public/logo-lockup.svg` | centered lockup (this README) |
-| `public/demo.gif` | the recorded golden path (landing page embed) |
+| `public/og.png` | the social card |
 | `docs/FORM_ANSWERS.md` | the 12 submission-form answers, claim → evidence |
 | `docs/screenshots/` | product screenshots (this README) |
-| `docs/demo.gif` | the golden path, recorded from the live app |
 <!-- FILEMAP:END -->
 
 *Built for the Razorpay AI Buildathon 2026. Test-mode only — no live keys, no

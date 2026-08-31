@@ -222,3 +222,60 @@ surfaces are the pitch, pre-rendered. The scope ledger converts "what's missing?
 from an attack surface into an exhibit of discipline.
 
 ---
+
+## D7-1 — the v2 redesign: research-first, one device
+
+**Date:** 2026-09-01 (evening)
+**Phase:** design round 2 — the x.ai benchmark, taken literally
+
+**What happened:** the first design language ("the customs house": warm paper,
+rotated rubber stamps, grain overlay, double borders, hard offset shadows,
+duotone photo collage, a recorded GIF) read as *decorated* rather than
+*deliberate* — the opposite of the reference. Before changing anything we
+fetched the reference itself (x.ai) and measured it: pure-black ground,
+Geist Sans/Mono, hairline borders at `rgba(255,255,255,0.06–0.1)`, 2–4px
+radii, near-zero tracking on huge sentence-case headlines, 300ms ease
+transitions, one muted sage accent. Our v1 used six decorative devices where
+the benchmark uses one.
+
+**The redesign ("the night ledger"):**
+- Palette inverted to near-black ground (#050505) with white ink and ONE
+  device — the hairline (8%/18% white). Fraunces demoted from app-wide display
+  to the paper sheet only; Geist Sans carries everything else.
+- Removed: grain overlay, rotated stamps, double borders, offset hard
+  shadows, perforation masks, the hero photo collage, ALL-CAPS 0.22em mono
+  tracking (now 0.1em micro-labels).
+- **The GIF is gone.** Its replacement is `demo-player.tsx`: the golden path
+  plays itself in live code — typed user turns, tool steps, the tier refusal,
+  attestation, the mandate, ten gate checks ticking in, capture, and the
+  ledger row landing; loops, holds on hover, replays on command. Crisp at
+  every DPI, zero bytes of media. `docs/demo.gif`, `public/demo.gif`,
+  `scripts/make-demo-gif.sh` deleted; `hero-customs.jpg` deleted; a designed
+  `public/og.png` social card generated (`scripts/make-og.py`).
+- The paper page became the one deliberate light surface: a white sheet on
+  the black desk, serif, numbered sections.
+- Verdict chips went upright (a finance system states verdicts, it does not
+  decorate them) and were re-tuned for legibility after VLM review flagged
+  contrast (borders 50%, tint 15%).
+- Motion unified on 300ms ease-out (the measured x.ai curve), 150ms
+  micro-interactions, reduced-motion inert.
+
+**Bugs found and fixed during the round:**
+- The trace dialog's backdrop was `bg-ink/30` — with ink now white, that
+  rendered a *white* veil over a black page. Now `bg-black/70` + blur.
+- Demo player: typing/gate-tick effects only bound to the first beat
+  (SCRIPT[0]) — restructured so every beat starts its own effect. Hover-pause
+  made real by a self-re-checking timer wrapper (every scheduled callback
+  re-schedules at 200ms while paused, so the whole sequence holds).
+- Next.js dev-tools indicator ("N" badge) polluted captures —
+  `devIndicators: false` (dev-only anyway; production was never affected).
+
+**The test it became:** `make verify` REQUIRED list now pins the v2 tree
+(demo-player.tsx, og.png, screenshots; GIF/script/hero removed). VLM design
+review at x.ai benchmark on five surfaces; both FIX verdicts (stats-bar
+breathing room, paper leading) applied and re-reviewed.
+
+**Why it matters for the pitch:** design is the first thing a judge sees and
+the last thing most hackathon repos get right. One device, one accent, and
+numbers in mono is the aesthetic of a payment network, not a template.
+

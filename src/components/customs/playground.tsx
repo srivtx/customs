@@ -9,7 +9,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { ChatEventView } from "./chat-events";
-import { SectionLabel, Stamp, TierChip, GhostButton, Typing, ManifestRow, inr, Kbd } from "./bits";
+import { InkButton, SectionLabel, Stamp, TierChip, GhostButton, Typing, ManifestRow, inr, Kbd, LogoMark } from "./bits";
 import type { ChatEvent } from "@/lib/customs/agent/loop";
 import type { AdapterId } from "@/lib/customs/adapters";
 import { ADAPTERS } from "@/lib/customs/adapters";
@@ -145,17 +145,15 @@ export function Playground() {
         {/* transcript */}
         <div ref={scrollRef} className="chat-scroll flex-1 space-y-1 overflow-y-auto px-4 py-4" style={{ maxHeight: "min(62vh, 660px)" }}>
           {events.length === 0 && (
-            <div className="py-10 text-center">
-              <div className="mx-auto mb-4 flex h-12 w-12 rotate-[-6deg] items-center justify-center stamp border-[2.5px] border-ink text-[10px]">
-                CUSTOMS
-              </div>
-              <p className="font-display text-lg text-ink">The counter is open.</p>
-              <p className="mx-auto mt-1 max-w-md text-[13px] leading-relaxed text-inksoft">
+            <div className="py-12 text-center">
+              <LogoMark size={40} className="mx-auto mb-4 text-ink/80" />
+              <p className="font-display text-lg font-medium text-ink">The counter is open.</p>
+              <p className="mx-auto mt-1.5 max-w-md text-[13px] leading-relaxed text-inksoft">
                 You are an unverified walk-in with a ₹500 envelope. Ask for something, let the agent
                 build a cart, request a signed mandate — or type <Kbd>help</Kbd>. Escalate with{" "}
                 <Kbd>attest</Kbd>, then push the desk with the red team.
               </p>
-              <div className="mt-4 flex flex-wrap justify-center gap-2">
+              <div className="mt-5 flex flex-wrap justify-center gap-2">
                 {SUGGESTIONS.map((s) => (
                   <GhostButton key={s} onClick={() => send(s)}>
                     {s}
@@ -169,7 +167,7 @@ export function Playground() {
           ))}
           {busy && (
             <div className="flex items-center gap-3 px-1 py-2">
-              <span aria-hidden className="stamp h-7 w-7 rotate-[-6deg] items-center justify-center border-[2px] border-ink text-[8px]">C</span>
+              <LogoMark size={16} className="text-inksoft" />
               <Typing />
               <span className="font-mono text-[10px] text-inksoft">
                 parsing intent · calling tools through {ADAPTERS[adapter].label} · gate checks pending
@@ -191,22 +189,18 @@ export function Playground() {
             onChange={(e) => setInput(e.target.value)}
             placeholder={sessionFresh ? "try: search headphones under 5000" : "message the agent…"}
             aria-label="message the agent"
-            className="h-10 flex-1 rounded-sm border border-line2 bg-card px-3 font-mono text-[13px] text-ink placeholder:text-inksoft/60 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink"
+            className="h-10 flex-1 rounded-[4px] border border-line2 bg-card px-3 text-[13px] text-ink placeholder:text-inksoft/60 transition-colors focus:border-white/30 focus:outline-none"
           />
-          <button
-            type="submit"
-            disabled={busy || !input.trim()}
-            className="h-10 border border-ink bg-ink px-4 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-paper transition-all hover:-translate-y-px hover:shadow-[3px_3px_0_0_var(--line-strong)] disabled:pointer-events-none disabled:opacity-40"
-          >
+          <InkButton type="submit" disabled={busy || !input.trim()} ariaLabel="send message">
             Send
-          </button>
+          </InkButton>
         </form>
       </section>
 
       {/* ------------------------------ rail ------------------------------ */}
-      <aside className="rail-scroll space-y-4 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pr-1" aria-label="buyer passport and red team">
+      <aside className="rail-scroll space-y-5 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pr-1" aria-label="buyer passport and red team">
         {/* passport */}
-        <section className="doc px-4 py-3">
+        <section className="doc px-4 py-4">
           <SectionLabel>buyer passport</SectionLabel>
           <div className="mt-3 flex items-center justify-between">
             <TierChip tier={tier} />
@@ -241,7 +235,7 @@ export function Playground() {
         </section>
 
         {/* red team */}
-        <section className="doc px-4 py-3">
+        <section className="doc px-4 py-4">
           <SectionLabel>red team — attack this desk</SectionLabel>
           <p className="mt-2 text-[12.5px] leading-relaxed text-inksoft">
             The same authored corpus <span className="font-mono">make fuzz</span> runs — fired live
@@ -249,7 +243,7 @@ export function Playground() {
           </p>
           <div className="mt-3 grid grid-cols-2 gap-2">
             {RED_TEAM.map((a) => (
-              <GhostButton key={a.id} onClick={() => send(`attack: ${a.id}`)} className="w-full">
+              <GhostButton key={a.id} variant="danger" onClick={() => send(`attack: ${a.id}`)} className="w-full">
                 {a.label}
               </GhostButton>
             ))}
@@ -257,24 +251,25 @@ export function Playground() {
         </section>
 
         {/* how the counter works */}
-        <section className="doc px-4 py-3">
+        <section className="doc px-4 py-4">
           <SectionLabel>the three steps</SectionLabel>
           <ol className="mt-2 space-y-2.5">
-            {[
-              ["Mandate", "The desk signs an envelope: amount cap, items, expiry, tier — Ed25519 over canonical JSON."],
-              ["Bind", "The gate re-verifies signature, bounds and live prices at bind time, in plain code. Never an LLM."],
-              ["Settle", "Capture on the rail, manifest issued, every span hash-chained for replay."],
-            ].map(([t, d], i) => (
-              <li key={t} className="flex gap-3">
-                <span className="stamp h-6 w-6 shrink-0 items-center justify-center border-[2px] border-line2 text-[9px] text-inksoft">
-                  {i + 1}
-                </span>
-                <div>
-                  <div className="font-mono text-[11px] font-semibold uppercase tracking-wider text-ink">{t}</div>
-                  <div className="text-[12px] leading-relaxed text-inksoft">{d}</div>
-                </div>
-              </li>
-            ))}
+            {["Mandate", "Bind", "Settle"].map((t, i) => {
+              const d = [
+                "The desk signs an envelope: amount cap, items, expiry, tier — Ed25519 over canonical JSON.",
+                "The gate re-verifies signature, bounds and live prices at bind time, in plain code. Never an LLM.",
+                "Capture on the rail, manifest issued, every span hash-chained for replay.",
+              ][i];
+              return (
+                <li key={t} className="flex gap-3.5">
+                  <span className="font-mono text-[11px] font-semibold text-cleared">0{i + 1}</span>
+                  <div>
+                    <div className="text-[12px] font-medium text-ink">{t}</div>
+                    <div className="text-[12px] leading-relaxed text-inksoft">{d}</div>
+                  </div>
+                </li>
+              );
+            })}
           </ol>
         </section>
       </aside>

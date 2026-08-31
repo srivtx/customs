@@ -1,6 +1,6 @@
 {
   "status": "measured",
-  "measured_at": "2026-08-31T19:43:28.654Z",
+  "measured_at": "2026-08-31T20:49:19.227Z",
   "metrics": {
     "gmvPaise": 6373200,
     "capturedCount": 12,
@@ -14,7 +14,7 @@
     "channelRevenuePaise": 127464,
     "netPaise": 127430,
     "p50DecisionMs": 1,
-    "p99DecisionMs": 54
+    "p99DecisionMs": 1
   },
   "assumptions": {
     "mdrPct": 2,

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
-  <!-- Customs — the gate diamond (mark on a paper badge) -->
-  <rect x="0.5" y="0.5" width="95" height="95" rx="22" fill="#f6f3ec" stroke="#ddd6c4"/>
-  <path fill="#1b180f" fill-rule="evenodd"
-    d="M48 9 L87 48 L48 87 L9 48 Z M41 36 A7 7 0 0 1 55 36 L55 60 A7 7 0 0 1 41 60 Z"/>
+  <!-- Customs — the gate diamond (the mark, on the night tile) -->
+  <rect x="0.5" y="0.5" width="95" height="95" rx="18" fill="#050505" stroke="rgba(255,255,255,0.14)"/>
+  <path fill="#f4f4f0" fill-rule="evenodd"
+    d="M48 13 L83 48 L48 83 L13 48 Z M42 36 A6 6 0 0 1 54 36 L54 60 A6 6 0 0 1 42 60 Z"/>
 </svg>

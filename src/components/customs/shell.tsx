@@ -4,7 +4,8 @@
  * shell.tsx — the app shell: one route, five surfaces (overview, why it
  * exists, the paper, agent playground, merchant control room), the gate
  * diamond in the masthead, honest status chips, and a footer that says
- * the true things. Views swap instantly and settle in — no exit lag.
+ * the true things. Views swap instantly and settle in 300ms — no exit
+ * lag, one motion system everywhere.
  */
 import { useCallback, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -19,11 +20,11 @@ import { SiteFooter } from "./footer";
 export type View = "home" | "why" | "paper" | "agent" | "merchant";
 
 const NAV: { id: View; label: string }[] = [
-  { id: "home", label: "overview" },
-  { id: "why", label: "why" },
-  { id: "paper", label: "paper" },
-  { id: "agent", label: "playground" },
-  { id: "merchant", label: "control room" },
+  { id: "home", label: "Overview" },
+  { id: "why", label: "Why" },
+  { id: "paper", label: "Paper" },
+  { id: "agent", label: "Playground" },
+  { id: "merchant", label: "Control Room" },
 ];
 
 export function CustomsApp() {
@@ -38,28 +39,23 @@ export function CustomsApp() {
   return (
     <div className="flex min-h-screen flex-col">
       {/* ------------------------------ top bar ------------------------------ */}
-      <header className="sticky top-0 z-40 border-b border-line bg-paper/95 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-[1320px] flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3 sm:px-6">
+      <header className="sticky top-0 z-40 border-b border-line bg-paper/80 backdrop-blur-xl">
+        <div className="mx-auto flex h-14 max-w-[1200px] items-center gap-8 px-5 sm:px-8">
           <button
             onClick={() => go("home")}
-            className="group flex items-center gap-3 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink"
+            className="group flex shrink-0 items-center gap-2.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink"
             aria-label="Customs home"
           >
             <LogoMark
-              size={30}
-              className="text-ink transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:rotate-[-8deg]"
+              size={22}
+              className="text-ink transition-transform duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:rotate-[-90deg]"
             />
-            <span className="text-left">
-              <span className="block font-display text-[19px] font-semibold leading-none tracking-tight text-ink">
-                Customs
-              </span>
-              <span className="block font-mono text-[9px] uppercase tracking-[0.22em] text-inksoft">
-                the checkpoint for agentic commerce
-              </span>
+            <span className="font-display text-[16px] font-semibold leading-none tracking-[-0.02em] text-ink">
+              Customs
             </span>
           </button>
 
-          <nav className="flex flex-wrap items-center gap-1" aria-label="views">
+          <nav className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto" aria-label="views">
             {NAV.map((n) => (
               <button
                 key={n.id}
@@ -67,25 +63,30 @@ export function CustomsApp() {
                 aria-current={view === n.id ? "page" : undefined}
                 aria-label={`view ${n.label}`}
                 className={cn(
-                  "h-9 px-3 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink",
-                  view === n.id ? "border-b-2 border-ink text-ink" : "text-inksoft hover:text-ink"
+                  "relative h-9 shrink-0 px-2.5 text-[13px] tracking-[-0.01em] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink",
+                  view === n.id ? "text-ink" : "text-inksoft hover:text-ink"
                 )}
               >
                 {n.label}
+                <span
+                  aria-hidden
+                  className={cn(
+                    "absolute inset-x-2.5 bottom-[2px] h-[1.5px] rounded-full transition-all duration-200",
+                    view === n.id ? "bg-ink opacity-100" : "bg-ink opacity-0"
+                  )}
+                />
               </button>
             ))}
           </nav>
 
-          <div className="ml-auto flex items-center gap-2">
-            <span className="stamp border-line2 text-inksoft" style={{ rotate: "0deg" }}>
-              TEST MODE · NO REAL MONEY
-            </span>
+          <div className="ml-auto hidden shrink-0 items-center sm:flex">
+            <span className="stamp border-line2 text-inksoft">TEST MODE</span>
           </div>
         </div>
       </header>
 
       {/* ------------------------------ content ------------------------------ */}
-      <main className="mx-auto w-full max-w-[1320px] flex-1 px-4 py-6 sm:px-6 sm:py-8">
+      <main className="mx-auto w-full max-w-[1200px] flex-1 px-5 py-10 sm:px-8 sm:py-14">
         <div key={view} className="view-enter">
           {view === "home" && <Landing onEnter={go} />}
           {view === "why" && <WhyPage onEnter={go} />}
