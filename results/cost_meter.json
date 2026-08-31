@@ -1,0 +1,7 @@
+{
+  "status": "pending",
+  "measured_at": null,
+  "metrics": {},
+  "notes": "tokens/decision, INR per successful payment, p50/p99 latency. Populated only by the measurement harness (make meter). Never hand-written.",
+  "regenerate": "make meter"
+}

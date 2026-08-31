@@ -1,0 +1,9 @@
+{
+  "status": "pending",
+  "measured_at": null,
+  "formula": null,
+  "assumptions": {},
+  "sensitivity": {},
+  "notes": "channel P&L: agent GMV vs AI serving cost at 1/10/100/1M payments per month. One explicit formula, every assumption labeled. No vibes.",
+  "regenerate": "make project"
+}

@@ -1,0 +1,6 @@
+{
+  "name": "@customs/server",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts"
+}

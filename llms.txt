@@ -1,0 +1,27 @@
+# Customs
+
+> Both sides of the agentic counter: the storefront AI buyers transact on, and the
+> merchant desk that lets a payments company trust them — bounded, metered, replayable.
+
+Built for the Razorpay AI Buildathon 2026, Track 1 (AI Growth & Agentic Commerce).
+TypeScript monorepo.
+
+## What is where
+
+- `apps/storefront/` — buyer screen: chat intent → cart → bounded mandate → agent pays (Razorpay test-mode). Also the API surface external agents (HTTP / MCP / ACP-style) transact with.
+- `apps/merchant/` — the Customs desk: traffic by protocol & trust tier, live channel P&L meter (agent GMV vs AI serving cost), blocks, span-by-span replay.
+- `server/` — the gate: Ed25519-signed bounded mandates, trust-tier policy, hash-chained audit, protocol adapters, OTel instrumentation.
+
+## Evidence index
+
+- `JUDGE.md` — claims mapped to files and regenerate commands (the 60-second entry point)
+- `ARCHITECTURE.md` — one diagram + decisions table
+- `ENGINEERING_LOG.md` — dated incidents; every incident becomes a test
+- `results/` — every measured number, JSON only, regeneration-only
+
+## Verify
+
+- `make verify` — the evidence checks CI runs on every push
+- `make triage` — self-guided judge tour (prints claims, runs checks, exits 0)
+
+Numbers are never hand-written; see `AGENTS.md` for the invariants that enforce it.

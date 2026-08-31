@@ -1,0 +1,8 @@
+{
+  "status": "pending",
+  "measured_at": null,
+  "batch": null,
+  "arms": {},
+  "notes": "rules-only vs rules+LLM on the same checkout batch; per decision class. Populated only by the ablation harness (make ablation).",
+  "regenerate": "make ablation"
+}

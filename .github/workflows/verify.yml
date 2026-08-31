@@ -1,0 +1,17 @@
+name: verify
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Evidence checks (same as `make verify`)
+        run: node scripts/verify.mjs
+      - name: Judge tour (same as `make triage`)
+        run: node scripts/triage.mjs

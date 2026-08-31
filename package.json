@@ -1,0 +1,13 @@
+{
+  "name": "customs",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "workspaces": ["server", "apps/*"],
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "verify": "node scripts/verify.mjs",
+    "triage": "node scripts/triage.mjs",
+    "spike": "node scripts/spike-d1-1.mjs"
+  }
+}

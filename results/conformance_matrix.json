@@ -1,0 +1,7 @@
+{
+  "status": "pending",
+  "measured_at": null,
+  "attacks": [],
+  "notes": "authored attacks x protocol adapters, pass/fail with reason codes. Populated only by the conformance suite (make fuzz).",
+  "regenerate": "make fuzz"
+}
