@@ -1,0 +1,311 @@
+"use client";
+
+/**
+ * bits.tsx — the Customs design primitives.
+ * Stamps, manifest lines, mono money, count-up numbers. Small, sharp, reused
+ * everywhere so the product reads as one document.
+ */
+import { ReactNode, useEffect, useRef, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import { cn } from "@/lib/utils";
+
+export function inr(paise: number, opts?: { decimals?: boolean }): string {
+  const v = paise / 100;
+  return `₹${v.toLocaleString("en-IN", {
+    minimumFractionDigits: opts?.decimals ? 2 : 0,
+    maximumFractionDigits: opts?.decimals ? 2 : 0,
+  })}`;
+}
+
+export function monoId(id: string, max = 14): string {
+  return id.length > max ? id.slice(0, max) + "…" : id;
+}
+
+/* ---------------- verdict stamp — the signature element ---------------- */
+
+export type StampKind = "cleared" | "refused" | "held" | "ink" | "sim";
+
+const STAMP_STYLES: Record<StampKind, string> = {
+  cleared: "border-cleared text-cleared bg-cleared-ink/40",
+  refused: "border-refused text-refused bg-refused-ink/40",
+  held: "border-held text-held bg-held-ink/40",
+  ink: "border-ink text-ink bg-paper2/60",
+  sim: "border-inksoft text-inksoft bg-paper2/60",
+};
+
+export function Stamp({
+  kind,
+  children,
+  rotate = -2.5,
+  className,
+  animate = true,
+}: {
+  kind: StampKind;
+  children: ReactNode;
+  rotate?: number;
+  className?: string;
+  animate?: boolean;
+}) {
+  const reduce = useReducedMotion();
+  if (animate && !reduce) {
+    return (
+      <motion.span
+        initial={{ scale: 1.6, opacity: 0, rotate: rotate * 2 }}
+        animate={{ scale: 1, opacity: 1, rotate }}
+        transition={{ type: "spring", stiffness: 420, damping: 22, mass: 0.7 }}
+        className={cn("stamp", STAMP_STYLES[kind], className)}
+        style={{ rotate }}
+      >
+        {children}
+      </motion.span>
+    );
+  }
+  return (
+    <span className={cn("stamp", STAMP_STYLES[kind], className)} style={{ rotate: `${rotate}deg` }}>
+      {children}
+    </span>
+  );
+}
+
+/* ---------------- chips & labels ---------------- */
+
+export function StatusChip({ status }: { status: string }) {
+  const map: Record<string, StampKind> = {
+    CAPTURED: "cleared",
+    ALLOW: "cleared",
+    PROPOSED: "ink",
+    BOUND: "ink",
+    AWAITING_APPROVAL: "held",
+    HOLD_FOR_APPROVAL: "held",
+    REFUSED: "refused",
+    FAILED: "refused",
+    BLOCKED: "cleared",
+    PASSED: "refused",
+    SIMULATED: "sim",
+  };
+  return <Stamp kind={map[status] ?? "ink"}>{status.replace(/_/g, " ")}</Stamp>;
+}
+
+export function TierChip({ tier }: { tier: string }) {
+  const style: Record<string, string> = {
+    UNVERIFIED: "border-line2 text-inksoft bg-paper2",
+    ATTESTED: "border-held/60 text-held bg-held-ink/30",
+    MANDATED: "border-cleared/60 text-cleared bg-cleared-ink/30",
+  };
+  return (
+    <span
+      className={cn(
+        "stamp border-[2px] tracking-[0.14em]",
+        style[tier] ?? style.UNVERIFIED
+      )}
+    >
+      {tier}
+    </span>
+  );
+}
+
+export function SectionLabel({ children, className }: { children: ReactNode; className?: string }) {
+  return (
+    <div className={cn("flex items-center gap-3", className)}>
+      <span className="label-caps whitespace-nowrap">{children}</span>
+      <span className="hairline flex-1" />
+    </div>
+  );
+}
+
+/* ---------------- count-up number (the meter's tick) ---------------- */
+
+export function CountUp({
+  value,
+  format,
+  className,
+}: {
+  value: number;
+  format: (n: number) => string;
+  className?: string;
+}) {
+  const reduce = useReducedMotion();
+  // null = idle: no animation running, render the target value directly
+  const [display, setDisplay] = useState<number | null>(null);
+  const fromRef = useRef(value);
+  const rafRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (value === fromRef.current) return;
+    if (reduce) {
+      fromRef.current = value;
+      const raf = requestAnimationFrame(() => setDisplay(null));
+      return () => cancelAnimationFrame(raf);
+    }
+    const from = fromRef.current;
+    const to = value;
+    const t0 = performance.now();
+    const dur = 620;
+    const tick = (t: number) => {
+      const p = Math.min(1, (t - t0) / dur);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setDisplay(from + (to - from) * eased);
+      if (p < 1) rafRef.current = requestAnimationFrame(tick);
+      else {
+        fromRef.current = to;
+        setDisplay(null);
+      }
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      fromRef.current = to;
+    };
+  }, [value, reduce]);
+
+  return <span className={cn("tnum", className)}>{format(display ?? value)}</span>;
+}
+
+/* ---------------- manifest row (ledger line) ---------------- */
+
+export function ManifestRow({
+  left,
+  right,
+  mono,
+  className,
+}: {
+  left: ReactNode;
+  right: ReactNode;
+  mono?: boolean;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "flex items-baseline justify-between gap-4 border-b border-line/70 py-2 last:border-b-0",
+        mono && "font-mono text-[13px]",
+        className
+      )}
+    >
+      <span className="min-w-0 truncate text-inksoft">{left}</span>
+      <span className="tnum shrink-0 font-medium text-ink">{right}</span>
+    </div>
+  );
+}
+
+/* ---------------- buttons — the house style ---------------- */
+
+export function InkButton({
+  children,
+  onClick,
+  disabled,
+  type = "button",
+  className,
+  title,
+}: {
+  children: ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+  type?: "button" | "submit";
+  className?: string;
+  title?: string;
+}) {
+  return (
+    <button
+      type={type}
+      title={title}
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        "group relative inline-flex h-10 items-center justify-center gap-2 border border-ink bg-ink px-4 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-paper transition-all",
+        "hover:-translate-y-px hover:shadow-[3px_3px_0_0_var(--line-strong)] active:translate-y-0 active:shadow-none",
+        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink",
+        "disabled:pointer-events-none disabled:opacity-40",
+        className
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+export function GhostButton({
+  children,
+  onClick,
+  disabled,
+  className,
+  title,
+  active,
+}: {
+  children: ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+  className?: string;
+  title?: string;
+  active?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      title={title}
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        "inline-flex h-8 items-center justify-center gap-1.5 border border-line2 bg-transparent px-3 font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-inksoft transition-colors",
+        "hover:border-ink hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink",
+        "disabled:pointer-events-none disabled:opacity-40",
+        active && "border-ink bg-ink text-paper hover:text-paper",
+        className
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+/* ---------------- misc ---------------- */
+
+export function Kbd({ children }: { children: ReactNode }) {
+  return (
+    <kbd className="rounded-sm border border-line2 bg-paper2 px-1.5 py-0.5 font-mono text-[10px] text-inksoft">
+      {children}
+    </kbd>
+  );
+}
+
+export function Typing() {
+  return (
+    <span className="animate-typing inline-flex items-center gap-1 text-inksoft" aria-label="agent is working">
+      <span className="h-1.5 w-1.5 rounded-full bg-inksoft" />
+      <span className="h-1.5 w-1.5 rounded-full bg-inksoft" />
+      <span className="h-1.5 w-1.5 rounded-full bg-inksoft" />
+    </span>
+  );
+}
+
+/** tiny bar row for adapter split / wire bytes comparison */
+export function MeterBar({
+  value,
+  max,
+  kind = "ink",
+  label,
+  right,
+}: {
+  value: number;
+  max: number;
+  kind?: "ink" | "cleared" | "held" | "refused";
+  label: ReactNode;
+  right: ReactNode;
+}) {
+  const pct = max > 0 ? Math.max(2, Math.round((value / max) * 100)) : 0;
+  const fill: Record<string, string> = {
+    ink: "bg-ink",
+    cleared: "bg-cleared",
+    held: "bg-held",
+    refused: "bg-refused",
+  };
+  return (
+    <div className="grid grid-cols-[110px_1fr_86px] items-center gap-3 py-1">
+      <span className="truncate font-mono text-[11px] text-inksoft">{label}</span>
+      <span className="h-2.5 border border-line bg-paper2/60">
+        <span className={cn("block h-full", fill[kind])} style={{ width: `${pct}%` }} />
+      </span>
+      <span className="tnum text-right font-mono text-[11px] text-ink">{right}</span>
+    </div>
+  );
+}
