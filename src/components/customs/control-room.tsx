@@ -163,6 +163,17 @@ export function ControlRoom() {
     return () => window.removeEventListener("keydown", onKey);
   }, [traceFor, closeTrace]);
 
+  /* while the replay is open the page beneath locks — the dialog owns
+     the scroll, and the visitor's wheel can never wander off behind it */
+  useEffect(() => {
+    if (!traceFor) return;
+    const was = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = was;
+    };
+  }, [traceFor]);
+
   if (!state) {
     return (
       <div className="doc flex min-h-[480px] items-center justify-center">
@@ -551,7 +562,7 @@ export function ControlRoom() {
       {/* ------------------------------ trace dialog ------------------------------ */}
       {traceFor && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-paper/70 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-50 overflow-y-auto bg-paper/70 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-label="trace replay"
@@ -559,15 +570,22 @@ export function ControlRoom() {
             closeTrace();
           }}
         >
-          <div className="doc animate-rise max-h-[86vh] w-full max-w-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
-              <div>
-                <div className="label-caps">trace replay</div>
-                <div className="mt-1 font-mono text-[12px] text-ink">{traceFor}</div>
+          {/* the cradle: min-h-full + py, so a card taller than the
+              viewport scrolls INTO view instead of hanging off it —
+              the card is centered when it fits, reachable when it doesn't */}
+          <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
+            <div
+              className="doc animate-rise flex max-h-[calc(100dvh-3rem)] w-full max-w-2xl flex-col overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex shrink-0 items-center justify-between border-b border-line px-5 py-3.5">
+                <div>
+                  <div className="label-caps">trace replay</div>
+                  <div className="mt-1 font-mono text-[12px] text-ink">{traceFor}</div>
+                </div>
+                <GhostButton onClick={closeTrace}>close</GhostButton>
               </div>
-              <GhostButton onClick={closeTrace}>close</GhostButton>
-            </div>
-            <div className="chat-scroll max-h-[70vh] overflow-y-auto px-5 py-4">
+              <div className="chat-scroll flex-1 overflow-y-auto px-5 py-4">
               {!trace && <p className="text-[13px] text-inksoft">loading spans…</p>}
               {trace && trace.spans.length === 0 && (
                 <p className="text-[13px] leading-relaxed text-inksoft">
@@ -610,6 +628,7 @@ export function ControlRoom() {
                   </div>
                 </div>
               )}
+              </div>
             </div>
           </div>
         </div>

@@ -1,11 +1,11 @@
 {
   "status": "measured",
-  "measured_at": "2026-08-31T23:07:35.683Z",
+  "measured_at": "2026-08-31T23:44:49.176Z",
   "arms": [
     {
       "adapter": "naive",
       "verdictsMatched": "8/8",
-      "totalMs": 19,
+      "totalMs": 17,
       "toolCalls": 34,
       "wireBytes": 443,
       "estTokensIn": 114,
@@ -16,7 +16,7 @@
           "outcome": "ALLOW",
           "expected": "ALLOW",
           "matched": true,
-          "ms": 6,
+          "ms": 5,
           "wireBytes": 44
         },
         {
@@ -32,7 +32,7 @@
           "outcome": "ALLOW",
           "expected": "ALLOW",
           "matched": true,
-          "ms": 2,
+          "ms": 1,
           "wireBytes": 85
         },
         {
@@ -80,7 +80,7 @@
     {
       "adapter": "mcp",
       "verdictsMatched": "8/8",
-      "totalMs": 9,
+      "totalMs": 8,
       "toolCalls": 34,
       "wireBytes": 4150,
       "estTokensIn": 114,
@@ -107,7 +107,7 @@
           "outcome": "ALLOW",
           "expected": "ALLOW",
           "matched": true,
-          "ms": 2,
+          "ms": 1,
           "wireBytes": 650
         },
         {
@@ -155,7 +155,7 @@
     {
       "adapter": "acp",
       "verdictsMatched": "8/8",
-      "totalMs": 9,
+      "totalMs": 8,
       "toolCalls": 34,
       "wireBytes": 9862,
       "estTokensIn": 114,
@@ -206,7 +206,7 @@
           "outcome": "REFUSE",
           "expected": "REFUSE",
           "matched": true,
-          "ms": 2,
+          "ms": 1,
           "wireBytes": 1148
         },
         {
@@ -234,7 +234,7 @@
   },
   "batch": {
     "scenarios": 8,
-    "ts": 1788217655683
+    "ts": 1788219889176
   },
   "notes": "Same shopping batch through naive / MCP-style / ACP-style transports over identical tool implementations. Wire bytes are deterministic envelope sizes; latency is machine-dependent; token counts are deterministic estimates (chars/4) over identical payload shapes. The LLM arm requires any one LLM key (OPENAI / GROQ / GEMINI / XAI _API_KEY) — it is skipped, never simulated, when absent.",
   "regenerate": "make ablation"

@@ -66,6 +66,21 @@ export function Playground() {
   const [brain, setBrain] = useState("rules");
   const [sessionFresh, setSessionFresh] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  /* "/" focuses the composer — the counter's own power shortcut:
+     one keystroke from anywhere on the page to typing at the desk */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "/") return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+      e.preventDefault();
+      inputRef.current?.focus();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   const send = useCallback(
     async (text: string) => {
@@ -185,9 +200,10 @@ export function Playground() {
           }}
         >
           <input
+            ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={sessionFresh ? "try: search headphones under 5000" : "message the agent…"}
+            placeholder={sessionFresh ? "try: search headphones under 5000 — / focuses this" : "message the agent — / focuses this"}
             aria-label="message the agent"
             className="h-10 flex-1 rounded-[4px] border border-line2 bg-card px-3 text-[13px] text-ink placeholder:text-inksoft/60 transition-colors focus:border-ink/30 focus:outline-none"
           />

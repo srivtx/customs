@@ -270,67 +270,49 @@ html.light {
   }
 
   /* ------------------------------------------------------------------
-   * the one scrollbar — thin, quiet, on the desk.
-   * Engine split: Firefox gets the standard thin/color props. But
-   * Chromium ignores ::-webkit-scrollbar whenever those props are set,
-   * so inside a selector only Chromium matches we reset them to auto
-   * and draw the custom inset pill by hand. The window scrollbar and
-   * every scrollable panel share one design — themed via --sb-thumb.
+   * the one scrollbar — the window's own, thin and quiet on the desk.
+   * Inner panels hide theirs entirely (x.ai's way: the content scrolls
+   * on wheel and touch; the chrome stays invisible until the window).
    * ------------------------------------------------------------------ */
-  html,
-  .chat-scroll,
-  .rail-scroll,
-  .ledger-scroll,
-  .quiet-scroll {
+  html {
     scrollbar-width: thin;
     scrollbar-color: var(--sb-thumb) transparent;
     overscroll-behavior: contain;
   }
+  .chat-scroll,
+  .rail-scroll,
+  .ledger-scroll,
+  .quiet-scroll {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    overscroll-behavior: contain;
+  }
+  .chat-scroll::-webkit-scrollbar,
+  .rail-scroll::-webkit-scrollbar,
+  .ledger-scroll::-webkit-scrollbar,
+  .quiet-scroll::-webkit-scrollbar {
+    display: none;
+  }
   @supports selector(::-webkit-scrollbar) {
-    html,
-    .chat-scroll,
-    .rail-scroll,
-    .ledger-scroll,
-    .quiet-scroll {
+    html {
       scrollbar-width: auto;
       scrollbar-color: auto;
     }
-    html::-webkit-scrollbar,
-    .chat-scroll::-webkit-scrollbar,
-    .rail-scroll::-webkit-scrollbar,
-    .ledger-scroll::-webkit-scrollbar,
-    .quiet-scroll::-webkit-scrollbar {
+    html::-webkit-scrollbar {
       width: 8px;
-      height: 8px;
     }
-    html::-webkit-scrollbar-thumb,
-    .chat-scroll::-webkit-scrollbar-thumb,
-    .rail-scroll::-webkit-scrollbar-thumb,
-    .ledger-scroll::-webkit-scrollbar-thumb,
-    .quiet-scroll::-webkit-scrollbar-thumb {
+    html::-webkit-scrollbar-thumb {
       background: var(--sb-thumb);
       background-clip: content-box;
       border: 2px solid transparent;
       border-radius: 999px;
     }
-    html::-webkit-scrollbar-thumb:hover,
-    .chat-scroll::-webkit-scrollbar-thumb:hover,
-    .rail-scroll::-webkit-scrollbar-thumb:hover,
-    .ledger-scroll::-webkit-scrollbar-thumb:hover,
-    .quiet-scroll::-webkit-scrollbar-thumb:hover {
+    html::-webkit-scrollbar-thumb:hover {
       background: var(--sb-thumb-hover);
       background-clip: content-box;
     }
     html::-webkit-scrollbar-track,
-    .chat-scroll::-webkit-scrollbar-track,
-    .rail-scroll::-webkit-scrollbar-track,
-    .ledger-scroll::-webkit-scrollbar-track,
-    .quiet-scroll::-webkit-scrollbar-track,
-    html::-webkit-scrollbar-corner,
-    .chat-scroll::-webkit-scrollbar-corner,
-    .rail-scroll::-webkit-scrollbar-corner,
-    .ledger-scroll::-webkit-scrollbar-corner,
-    .quiet-scroll::-webkit-scrollbar-corner {
+    html::-webkit-scrollbar-corner {
       background: transparent;
     }
   }
@@ -340,13 +322,18 @@ html.light {
    * and rises onto the desk in 300ms — the x.ai pattern.
    * ------------------------------------------------------------------ */
   .view-enter {
-    animation: view-enter 0.3s cubic-bezier(0.25, 1, 0.5, 1) both;
+    /* no fill-mode: `both` would leave transform:translateY(0) computed
+       forever, and a lingering transform turns every position:fixed
+       descendant (the trace dialog) against the whole page instead of
+       the viewport — the modal users had to scroll to find */
+    animation: view-enter 0.3s cubic-bezier(0.25, 1, 0.5, 1);
   }
 
   /* new ledger rows: rise, then a sage wash drains out — a confirmation
-     settling, not an alert blinking */
+     settling, not an alert blinking. (rise carries a transform — no
+     fill-mode, so it never lingers as a containing block either) */
   .row-fresh {
-    animation: rise 0.3s cubic-bezier(0.25, 1, 0.5, 1) both,
+    animation: rise 0.3s cubic-bezier(0.25, 1, 0.5, 1),
       flash 2.4s cubic-bezier(0.25, 1, 0.5, 1) 1 both;
   }
 
@@ -365,7 +352,7 @@ html.light {
   }
 
   .animate-rise {
-    animation: rise 0.28s cubic-bezier(0.25, 1, 0.5, 1) both;
+    animation: rise 0.28s cubic-bezier(0.25, 1, 0.5, 1);
   }
   .animate-typing span {
     animation: blink 1.2s infinite;
@@ -448,19 +435,20 @@ html.light {
   }
 
   /* ------------------------------------------------------------------
-   * the customs bot, v3 — the pebble. One smooth egg-shaped volume,
-   * light from above, a gloss across the crown, a ground shadow that
-   * breathes with the float. Nothing orbits it, nothing is stuck to it.
-   * Everything moves on transform and opacity only (60fps, no layout),
-   * every color is a token (it re-inks under the desk lamp).
-   * Reduced motion stands it still, quietly on duty.
+   * the customs bot, v4 — the little one. One smooth egg-shaped body,
+   * and now it has some life in it: an iridescent aurora sweeps through
+   * the body (a wide multi-hue gradient, clipped to the body shape,
+   * gliding left-right — transform only, so it stays on the compositor),
+   * big glossy eyes that blink AND glance aside every so often, a soft
+   * ground shadow that breathes with the float. Hover and the eyes turn
+   * sage. Every structural color is a token; the aurora's hues are the
+   * one place the desk lets a little color in.
    * ------------------------------------------------------------------ */
   .hero-bot {
     display: block;
   }
 
-  /* the pebble: a quiet float — the shadow beneath breathes with it,
-   * smaller and fainter as it rises, fuller as it settles */
+  /* the float — the shadow beneath breathes with it */
   .hb-bot {
     animation: hb-float 7s ease-in-out infinite alternate;
   }
@@ -469,14 +457,33 @@ html.light {
     transform-origin: center;
     animation: hb-shadow-breathe 7s ease-in-out infinite alternate;
   }
+
+  /* the eyes: blink on their own clock; the pair glances aside,
+     rests, and returns — a small, alive motion */
   .hb-eye {
     transform-box: fill-box;
     transform-origin: center;
     animation: hb-blink 5.4s ease-in-out infinite;
     transition: fill 0.3s ease;
   }
+  .hb-eyes {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: hb-glance 9s ease-in-out infinite;
+  }
   .hero-bot:hover .hb-eye {
     fill: var(--cleared);
+  }
+
+  /* the aurora — the rainbow under the skin: a gradient ribbon wider
+     than the body, clipped to it, gliding back and forth */
+  .hb-aurora {
+    transform-box: view-box;
+    animation: hb-sweep 8s ease-in-out infinite alternate;
+    opacity: 0.55;
+  }
+  html.light .hb-aurora {
+    opacity: 0.38;
   }
 }
 
@@ -578,6 +585,25 @@ html.light {
     transform: scaleY(1);
   }
 }
+@keyframes hb-glance {
+  0%,
+  64%,
+  100% {
+    transform: translateX(0);
+  }
+  74%,
+  86% {
+    transform: translateX(4.5px);
+  }
+}
+@keyframes hb-sweep {
+  from {
+    transform: translateX(-150px);
+  }
+  to {
+    transform: translateX(150px);
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .animate-rise,
@@ -588,6 +614,8 @@ html.light {
   .type-caret::after,
   .hb-bot,
   .hb-eye,
+  .hb-eyes,
+  .hb-aurora,
   .hb-shadow {
     animation: none !important;
   }

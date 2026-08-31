@@ -57,7 +57,7 @@ export function SiteFooter({ onEnter }: { onEnter: (view: View) => void }) {
                 </span>
               </button>
               <p className="mt-5 text-[10px] leading-relaxed text-inksoft">
-                © 2026 Customs · Razorpay AI Buildathon 2026, Track 1
+                © 2026 Customs · Razorpay AI Buildathon 2026
                 <br />
                 Test mode only — no real money moves.
               </p>

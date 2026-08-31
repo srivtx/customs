@@ -17,12 +17,12 @@ export function WhyPage({ onEnter }: { onEnter: (v: View) => void }) {
   return (
     <div>
       {/* ------------------------------ the claim ------------------------------ */}
-      <section aria-label="why customs exists" className="pb-20 pt-6 text-center sm:pt-12">
+      <section aria-label="why customs exists" className="pb-16 pt-4 text-center sm:pt-8">
         <p className="label-caps">why customs exists</p>
-        <h1 className="mx-auto mt-6 max-w-[22ch] font-display text-[clamp(34px,5.4vw,64px)] font-semibold leading-[1.04] tracking-[-0.03em] text-ink">
+        <h1 className="mx-auto mt-7 max-w-[24ch] text-balance font-display text-[clamp(32px,4.8vw,56px)] font-semibold leading-[1.08] tracking-[-0.03em] text-ink">
           Every checkout assumes a human is paying.
         </h1>
-        <div className="mx-auto mt-8 max-w-[62ch] space-y-6 text-left text-[16px] leading-[1.8] text-inksoft">
+        <div className="mx-auto mt-9 max-w-[60ch] space-y-5 text-left text-[16px] leading-[1.75] text-inksoft">
           <p>
             Cards have CVV prompts and OTP screens. Wallets want a face or a
             fingerprint. UPI wants a PIN pushed to a phone a person is holding.

@@ -545,3 +545,80 @@ silently drops it.
 verify` green (wordmarks replace lockup+screenshots in REQUIRED), `make
 test` green. Browser walkthrough both themes + VLM review; GIF
 re-recorded from the final state.
+
+## D12-1 — 2026-09-01 · the fixed dialog, the alive bot, the calm opening
+
+**Round:** v3.4. Five user reports, two of them real bugs with
+surprising root causes.
+
+**The trace dialog you had to scroll to find:** the modal was
+`position: fixed` inside `.view-enter`, whose animation declared
+`fill-mode: both` — so `transform: translateY(0)` stayed computed on
+the wrapper FOREVER, and (CSS spec: a transformed element becomes the
+containing block for fixed descendants) the "viewport-fixed" dialog
+measured against the entire 1462px page instead of the 900px viewport.
+Fix 1: dropped `both` from every transform keyframe animation
+(view-enter, animate-rise, row-fresh's rise) — end state equals base
+state, so nothing visually changes. Fix 2: the dialog itself rebuilt
+the robust way — backdrop scrolls (`overflow-y-auto` + `min-h-full`
+cradle), card is a flex column capped at `calc(100dvh-3rem)` with the
+span list scrolling inside, body scroll-locked while open. Verified:
+card 207–693 in a 900px viewport, body locked, long traces scroll
+internally, Escape closes.
+
+**The half-typed "get" glitch in the demo (and on tab switch):** two
+causes. (1) The IntersectionObserver callback called `start()` inside
+the `setVisible` state updater — React StrictMode double-invokes
+updaters in dev, so two timer chains ran concurrently, both writing to
+the same last-entry slot: one typing word N while the other advanced
+to beat N+1 — the transcript showed half-words fighting. (2) Timers
+cleared on scroll-out left the partial text frozen. Fix: a generation
+counter — every (re)start mints a new generation and every scheduled
+callback checks it before firing; the observer now only sets state
+(pure), a separate effect owns start/stop on `visible`. Re-entry
+verified: scroll away mid-word → scroll back → clean restart, no
+duplicates.
+
+**The bot, v4:** the visor rectangle read as a face-frame — deleted.
+The face is drawn straight on the body now: bigger glossy eyes with
+white glint dots, a whisper of blush, the same pleased smile. And the
+one flourish the user asked for: an iridescent aurora — a soft
+multi-hue gradient (sage → sky → lilac → amber) clipped to the body's
+own shape, gliding through it on an 8s ease-in-out sweep
+(transform-only, compositor-safe, dimmer in light mode). The eyes also
+glance aside every 9s. VLM: "clean, polished, and exactly as
+requested" — SHIP.
+
+**Why page opening:** the giant clamp(64px) headline block held most
+of the section's whitespace while the body text sat dense beneath it —
+the imbalance read as "cramped then empty". Rebalanced: headline
+clamp(32/56px) + text-balance, label→h1 gap up, body leading 1.75,
+one consistent rhythm. VLM: SHIP.
+
+**Mobile masthead:** five nav links + wordmark + chip could not fit
+375px — they crunched into a horizontal scroll strip. Now: desktop nav
+(md+), and on phones a bordered menu button whose two lines become
+one; the dropdown is five full-width rows + the TEST MODE chip. Escape
+closes it. VLM: both SHIP.
+
+**The quiet stuff:** inner scrollbars (chat, rail, ledger, pre) hidden
+entirely — the window keeps its thin themed pill; wheel/touch still
+scroll everywhere. Footer © line drops ", Track 1" so it sets on one
+line. And a small power feature: "/" focuses the playground composer
+from anywhere on the page (the placeholder says so).
+
+**Lesson:** fill-mode `both` on a transform animation is a permanent
+transform — it silently turns every fixed-position descendant against
+its ancestor. Modals that live inside animated view wrappers must
+either escape the wrapper or the wrapper must never keep a computed
+transform. And never run side effects inside a setState updater —
+StrictMode will run them twice.
+
+**Validation:** tsc clean, eslint clean, `next build` green, `make
+verify` green, `make test` green. Browser: dialog geometry + lock +
+long-trace scroll verified by DOM measurement; demo re-entry clean
+under the generation guard; typing progression frame-checked (2fps
+strip: partial → complete, no freeze, no duplicate beats); mobile
+masthead + menu SHIP; why opening SHIP; bot SHIP (dark). GIF
+re-recorded (36.7s, 1.93MB). Zero console errors after the stale-HMR
+entry was cleared by a touch-recompile.

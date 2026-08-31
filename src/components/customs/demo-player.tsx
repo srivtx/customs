@@ -89,14 +89,23 @@ export function DemoPlayer() {
   const boxRef = useRef<HTMLDivElement>(null);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const pausedRef = useRef(false);
+  /* the generation: every (re)start mints a new one, and every pending
+     callback checks it before firing — so an old chain can never leak a
+     beat or half-type a word into a fresh run (the StrictMode
+     double-invoke, the tab-switch throttle, and the scroll-out clear
+     all used to leave two chains racing in the same transcript) */
+  const genRef = useRef(0);
 
   const clearTimers = () => {
     timers.current.forEach(clearTimeout);
     timers.current = [];
   };
-  /** a timer that holds while the visitor hovers — every beat waits politely */
+  /** a timer that holds while the visitor hovers — every beat waits
+      politely, and dies quietly if its generation was retired */
   const later = (fn: () => void, ms: number) => {
+    const myGen = genRef.current;
     const tick = () => {
+      if (myGen !== genRef.current) return;
       if (pausedRef.current) {
         timers.current.push(setTimeout(tick, 200));
         return;
@@ -107,6 +116,7 @@ export function DemoPlayer() {
   };
 
   const start = () => {
+    genRef.current += 1; // retire every pending callback at once
     clearTimers();
     setPlayed([]);
     setDone(false);
@@ -168,30 +178,32 @@ export function DemoPlayer() {
     pausedRef.current = paused;
   }, [paused]);
 
-  /* run only when on screen; restart when re-entering view */
+  /* run only while on screen. The observer only sets state (pure —
+     the old updater called start() inside setVisible, which React
+     StrictMode double-invokes: two racing chains, the half-typed-word
+     glitch). The effect below owns start/stop. */
   useEffect(() => {
     const el = boxRef.current;
     if (!el) return;
     const io = new IntersectionObserver(
-      (entries) => {
-        const on = entries.some((e) => e.isIntersecting);
-        setVisible((was) => {
-          if (on && !was) start();
-          if (!on) clearTimers();
-          return on;
-        });
-      },
+      (entries) => setVisible(entries.some((e) => e.isIntersecting)),
       { threshold: 0.25 }
     );
     io.observe(el);
-    return () => {
-      io.disconnect();
-      clearTimers();
-    };
+    return () => io.disconnect();
   }, []);
 
+  /* entering view starts the sequence; leaving retires it and stops
+     the timers — one owner, one chain, ever */
+  useEffect(() => {
+    if (visible) start();
+    else {
+      genRef.current += 1;
+      clearTimers();
+    }
+  }, [visible]);
+
   const restart = () => {
-    clearTimers();
     start();
   };
 

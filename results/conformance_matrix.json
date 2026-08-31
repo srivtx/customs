@@ -1,6 +1,6 @@
 {
   "status": "pass",
-  "measured_at": "2026-08-31T23:07:35.558Z",
+  "measured_at": "2026-08-31T23:44:49.103Z",
   "summary": {
     "passed": 12,
     "total": 12
@@ -14,7 +14,7 @@
       "code": "AMOUNT_OVER_TIER",
       "expected": "AMOUNT_OVER_TIER",
       "matched": true,
-      "ms": 5
+      "ms": 6
     },
     {
       "attackId": "overspend-cap",
@@ -24,7 +24,7 @@
       "code": "AMOUNT_OVER_CAP",
       "expected": "AMOUNT_OVER_CAP",
       "matched": true,
-      "ms": 2
+      "ms": 1
     },
     {
       "attackId": "expired-mandate",
@@ -94,7 +94,7 @@
       "code": "MALFORMED_MANDATE",
       "expected": "MALFORMED_MANDATE",
       "matched": true,
-      "ms": 4
+      "ms": 1
     },
     {
       "attackId": "over-50k",
