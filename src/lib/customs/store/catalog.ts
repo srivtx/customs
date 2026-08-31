@@ -62,24 +62,68 @@ export function catalogSnapshot(
   };
 }
 
-/** Deterministic search: token overlap scoring, no RNG, no LLM. */
-export function searchCatalog(query: string, limit = 3): Product[] {
+/** Deterministic search: token overlap scoring, no RNG, no LLM.
+ *
+ * Budget-aware: when the query carries a price ceiling ("under ₹5,000"),
+ * unaffordable matches are removed BEFORE the limit is applied (limiting
+ * first would starve the result set), and if the strict matches empty out,
+ * the search falls back to the same category under budget — "headphones
+ * under 5000" lands on the earbuds the buyer can actually buy.
+ */
+const SYNONYMS: Record<string, string[]> = {
+  headphones: ["earbuds", "buds", "earphones"],
+  earbuds: ["headphones", "buds", "earphones"],
+  earphones: ["headphones", "earbuds", "buds"],
+  buds: ["earbuds", "headphones"],
+  headset: ["headphones", "earbuds"],
+  speaker: ["audio", "sound"],
+};
+
+export function searchCatalog(
+  query: string,
+  limit = 3,
+  opts?: { ceilingPaise?: number | null }
+): Product[] {
   const q = query.toLowerCase().trim();
   if (!q) return [];
+  const ceiling = opts?.ceilingPaise ?? null;
   const tokens = q.split(/[^a-z0-9]+/).filter((t) => t.length > 1);
   const scored = CATALOG.map((p) => {
-    const haystack = `${p.name} ${p.tagline} ${p.category} ${p.tags.join(" ")}`.toLowerCase();
+    const name = p.name.toLowerCase();
+    const haystack = `${name} ${p.tagline} ${p.category} ${p.tags.join(" ")}`.toLowerCase();
     let score = 0;
     for (const t of tokens) {
       if (haystack.includes(t)) score += 2;
-      if (p.name.toLowerCase().includes(t)) score += 3;
+      if (name.includes(t)) score += 3;
       for (const tag of p.tags) if (tag === t) score += 2;
+      // a synonym match is worth one point — near-miss, not a hit
+      for (const s of SYNONYMS[t] ?? []) if (haystack.includes(s)) score += 1;
     }
     return { p, score };
   })
     .filter((s) => s.score > 0)
-    .sort((a, b) => b.score - a.score || a.p.id.localeCompare(b.p.id));
-  return scored.slice(0, limit).map((s) => s.p);
+    .sort(
+      (a, b) =>
+        b.score - a.score ||
+        (ceiling ? a.p.pricePaise - b.p.pricePaise : 0) ||
+        a.p.id.localeCompare(b.p.id)
+    );
+
+  if (!ceiling) return scored.slice(0, limit).map((s) => s.p);
+
+  // budget query: only what the buyer can afford, decided before the limit
+  const affordable = scored.filter((s) => s.p.pricePaise <= ceiling);
+  if (affordable.length > 0) return affordable.slice(0, limit).map((s) => s.p);
+
+  // strict matches are all over budget — fall back to the best match's
+  // category, under budget, cheapest first (deterministic)
+  const category = scored[0]?.p.category;
+  if (category) {
+    return CATALOG.filter((p) => p.category === category && p.pricePaise <= ceiling)
+      .sort((a, b) => a.pricePaise - b.pricePaise || a.id.localeCompare(b.id))
+      .slice(0, limit);
+  }
+  return [];
 }
 
 /** Parse "under ₹3,000" / "below 3k" / "max 3000" → paise; null when absent. */

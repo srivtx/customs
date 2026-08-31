@@ -52,15 +52,17 @@ export function ChatEventView({
         <div
           className={cn(
             "max-w-[82%] rounded-[4px] border px-3.5 py-2.5 text-[13.5px] leading-relaxed",
-            /* the same logged-input block the demo player renders — one
-               transcript system across the recording and the real thing */
+            /* the same transcript system the demo player renders — the
+               buyer's intent is a sent message (solid ink, the send
+               button's own colors), the desk's voice is an incoming
+               white card. One system across the demo and the real thing. */
             isUser
-              ? "border-line bg-ink/[0.04] text-ink"
+              ? "border-transparent bg-ink text-paper"
               : "border-line bg-card text-ink"
           )}
         >
           {isUser ? event.text : rich(event.text)}
-          <div className={cn("mt-1 font-mono text-[9px] tracking-wide", isUser ? "text-inksoft" : "text-inksoft/70")}>
+          <div className={cn("mt-1 font-mono text-[9px] tracking-wide", isUser ? "text-paper/55" : "text-inksoft/70")}>
             {tsOf(event.ts)}
           </div>
         </div>
@@ -81,20 +83,22 @@ export function ChatEventView({
                 onClick={() => onSend(`add ${p.id}`)}
                 className="card-lift group overflow-hidden rounded-[4px] border border-line bg-card text-left focus-visible:outline-2 focus-visible:outline-ink"
               >
-                {/* product photo — plain img: local files, fixed sizes, no remote optimizer */}
+                {/* product photo — square, full color, center-cropped: the
+                    same frame every commerce shelf uses. Plain img: local
+                    files, fixed sizes, no remote optimizer. */}
                 <img
                   src={p.image}
                   alt={p.name}
                   width={640}
-                  height={480}
+                  height={640}
                   loading="lazy"
-                  className="aspect-[4/3] w-full border-b border-line object-cover opacity-90 grayscale-[0.3] transition-all group-hover:opacity-100 group-hover:grayscale-0"
+                  className="aspect-square w-full border-b border-line object-cover"
                 />
                 <div className="px-3 py-2">
                   <div className="truncate text-[12px] font-medium text-ink">{p.name}</div>
-                  <div className="flex items-baseline justify-between">
+                  <div className="flex items-baseline justify-between gap-2">
                     <span className="tnum font-mono text-[13px] font-semibold text-ink">{inr(p.pricePaise)}</span>
-                    <span className="text-[11px] font-medium text-inksoft opacity-0 transition-opacity group-hover:opacity-100">add to cart →</span>
+                    <span className="shrink-0 text-[11px] font-medium text-cleared opacity-0 transition-opacity group-hover:opacity-100">add to cart →</span>
                   </div>
                 </div>
               </button>
@@ -214,16 +218,16 @@ function StepChip({ event }: { event: Extract<ChatEventT, { kind: "step" }> }) {
     <div className="animate-rise py-1">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center gap-2.5 rounded-[4px] border border-line bg-ink/[0.02] px-3 py-1.5 text-left transition-colors hover:border-line2 focus-visible:outline-2 focus-visible:outline-ink"
+        className="flex w-fit max-w-full items-center gap-2.5 rounded-[4px] border border-ink/15 bg-card px-2.5 py-1.5 text-left transition-colors hover:border-line2 focus-visible:outline-2 focus-visible:outline-ink"
         aria-expanded={open}
       >
-        {/* the adapter rides as a chip — the same token the demo player
-            renders; adapters are not verdicts, so they stay uncolored */}
-        <span className="shrink-0 rounded-[3px] border border-ink/25 bg-ink/[0.05] px-1.5 py-px font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-ink">
+        {/* the adapter rides as a chip — the agent's own green, the same
+            token the demo player renders */}
+        <span className="shrink-0 rounded-[3px] border border-cleared/40 bg-cleared/10 px-1.5 py-px font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-cleared">
           {event.adapter}
         </span>
         <span className="font-mono text-[11.5px] text-ink">{event.tool}</span>
-        <span className="truncate text-[11.5px] text-inksoft">{event.summary}</span>
+        <span className="hidden truncate text-[11.5px] text-inksoft sm:inline">{event.summary}</span>
         <span className="ml-auto flex items-center gap-2">
           <span className="tnum font-mono text-[10px] text-inksoft">{event.ms}ms</span>
           <span className={cn("text-[9px] text-inksoft transition-transform", open && "rotate-90")}>▸</span>

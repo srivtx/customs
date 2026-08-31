@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="public/logo-lockup.svg" alt="Customs — the checkpoint for agentic commerce" width="640" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="public/wordmark-dark.svg" />
+    <img src="public/wordmark-light.svg" alt="Customs" width="300" />
+  </picture>
 </p>
 
 <p align="center">
@@ -28,16 +31,11 @@
 Built for the **Razorpay AI Buildathon 2026** · Track 1 (AI Growth & Agentic
 Commerce) · **test mode only — no live keys, no real money.**
 
-**The whole golden path, rendered live by the page itself** — the customs
-bot keeping watch, the agent checkout played in code (intent → search → tier
-refusal → attestation → mandate → approval → the ten-check gate → capture →
-the ledger line landing), and the live ledger ticking:
+**The whole golden path, rendered live by the page itself** — intent,
+search, tier refusal, attestation, mandate, approval, the ten-check gate,
+capture, and the ledger line landing, with the live ledger ticking:
 
 ![Customs — the golden path, played live](docs/demo.gif)
-
-![Customs — the agent playground](docs/screenshots/playground.jpg)
-
-![Customs — the merchant control room](docs/screenshots/control-room.jpg)
 
 ## The problem, in one paragraph
 
@@ -62,14 +60,14 @@ database. A human desk over ₹10,000, at every tier.
 | Red-team panel — fire the authored attack corpus | Span-by-span replay, ablation, blocks log |
 
 Plus three reading surfaces: **Why it exists** (the problem and the mandate
-principle, with the architecture diagram), **the Paper** (a working paper
-rendered as a clean document page — §5–§6 numbers read live from the running
-ledger), and **the live demo** on the landing page (the golden path plays
-itself in code — the GIF above is a recording of that page, not a separate
-asset). One design system, two themes (the night ledger default, a pure-white
-day ledger one click away in the footer — x.ai's desk lamp), and one type
-system: the house sans carries every human sentence, the mono carries only
-what a machine would read.
+principle, with the architecture drawn as the site's own cards), **the
+Paper** (a working paper rendered as a clean document page — §5–§6 numbers
+read live from the running ledger), and **the live demo** on the landing
+page (the golden path plays itself in code — the GIF above is a recording of
+that page, not a separate asset). One design system, two themes (dark
+default, a pure-white light mode one click away in the footer), and one
+type system: the house sans carries every human sentence, the mono carries
+only what a machine would read.
 
 ## The gate in one look
 
@@ -176,8 +174,8 @@ the **Why it exists** view and `PAPER.md` §7.
 | `src/components/customs/shell.tsx` | the app shell — views, transitions, masthead |
 | `src/components/customs/landing.tsx` | overview: hero + bot, the live demo, ladder, proof layer |
 | `src/components/customs/demo-player.tsx` | the golden path, played live in code (what the README GIF records) |
-| `src/components/customs/hero-bot.tsx` | the customs bot — the animated desk officer (SVG, token-inked, reduced-motion aware) |
-| `src/components/customs/why.tsx` | why it exists + the architecture diagram + scope ledger |
+| `src/components/customs/hero-bot.tsx` | the customs bot — one smooth volume, token-inked, reduced-motion aware |
+| `src/components/customs/why.tsx` | why it exists + the architecture (drawn as cards) + scope ledger |
 | `src/components/customs/paper.tsx` | the working paper view — a clean document page, numbers live |
 | `src/components/customs/playground.tsx` | buyer side: chat, mandate approval, red team |
 | `src/components/customs/control-room.tsx` | merchant side: P&L, approvals, the order ledger |
@@ -186,12 +184,12 @@ the **Why it exists** view and `PAPER.md` §7.
 | `src/components/customs/theme.tsx` | the desk lamp — footer dark/light toggle, persisted, no-flash |
 | `src/components/customs/footer.tsx` | the footer — mark, quiet link columns, the theme toggle (x.ai pattern) |
 | `src/app/api/` | route handlers: chat, state, decision, fuzz, webhook, health |
-| `public/logo.svg` | the gate diamond (badge, night tile) |
-| `public/logo-lockup.svg` | centered lockup (this README) |
+| `public/logo.svg` | the gate diamond (badge tile) |
+| `public/wordmark-light.svg` | the wordmark, light surfaces (this README) |
+| `public/wordmark-dark.svg` | the wordmark, dark surfaces (this README) |
 | `public/og.png` | the social card |
 | `docs/demo.gif` | the recorded golden path (this README) |
 | `docs/FORM_ANSWERS.md` | the 12 submission-form answers, claim → evidence |
-| `docs/screenshots/` | product screenshots (this README) |
 <!-- FILEMAP:END -->
 
 *Built for the Razorpay AI Buildathon 2026. Test-mode only — no live keys, no

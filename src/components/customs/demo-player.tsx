@@ -8,6 +8,11 @@
  * never fuzzes. The sequence is the real story — intent, search, tier
  * refusal, attestation, mandate, approval, the ten-check gate, capture,
  * and the ledger line landing. It loops; hovering holds it still.
+ *
+ * The transcript is a window, not a scroll region: the panel shows the
+ * latest beats, older ones dissolving into the top fade. Nothing inside
+ * this panel can scroll, so the page's own wheel and touch scrolling
+ * pass straight through it — no sticking, no scrollbar to style.
  */
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -42,9 +47,9 @@ const GATE_CHECKS = [
 const SCRIPT: (Beat & { hold?: number })[] = [
   { t: "user", text: "get me the bud-pro earbuds", hold: 900 },
   { t: "tool", tag: "AGENT", text: "catalog.search(\"bud-pro\") → 1 match" },
-  { t: "product", name: "Bud-Pro Earbuds", price: "₹3,499", note: "24h battery · anc · usb-c", image: "/products/bud-pro-earbuds.jpg" },
+  { t: "product", name: "Bud Pro Earbuds", price: "₹3,499", note: "24h battery · anc · usb-c", image: "/products/bud-pro-earbuds.jpg" },
   { t: "user", text: "add 2 to my cart", hold: 700 },
-  { t: "cart", name: "Bud-Pro Earbuds", qty: 2, price: "₹6,998", image: "/products/bud-pro-earbuds.jpg" },
+  { t: "cart", name: "Bud Pro Earbuds", qty: 2, price: "₹6,998", image: "/products/bud-pro-earbuds.jpg" },
   { t: "refuse", code: "AMOUNT_OVER_TIER", note: "₹6,998 exceeds the ₹500 unverified envelope" },
   { t: "say", text: "The desk refuses politely. Escalate trust — say \"attest\" and the envelope rises to ₹5,000." },
   { t: "user", text: "attest", hold: 500 },
@@ -64,6 +69,9 @@ const TYPE_MS = 34;
 const GATE_STEP_MS = 300;
 const LOOP_HOLD_MS = 3400;
 
+/* how many beats the window keeps — older ones dissolve into the fade */
+const WINDOW_BEATS = 7;
+
 /* ------------------------------ the player ------------------------------ */
 
 interface Played {
@@ -79,7 +87,6 @@ export function DemoPlayer() {
   const [paused, setPaused] = useState(false);
   const [visible, setVisible] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const pausedRef = useRef(false);
 
@@ -181,18 +188,14 @@ export function DemoPlayer() {
       io.disconnect();
       clearTimers();
     };
-  }, []);  
-
-  /* keep the transcript pinned to the newest beat */
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (el) el.scrollTo({ top: el.scrollHeight, behavior: reduce ? "auto" : "smooth" });
-  }, [played, reduce]);
+  }, []);
 
   const restart = () => {
     clearTimers();
     start();
   };
+
+  const window_ = played.slice(-WINDOW_BEATS);
 
   return (
     <div
@@ -220,16 +223,17 @@ export function DemoPlayer() {
         </div>
       </div>
 
-      {/* the transcript — every beat is one of two shapes: a quiet
-          hairline block (what is said) or a hairline card (what the
-          desk produces). No bubbles, no second border style. */}
-      <div
-        ref={scrollRef}
-        className="chat-scroll h-[460px] space-y-2.5 overflow-y-auto px-4 py-4 sm:px-5"
-        aria-live="off"
-      >
-        {played.map((p, i) => (
-          <BeatView key={i} p={p} last={i === played.length - 1} />
+      {/* the window — the newest beats, bottom-anchored; the oldest
+          dissolve into the top fade. It cannot scroll, so the visitor's
+          wheel and touch go straight to the page, where they belong. */}
+      <div className="demo-window flex h-[400px] flex-col justify-end gap-2.5 overflow-hidden px-4 py-4 sm:h-[420px] sm:px-5" aria-live="off">
+        {/* the boot line — the desk is open before the first word is typed */}
+        <div className="flex items-center gap-2 px-1 font-mono text-[10.5px] text-inksoft">
+          <span className="h-1.5 w-1.5 rounded-full bg-cleared/70" aria-hidden />
+          desk open · 20 catalog items · rail: simulation (labeled)
+        </div>
+        {window_.map((p, i) => (
+          <BeatView key={played.length - window_.length + i} p={p} last={i === window_.length - 1} />
         ))}
       </div>
 
@@ -255,29 +259,32 @@ function BeatView({ p, last }: { p: Played; last: boolean }) {
     case "user":
       return (
         <div className={cn(cls, "flex justify-end")}>
-          {/* the buyer's intent — a logged input, right-aligned. Same
-              hairline, same 4px, same lift as everything else on the desk. */}
-          <div className="max-w-[78%] rounded-[4px] border border-line bg-ink/[0.04] px-3.5 py-2 text-[13px] text-ink">
-            <span className={last && p.typed.length < b.text.length ? "type-caret" : undefined}>{p.typed}</span>
+          {/* the buyer's intent — a sent message: solid ink, the send
+              button's own colors (black on white by day, white on black
+              by night). What you sent reads as what you sent. */}
+          <div className="max-w-[78%] rounded-[4px] bg-ink px-3.5 py-2 text-[13px] text-paper">
+            <span className={last && p.typed.length < b.text.length ? "type-caret-paper" : undefined}>{p.typed}</span>
           </div>
         </div>
       );
     case "tool":
       return (
-        <div className={cn(cls, "flex items-center gap-2.5 rounded-[4px] border border-ink/20 bg-ink/[0.03] px-3 py-1.5")}>
-          {/* the tag is a chip in plain ink — black on white, exactly the
-              button style; the verdict colors are reserved for verdicts */}
-          <span className="shrink-0 rounded-[3px] border border-ink/25 bg-ink/[0.05] px-1.5 py-px font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-ink">{b.tag}</span>
+        /* the tool line hugs its content — a chip, not a bar, so it never
+            stretches out of proportion to what it says */
+        <div className={cn(cls, "flex w-fit max-w-full items-center gap-2.5 rounded-[4px] border border-ink/15 bg-card px-2.5 py-1.5")}>
+          {/* the tag — the agent's own green, the one live accent */}
+          <span className="shrink-0 rounded-[3px] border border-cleared/40 bg-cleared/10 px-1.5 py-px font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-cleared">{b.tag}</span>
           <ToolText text={b.text} />
         </div>
       );
     case "say":
       return (
-        <div className={cn(cls, "max-w-[88%] px-1 py-0.5 text-[13px] leading-relaxed text-inksoft")}>{b.text}</div>
+        /* the desk's voice — the incoming message, a white card */
+        <div className={cn(cls, "w-fit max-w-[88%] rounded-[4px] border border-line bg-card px-3.5 py-2 text-[13px] leading-relaxed text-inksoft")}>{b.text}</div>
       );
     case "product":
       return (
-        <div className={cn(cls, "flex max-w-[420px] items-center gap-3 rounded-[4px] border border-line bg-card p-3")}>
+        <div className={cn(cls, "card-lift flex w-fit max-w-full items-center gap-3 rounded-[4px] border border-line bg-card p-3")}>
           {/* the real product photo — the same asset the playground serves */}
           <img
             src={b.image}
@@ -296,7 +303,7 @@ function BeatView({ p, last }: { p: Played; last: boolean }) {
       );
     case "cart":
       return (
-        <div className={cn(cls, "flex max-w-[420px] items-center gap-3 rounded-[4px] border border-line bg-card px-3.5 py-2")}>
+        <div className={cn(cls, "flex w-fit max-w-full items-center gap-3 rounded-[4px] border border-line bg-card px-3.5 py-2")}>
           <img
             src={b.image}
             alt=""
@@ -305,7 +312,7 @@ function BeatView({ p, last }: { p: Played; last: boolean }) {
             loading="lazy"
             className="h-7 w-7 shrink-0 rounded-[3px] border border-line object-cover"
           />
-          <div className="flex min-w-0 flex-1 items-baseline justify-between text-[12.5px]">
+          <div className="flex min-w-0 items-baseline gap-4 text-[12.5px]">
             <span className="truncate text-inksoft">
               {b.name} × {b.qty}
             </span>
@@ -315,26 +322,26 @@ function BeatView({ p, last }: { p: Played; last: boolean }) {
       );
     case "refuse":
       return (
-        <div className={cn(cls, "flex max-w-[420px] items-center justify-between rounded-[4px] border border-refused/30 bg-refused-ink px-3.5 py-2")}>
+        <div className={cn(cls, "flex w-fit max-w-full items-center justify-between gap-4 rounded-[4px] border border-refused/30 bg-refused-ink px-3.5 py-2")}>
           <span className="text-[12.5px] text-inksoft">{b.note}</span>
-          <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-refused">{b.code}</span>
+          <span className="shrink-0 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-refused">{b.code}</span>
         </div>
       );
     case "tier":
       return (
-        <div className={cn(cls, "flex max-w-[420px] items-center gap-3 rounded-[4px] border border-ink/20 bg-ink/[0.03] px-3.5 py-2")}>
+        <div className={cn(cls, "flex w-fit max-w-full items-center gap-3 rounded-[4px] border border-ink/15 bg-card px-3.5 py-2")}>
           <span className="stamp border-ink/25 text-ink bg-ink/[0.05]">{b.tier}</span>
           <span className="text-[12.5px] text-inksoft">{b.note}</span>
         </div>
       );
     case "mandate":
       return (
-        <div className={cn(cls, "max-w-[440px] rounded-[4px] border border-ink/20 bg-card")}>
-          <div className="flex items-center justify-between border-b border-line px-3.5 py-2">
+        <div className={cn(cls, "w-fit max-w-full rounded-[4px] border border-ink/15 bg-card")}>
+          <div className="flex items-center justify-between gap-6 border-b border-line px-3.5 py-2">
             <span className="label-caps">spending mandate</span>
             <span className="tnum font-mono text-[13px] font-semibold text-ink">{b.cap} envelope</span>
           </div>
-          <div className="flex items-baseline justify-between px-3.5 py-2 text-[12.5px]">
+          <div className="flex items-baseline justify-between gap-6 px-3.5 py-2 text-[12.5px]">
             <span className="text-inksoft">signature</span>
             <span className="font-mono text-ink">{b.sig}</span>
           </div>
@@ -342,7 +349,7 @@ function BeatView({ p, last }: { p: Played; last: boolean }) {
       );
     case "gate":
       return (
-        <div className={cn(cls, "max-w-[480px] rounded-[4px] border border-ink/20 bg-card")}>
+        <div className={cn(cls, "w-fit max-w-full rounded-[4px] border border-ink/15 bg-card")}>
           <div className="border-b border-line px-3.5 py-2 label-caps">
             gate · bind-time checks
           </div>
@@ -358,7 +365,7 @@ function BeatView({ p, last }: { p: Played; last: boolean }) {
       );
     case "capture":
       return (
-        <div className={cn(cls, "flex max-w-[440px] items-center justify-between rounded-[4px] border border-cleared/30 bg-cleared-ink px-3.5 py-2.5")}>
+        <div className={cn(cls, "flex w-fit max-w-full items-center justify-between gap-6 rounded-[4px] border border-cleared/30 bg-cleared-ink px-3.5 py-2.5")}>
           <Stamp kind="cleared" animate={false}>captured · test</Stamp>
           <span className="tnum font-mono text-[15px] font-semibold text-ink">{b.amount}</span>
         </div>
@@ -380,7 +387,7 @@ function BeatView({ p, last }: { p: Played; last: boolean }) {
 
 /** the tool line's text — a machine call in the ledger's own mono: the
     call in soft ink, the arrow and its result reach full ink, so the
-    outcome is what your eye lands on. Black and white, like a receipt. */
+    outcome is what your eye lands on. */
 function ToolText({ text }: { text: string }) {
   const at = text.indexOf("\u2192");
   if (at === -1) return <span className="truncate font-mono text-[11px] text-inksoft">{text}</span>;

@@ -2,11 +2,14 @@
 
 /**
  * why.tsx — "why it exists": the problem in plain words, the principle
- * (machines get mandates, not cards), the architecture on one diagram,
- * and the honest scope ledger. Written to be read: one narrow measure,
- * one accent, hairlines between thoughts.
+ * (machines get mandates, not cards), the architecture drawn as the
+ * site's own cards (not a fixed-width picture — it reflows, it never
+ * scrolls sideways), and the honest scope ledger. Written to be read:
+ * a centered opening claim, one narrow measure, one accent, hairlines
+ * between thoughts.
  */
-import { GhostButton, InkButton, Reveal, TierChip, SectionLabel, Stamp } from "./bits";
+import { cn } from "@/lib/utils";
+import { GhostButton, InkButton, Reveal, TierChip, SectionLabel, Stamp, LogoMark } from "./bits";
 import type { View } from "./shell";
 import { TRUST_TIERS } from "@/lib/customs/gate/types";
 
@@ -14,12 +17,12 @@ export function WhyPage({ onEnter }: { onEnter: (v: View) => void }) {
   return (
     <div>
       {/* ------------------------------ the claim ------------------------------ */}
-      <section aria-label="why customs exists" className="pb-20 pt-6 sm:pt-12">
+      <section aria-label="why customs exists" className="pb-20 pt-6 text-center sm:pt-12">
         <p className="label-caps">why customs exists</p>
-        <h1 className="mt-6 max-w-[22ch] font-display text-[clamp(34px,5.4vw,64px)] font-semibold leading-[1.04] tracking-[-0.03em] text-ink">
+        <h1 className="mx-auto mt-6 max-w-[22ch] font-display text-[clamp(34px,5.4vw,64px)] font-semibold leading-[1.04] tracking-[-0.03em] text-ink">
           Every checkout assumes a human is paying.
         </h1>
-        <div className="mt-8 max-w-[62ch] space-y-6 text-[16px] leading-[1.8] text-inksoft">
+        <div className="mx-auto mt-8 max-w-[62ch] space-y-6 text-left text-[16px] leading-[1.8] text-inksoft">
           <p>
             Cards have CVV prompts and OTP screens. Wallets want a face or a
             fingerprint. UPI wants a PIN pushed to a phone a person is holding.
@@ -110,26 +113,27 @@ export function WhyPage({ onEnter }: { onEnter: (v: View) => void }) {
               the full decision table lives in ARCHITECTURE.md · every box is code you can open
             </span>
           </div>
-          <div className="doc mt-6 overflow-hidden">
-            <div className="ledger-scroll overflow-x-auto">
-              <ArchDiagram />
-            </div>
-            <div className="grid gap-px border-t border-line bg-line md:grid-cols-4">
-              {[
-                ["01", "the agent asks", "Natural-language intent in. The rules brain (or an optional LLM brain) turns it into catalog actions — search, add, checkout. Every tool call is shown to the buyer."],
-                ["02", "the desk signs", "A mandate is drafted — cap, items, expiry, tier — and signed with Ed25519 over canonical JSON. The principal approves it. No mandate, no money."],
-                ["03", "the gate decides", "Ten checks in plain code at bind time: signature, tier bounds, cap, allowlist, quantities, live prices, expiry, replay, threshold. Verdicts are reason codes, not vibes."],
-                ["04", "the ledger remembers", "Capture on the rail (test mode or labeled simulation), a manifest receipt out, every span hash-chained. The merchant desk replays any of it."],
-              ].map(([n, t, d]) => (
-                <div key={n} className="bg-card px-4 py-3.5">
-                  <div className="flex items-baseline gap-2.5">
-                    <span className="font-mono text-[10px] text-inksoft">{n}</span>
-                    <span className="text-[14px] font-medium text-ink">{t}</span>
-                  </div>
-                  <p className="mt-1.5 text-[12.5px] leading-relaxed text-inksoft">{d}</p>
+
+          {/* the flow, drawn with the site's own cards — it reflows on a
+              phone, never scrolls sideways, and re-inks with the theme */}
+          <ArchFlow />
+
+          {/* the four moves, in order */}
+          <div className="mt-3 grid gap-px bg-line md:grid-cols-4">
+            {[
+              ["01", "the agent asks", "Natural-language intent in. The rules brain (or an optional LLM brain) turns it into catalog actions — search, add, checkout. Every tool call is shown to the buyer."],
+              ["02", "the desk signs", "A mandate is drafted — cap, items, expiry, tier — and signed with Ed25519 over canonical JSON. The principal approves it. No mandate, no money."],
+              ["03", "the gate decides", "Ten checks in plain code at bind time: signature, tier bounds, cap, allowlist, quantities, live prices, expiry, replay, threshold. Verdicts are reason codes, not vibes."],
+              ["04", "the ledger remembers", "Capture on the rail (test mode or labeled simulation), a manifest receipt out, every span hash-chained. The merchant desk replays any of it."],
+            ].map(([n, t, d]) => (
+              <div key={n} className="card-lift rounded-[4px] bg-card px-4 py-3.5">
+                <div className="flex items-baseline gap-2.5">
+                  <span className="font-mono text-[10px] text-inksoft">{n}</span>
+                  <span className="text-[14px] font-medium text-ink">{t}</span>
                 </div>
-              ))}
-            </div>
+                <p className="mt-1.5 text-[12.5px] leading-relaxed text-inksoft">{d}</p>
+              </div>
+            ))}
           </div>
         </section>
       </Reveal>
@@ -224,138 +228,128 @@ export function WhyPage({ onEnter }: { onEnter: (v: View) => void }) {
 }
 
 /* ------------------------------------------------------------------ */
-/* the architecture diagram — drawn, not screenshotted. Every ink is   */
-/* a CSS variable (--di-*), so the diagram re-inks itself when the    */
-/* desk lamp flips: white-on-black at night, black-on-paper by day.   */
+/* the architecture, drawn as the site's own cards. Not a fixed-width */
+/* picture: the flow reflows (phone → one column), never scrolls      */
+/* sideways, and re-inks with the theme. The same information the     */
+/* old SVG carried: buyer side, the gate's checks, the rail, the      */
+/* merchant side, and the ledger beneath everything.                  */
 /* ------------------------------------------------------------------ */
 
-function ArchDiagram() {
-  const ink = "var(--di-ink)";
-  const soft = "var(--di-soft)";
-  const line = "var(--di-line)";
-  const hair = "var(--di-hair)";
-  const sage = "var(--cleared)";
-  const fillBox = "var(--di-fill)";
-  const fillBox2 = "var(--di-fill2)";
-  const monoF = { fontFamily: "var(--font-geist-mono), monospace" };
-  const boxStyle = { fill: fillBox, stroke: line, strokeWidth: 1 };
-  const gateStyle = { fill: fillBox, stroke: ink, strokeWidth: 1.5 };
-  const caps = (x: number, y: number, s: string, size = 10, fill: string = soft, ls = 1.4) => (
-    <text x={x} y={y} fontSize={size} letterSpacing={ls} style={{ ...monoF, fill }} textAnchor="middle">
-      {s}
-    </text>
-  );
+function ArchFlow() {
   return (
-    <svg
-      viewBox="0 0 1060 470"
-      className="block h-auto w-full min-w-[840px]"
-      role="img"
-      aria-label="Customs architecture: buyer side, the gate, the rail, merchant side, and the hash-chained ledger beneath all of it"
-    >
-      <title>Customs architecture diagram</title>
-      <defs>
-        <marker id="arrow" viewBox="0 0 10 10" refX={9} refY={5} markerWidth={7} markerHeight={7} orient="auto-start-reverse">
-          <path d="M 0 1 L 9 5 L 0 9 z" style={{ fill: line }} />
-        </marker>
-        <marker id="arrowInk" viewBox="0 0 10 10" refX={9} refY={5} markerWidth={7} markerHeight={7} orient="auto-start-reverse">
-          <path d="M 0 1 L 9 5 L 0 9 z" style={{ fill: ink }} />
-        </marker>
-        <marker id="arrowSage" viewBox="0 0 10 10" refX={9} refY={5} markerWidth={7} markerHeight={7} orient="auto-start-reverse">
-          <path d="M 0 1 L 9 5 L 0 9 z" style={{ fill: sage }} />
-        </marker>
-      </defs>
+    <div className="doc mt-6">
+      <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
+        <span className="label-caps">the flow — one payment, end to end</span>
+        <span className="hidden text-[11.5px] text-inksoft sm:block">hover any box · every one is code you can open</span>
+      </div>
+      <div className="space-y-3 p-4">
+        {/* the counters */}
+        <div className="flex flex-col gap-2 lg:flex-row lg:items-stretch lg:gap-2.5">
+          <FlowCard title="buyer side" flex="lg:flex-[1.05]">
+            <FlowRow left="principal" right="human · owns the money, signs" />
+            <FlowRow left="agent" right="intent → tools → cart" />
+            <FlowRow left="adapter" right="naive · mcp · acp" />
+            <div className="mt-2.5 rounded-[4px] border border-cleared/35 bg-cleared/10 px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.08em] text-cleared">
+              mandate approval — human in the loop
+            </div>
+          </FlowCard>
+          <FlowArrow />
+          <FlowCard title="the gate" flex="lg:flex-[1.25]" accent>
+            <div className="flex items-center gap-2.5 pb-2">
+              <LogoMark size={14} className="text-ink" />
+              <span className="font-mono text-[10.5px] text-inksoft">decide() — 10 checks, plain code</span>
+            </div>
+            {[
+              "signature verifies",
+              "tier bounds · mandate cap",
+              "item allowlist · quantities",
+              "live catalog prices",
+              "expiry · replay dedupe",
+              "≥ ₹10,000 → human desk",
+            ].map((s) => (
+              <div key={s} className="flex items-center gap-2.5 rounded-[3px] bg-ink/[0.04] px-2.5 py-1.5">
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-cleared" aria-hidden />
+                <span className="text-[12px] text-ink">{s}</span>
+              </div>
+            ))}
+          </FlowCard>
+          <FlowArrow />
+          <FlowCard title="the rail" flex="lg:flex-[0.55]">
+            <FlowRow left="capture" right="test mode" />
+            <FlowRow left="or" right="labeled simulation" />
+            <p className="mt-2 text-[11.5px] leading-relaxed text-inksoft">the only place money moves</p>
+          </FlowCard>
+          <FlowArrow />
+          <FlowCard title="merchant side" flex="lg:flex-[1]">
+            <FlowRow left="control room" right="P&L · approvals" />
+            <FlowRow left="span replay" right="click any row" />
+            <FlowRow left="red-team log" right="12 · all blocked" />
+          </FlowCard>
+        </div>
 
-      {/* column captions */}
-      {caps(150, 28, "BUYER SIDE")}
-      {caps(530, 28, "THE GATE")}
-      {caps(910, 28, "MERCHANT SIDE")}
+        {/* the ledger beneath everything */}
+        <div className="rounded-[4px] border border-line bg-paper2/40 px-4 py-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-ink">
+              hash-chained ledger — the audit trail is the database
+            </span>
+            <span className="text-[11.5px] text-inksoft">every verdict, every span, every refusal</span>
+          </div>
+          <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+            {Array.from({ length: 12 }, (_, i) => (
+              <span key={i} className="flex items-center gap-1.5">
+                <span className="rounded-[3px] border border-line bg-card px-1.5 py-0.5 font-mono text-[9.5px] text-inksoft">
+                  #{i + 1}
+                </span>
+                {i < 11 && <span className="text-[10px] text-inksoft/60">→</span>}
+              </span>
+            ))}
+          </div>
+          <p className="mt-2 text-[11.5px] text-inksoft">
+            approvals, refusals, every span · tamper with a byte and the walk fails · replay span-by-span from the control room
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
-      {/* buyer box */}
-      <rect x={30} y={44} width={240} height={252} rx={4} style={{ fill: "none", stroke: hair, strokeDasharray: "3 4", strokeWidth: 1 }} />
-      <rect x={54} y={66} width={192} height={54} rx={3} style={boxStyle} />
-      {caps(150, 88, "PRINCIPAL · HUMAN")}
-      {caps(150, 104, "owns the money, signs", 9)}
-      <rect x={54} y={140} width={192} height={54} rx={3} style={boxStyle} />
-      {caps(150, 162, "AGENT · AI BUYER")}
-      {caps(150, 178, "intent → tools → cart", 9)}
-      <rect x={54} y={214} width={192} height={54} rx={3} style={boxStyle} />
-      {caps(150, 236, "ADAPTER")}
-      {caps(150, 252, "naive / mcp / acp", 9)}
-      <path d="M150 120 L150 140" style={{ stroke: line, strokeWidth: 1 }} markerEnd="url(#arrow)" />
-      <path d="M150 194 L150 214" style={{ stroke: line, strokeWidth: 1 }} markerEnd="url(#arrow)" />
+/** one counter in the flow — a quiet card with a caps header */
+function FlowCard({
+  title,
+  children,
+  flex,
+  accent,
+}: {
+  title: string;
+  children: React.ReactNode;
+  flex?: string;
+  accent?: boolean;
+}) {
+  return (
+    <div className={cn("card-lift rounded-[4px] border bg-card px-3.5 py-3", accent ? "border-ink/25" : "border-line", flex)}>
+      <div className="label-caps mb-2.5">{title}</div>
+      <div className="space-y-1.5">{children}</div>
+    </div>
+  );
+}
 
-      {/* mandate approval loop (human in the loop) */}
-      <path d="M246 93 C 300 93 310 120 356 120" fill="none" style={{ stroke: sage, strokeWidth: 1 }} markerEnd="url(#arrowSage)" strokeDasharray="5 3" opacity={0.8} />
-      {caps(300, 63, "mandate approval", 9, sage, 1.2)}
+/** a row inside a flow card — quiet mono left, soft sans right */
+function FlowRow({ left, right }: { left: string; right: string }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3 rounded-[3px] bg-ink/[0.04] px-2.5 py-1.5">
+      <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink">{left}</span>
+      <span className="text-right text-[11.5px] text-inksoft">{right}</span>
+    </div>
+  );
+}
 
-      {/* gate box */}
-      <rect x={360} y={44} width={340} height={286} rx={4} style={gateStyle} />
-      {/* the diamond mark, top-left of the gate header */}
-      <path transform="translate(376, 50) scale(0.42)" d="M30 6 L54 30 L30 54 L6 30 Z M24 17 A6 6 0 0 1 36 17 L36 39 A6 6 0 0 1 24 39 Z" fillRule="evenodd" style={{ fill: ink }} />
-      {caps(536, 66, "CUSTOMS GATE")}
-      {caps(536, 81, "decide() — 10 checks, plain code", 9)}
-      {[
-        "signature verifies",
-        "tier bounds · mandate cap",
-        "item allowlist · quantities",
-        "live catalog prices",
-        "expiry · replay dedupe",
-        "≥ ₹10,000 → human desk",
-      ].map((s, i) => (
-        <g key={s}>
-          <rect x={386} y={96 + i * 30} width={288} height={24} rx={2} style={{ fill: fillBox2 }} />
-          <circle cx={400} cy={108 + i * 30} r={3} style={{ fill: sage }} />
-          <text x={414} y={112 + i * 30} fontSize={10.5} letterSpacing={0.4} style={{ ...monoF, fill: ink }}>
-            {s}
-          </text>
-        </g>
-      ))}
-      <path d="M246 241 C 300 241 310 190 360 186" fill="none" style={{ stroke: ink, strokeWidth: 1.5 }} markerEnd="url(#arrowInk)" />
-      {caps(300, 332, "every tool call crosses here", 8.5)}
-
-      {/* rail */}
-      <rect x={742} y={130} width={116} height={84} rx={3} style={boxStyle} />
-      {caps(800, 160, "THE RAIL")}
-      {caps(800, 176, "razorpay test", 9)}
-      {caps(800, 190, "or labeled sim", 9)}
-      <path d="M700 172 L742 172" style={{ stroke: ink, strokeWidth: 1.5 }} markerEnd="url(#arrowInk)" />
-
-      {/* merchant box */}
-      <rect x={890} y={44} width={140} height={252} rx={4} style={{ fill: "none", stroke: hair, strokeDasharray: "3 4", strokeWidth: 1 }} />
-      <rect x={906} y={66} width={108} height={54} rx={3} style={boxStyle} />
-      {caps(960, 88, "CONTROL ROOM", 10, soft, 0.8)}
-      {caps(960, 104, "P&L · approvals", 9, soft, 0.5)}
-      <rect x={906} y={140} width={108} height={54} rx={3} style={boxStyle} />
-      {caps(960, 162, "SPAN REPLAY", 10, soft, 0.8)}
-      {caps(960, 178, "click any row", 9, soft, 0.5)}
-      <rect x={906} y={214} width={108} height={54} rx={3} style={boxStyle} />
-      {caps(960, 236, "RED-TEAM LOG", 10, soft, 0.8)}
-      {caps(960, 252, "12 · all blocked", 9, soft, 0.5)}
-      <path d="M858 172 L890 172" style={{ stroke: ink, strokeWidth: 1.5 }} markerEnd="url(#arrowInk)" />
-
-      {/* ledger bar — spans everything */}
-      <rect x={30} y={368} width={1000} height={76} rx={4} style={{ fill: fillBox, stroke: hair, strokeWidth: 1 }} />
-      {caps(530, 396, "HASH-CHAINED LEDGER — THE AUDIT TRAIL IS THE DATABASE", 11, ink, 2)}
-      {/* chain links */}
-      {Array.from({ length: 12 }, (_, i) => {
-        const x = 110 + i * 76;
-        return (
-          <g key={i}>
-            <rect x={x} y={414} width={26} height={22} rx={2} style={{ fill: fillBox2, stroke: line, strokeWidth: 0.8 }} />
-            <text x={x + 13} y={429} fontSize={8.5} style={{ ...monoF, fill: soft }} textAnchor="middle">
-              {`#${i + 1}`}
-            </text>
-            {i < 11 && <path d={`M${x + 26} 425 L${x + 76} 425`} style={{ stroke: hair, strokeWidth: 1 }} />}
-          </g>
-        );
-      })}
-      {/* arrows into the ledger */}
-      <path d="M150 296 L150 368" style={{ stroke: line, strokeWidth: 1 }} markerEnd="url(#arrow)" />
-      <path d="M530 330 L530 368" style={{ stroke: ink, strokeWidth: 1.5 }} markerEnd="url(#arrowInk)" />
-      <path d="M960 296 L960 368" style={{ stroke: line, strokeWidth: 1 }} markerEnd="url(#arrow)" />
-      {caps(196, 348, "approvals, refusals, every span", 9)}
-      {caps(560, 348, "every verdict, hash-chained", 9)}
-      {caps(922, 348, "replay + tamper probe", 9)}
-    </svg>
+/** the arrow between counters — points down when stacked, right when wide */
+function FlowArrow() {
+  return (
+    <div className="flex items-center justify-center py-0.5 lg:py-0" aria-hidden>
+      <span className="font-mono text-[13px] text-inksoft/60 lg:hidden">↓</span>
+      <span className="hidden font-mono text-[13px] text-inksoft/60 lg:inline">→</span>
+    </div>
   );
 }

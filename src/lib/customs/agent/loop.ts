@@ -152,7 +152,9 @@ export async function agentTurn(
       break;
     }
     case "search": {
-      await runTool("search_catalog", { query: intent.query }, "Searched the catalog");
+      // the ceiling rides with the intent — the cleaned query no longer
+      // carries "under 5,000", so re-parsing it from text would lose it
+      await runTool("search_catalog", { query: intent.query, maxPricePaise: intent.maxPricePaise }, "Searched the catalog");
       break;
     }
     case "add": {
@@ -246,15 +248,16 @@ async function executeTool(
   switch (name) {
     case "search_catalog": {
       const query = String(args.query ?? "");
-      let results = searchCatalog(query, 3);
-      const ceiling = parsePriceCeiling(query);
-      if (ceiling) results = results.filter((p) => p.pricePaise <= ceiling);
-      const note = ceiling ? `filtered to ≤ ${rupees(ceiling)}` : null;
+      // budget from the intent when the brain parsed one, else from the raw text
+      const carried = Number(args.maxPricePaise ?? args.ceilingPaise ?? NaN);
+      const ceiling = Number.isFinite(carried) && carried > 0 ? carried : parsePriceCeiling(query);
+      const results = searchCatalog(query, 3, { ceilingPaise: ceiling });
+      const note = ceiling ? `budget ≤ ${rupees(ceiling)}` : null;
       events.push({ id: eid(), ts: Date.now(), kind: "products", products: results, note });
       say(
         results.length
-          ? `Found ${results.length} match${results.length > 1 ? "es" : ""}${note ? ` (${note})` : ""}. I can add any of them — "add ${results[0].id.split("-")[0]} ${results[0].id.split("-").slice(1).join("-")}".`
-          : `Nothing matched. Try a broader search.`
+          ? `Found ${results.length} match${results.length > 1 ? "es" : ""}${note ? ` (${note})` : ""}. I can add any of them — "add ${results[0].id}".`
+          : `Nothing matched${ceiling ? ` under ${rupees(ceiling)}` : ""}. Try a broader search.`
       );
       return results.map((p) => ({ id: p.id, name: p.name, pricePaise: p.pricePaise, stock: p.stock }));
     }

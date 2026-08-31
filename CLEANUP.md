@@ -96,8 +96,8 @@ any one LLM key (`GROQ_API_KEY` / `GEMINI_API_KEY` have free tiers) with
 
 - Record the 5:00 video per `VIDEO_TRANSCRIPT.md` (reset the demo first:
   `curl -X POST <live-url>/api/reset`).
-- Refresh `docs/screenshots/` if the UI changed (landing, playground,
-  control-room — the README embeds them).
+- Refresh `docs/demo.gif` if the UI changed (`scripts/make-gif.sh`) — the
+  README embeds it and nothing else.
 - Razorpay test keys set → run `make spike-d1-1` → the D1-1 log entry flips
   from `blocked-no-keys` to the measured verdict, and the rail goes live-test.
 - Paste the form answers from `docs/FORM_ANSWERS.md` (claim → evidence file →

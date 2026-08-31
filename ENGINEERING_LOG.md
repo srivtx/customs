@@ -490,3 +490,58 @@ themes with VLM verdicts: landing dark SHIP, landing light SHIP (pure
 white confirmed), control room SHIP (after the projection-row and
 green fixes), demo badges SHIP, paper sheet SHIP, live ledger SHIP,
 GIF frames SHIP. Zero console errors.
+
+## D11-1 — 2026-09-01 · the pebble, the window, the honest search
+
+**Round:** v3.3. Trigger: three real product complaints — (1) the demo
+player trapped the page's scroll (an internal `overflow-y-auto` pinned to
+the newest beat: wheel-down went nowhere, wheel-up fought the auto-pin —
+the page "stuck" whenever the cursor crossed it); (2) `search headphones
+under 5000` returned the ₹18,999 headphones; (3) the bot had regressed
+into an orbiting gadget rack (ring + chip + antenna + pods) after being
+asked for "smooth, cute, minimal".
+
+**Fixes:**
+
+- **The demo player is a window, not a scroll region.** `overflow-hidden`
+  + `flex-col justify-end` (flexbox clips the START when justify-end
+  overflows — the exact "pinned to newest" behavior without a scrollbar)
+  + a `mask-image` top fade. A boot line seeds the panel so it never
+  renders empty. No wheel capture, no scrollbar to style.
+- **The search lost the budget.** Root cause: `nlu.ts` strips "under
+  5000" from the query before handing it to `search_catalog`, and the
+  tool re-parsed the ceiling from the *cleaned* string — always null.
+  The ceiling now rides with the intent into the tool args; filtering
+  happens BEFORE the 3-result limit (limiting first starved budget
+  queries); a synonym set (headphones ↔ earbuds/buds/earphones) plus a
+  same-category fallback lands "headphones under 5000" on the ₹4,999
+  earbuds. Deterministic throughout — the ablation still replays
+  bit-for-bit.
+- **The bot, v3 — the pebble.** One smooth egg-shaped volume: vertical
+  gradient light, a gloss band across the crown, blurred ambient
+  occlusion at the foot, a breathing ground shadow, a quiet visor face
+  that blinks. Deleted: the orbit ring, the mandate chip, the antenna,
+  the side pods. 3D read from light, not from line-art.
+- **One transcript system:** buyer intent = sent message (solid
+  `bg-ink`/`text-paper` — black-on-white by day, white-on-black by
+  night, exactly the send button's colors), desk voice = incoming white
+  card, AGENT/adapter tag = the agent's own green, tool rows `w-fit` so
+  they hug their content.
+- **Why page:** centered opening claim; the architecture redrawn as the
+  site's own cards (HTML, not a fixed-width SVG) — reflows on phones,
+  never scrolls sideways, re-inks with the theme.
+- **README:** centered wordmark as transparent SVG light+dark variants
+  via `prefers-color-scheme` (the night-tile lockup is gone), the GIF is
+  the only embedded image, tone tightened to production.
+
+**Lesson:** an auto-scrolling inner container is a scroll trap — if a
+panel must follow its own output, make it a clipped window (justify-end
++ overflow-hidden), never a scroll region the visitor's wheel can fall
+into. And: state parsed upstream (the price ceiling) must travel
+downstream with the request — re-deriving it from a *cleaned* string
+silently drops it.
+
+**Validation:** tsc clean, eslint clean, `next build` green, `make
+verify` green (wordmarks replace lockup+screenshots in REQUIRED), `make
+test` green. Browser walkthrough both themes + VLM review; GIF
+re-recorded from the final state.
