@@ -5,22 +5,35 @@ agent-first: the evidence layer is a product surface, not documentation garnish.
 
 ## Stack (locked)
 
-TypeScript monorepo · Next.js (App Router) for both screens · Node gate server ·
-SQLite (append-only, hash-chained audit) · OpenTelemetry JS SDK · Playwright (payment
-completion + E2E) · Railway deploy. One language, no exceptions.
+One Next.js 16 app (App Router, one route, view-switched) · TypeScript throughout ·
+Node runtime for the gate (node:crypto, zero third-party deps in the money path) ·
+hash-chained JSONL ledger (no ORM — the audit trail IS the database) · Tailwind CSS 4 ·
+framer-motion for the few animations that earn their bytes · bun as the runner
+(npm works too) · Razorpay test-mode rails behind env keys (labeled simulation
+default).
 
 ## Commands
 
 ```bash
-make verify          # evidence checks (CI entry) — must stay green on every push
-make triage          # 60-second self-guided judge tour
-make spike-d1-1      # payment-mechanism spike (needs RAZORPAY test keys)
-make demo            # one-command product demo (lands Day 1 EOD)
-make meter           # regenerate results/cost_meter.json (harness lands Day 3)
-make ablation        # rules-only vs LLM on the same batch (Day 3)
-make fuzz            # conformance matrix (Day 3)
-make project         # channel P&L projection w/ explicit assumptions (Day 3)
+bun install            # or npm install
+bun run dev            # the product → http://localhost:3000 (auto-seeds on boot)
+bun run lint           # eslint
+bun run typecheck      # tsc --noEmit
+
+make verify            # evidence checks (CI entry) — zero deps, node only
+make triage            # 60-second self-guided judge tour
+make fuzz              # attack corpus → results/conformance_matrix.json
+make ablation          # same batch × three protocols → results/ablation.json
+make meter             # channel P&L → results/cost_meter.json
+make project           # at-1M projection → results/project.json
+make audit             # hash-chain walk + tamper control → results/audit_chain.json
+make test              # fuzz + ablation + audit, exit codes propagate
+make spike-d1-1        # payment-mechanism spike (needs RAZORPAY test keys)
 ```
+
+`make verify` is zero-dependency (plain node) — a judge needs nothing installed
+to check the repo's claims. The harnesses run the real engine, so they need one
+`bun install` (or `npx tsx`).
 
 ## Invariants (violating any of these is a build failure of trust)
 
@@ -30,9 +43,10 @@ make project         # channel P&L projection w/ explicit assumptions (Day 3)
    Not even flattering ones. Cite prior art qualitatively.
 3. **No URL ships unless live.** CI checks every external link; a placeholder link is a
    build failure, not a README blemish.
-4. **Money is integer paise.** Floats never touch financial arithmetic.
+4. **Money is integer paise.** Floats never touch financial arithmetic — canonical JSON
+   refuses them, and the refusal is a fuzz case.
 5. **Gate logic is deterministic code, never an LLM.** LLM earns its fee on intent
-   parsing / cart assembly only — and the ablation must prove where.
+   parsing only — and the ablation must prove where.
 6. **Mandates**: canonical JSON (sorted keys, no whitespace), Ed25519 signature,
    bounds re-verified server-side at bind time.
 7. **Every incident → an ENGINEERING_LOG.md entry → a test.** If it broke once, it is
@@ -43,10 +57,27 @@ make project         # channel P&L projection w/ explicit assumptions (Day 3)
 
 ## How to add things
 
-- **A protocol adapter**: `server/src/adapters/<name>/` — implements the mandate request
-  contract, adds its fuzz cases to the conformance corpus, updates the matrix.
-- **A fuzz case**: one file in `fuzz/cases/`, deterministic input, expected verdict
-  (refuse + reason code), wired into `make fuzz`.
+- **A protocol adapter**: implement the transport in
+  `src/lib/customs/adapters/index.ts` following the MCP/ACP pattern (same tool
+  schemas, logged wire), add its wire-overhead accounting to the ablation, and
+  add corpus cases for anything it changes.
+- **A fuzz case**: one entry in `src/lib/customs/fuzz/corpus.ts` — deterministic
+  input, expected verdict (refuse + reason code), then `make fuzz`. Corpus design
+  rule: attacks on legitimately-issued mandates keep valid signatures so the
+  intended bound fires; only the tampering case mutates bytes after signing.
 - **A measured number**: write the harness in `scripts/`, make it emit
-  `results/<name>.json`, then reference the file from JUDGE.md with the regenerate
-  command. The number does not exist until the script produces it.
+  `results/<name>.json` with a `status` and a `regenerate` command, then
+  reference the file from JUDGE.md. The number does not exist until the script
+  produces it.
+- **A catalog product**: one entry in `src/lib/customs/store/catalog.ts`
+  (integer paise, image under `public/products/`). Price points are chosen to
+  exercise tier boundaries — keep at least one item under ₹500.
+
+## State & determinism
+
+- `data/state/` (gitignored) holds the live ledger and test-only Ed25519 keys;
+  both are generated at first boot. The seed history is deterministic (fixed
+  clock, fixed RNG, fixed catalog) so meter numbers regenerate identically;
+  ledger ids/hashes differ per machine — never cite them.
+- Ephemeral runtimes (serverless, read-only FS) run in-memory and are flagged
+  in the UI and `/api/health`. Honesty about state is part of the design.
