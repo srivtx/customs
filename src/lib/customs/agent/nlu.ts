@@ -42,7 +42,7 @@ export function parseIntent(raw: string): Intent {
 
   const atk = lower.match(ATTACK_RE);
   if (atk) return { kind: "attack", attackId: atk[1] };
-  if (/^(hi|hello|hey|namaste|yo|good (morning|evening|afternoon))\b/.test(lower))
+  if (/^(whats up|what's up|wassup|sup|how are you|how are things|how is it going|thanks|thank you|thx|ty|who are you|what are you|good (night|day))\b/.test(lower) || /^(hi|hello|hey|namaste|yo|good (morning|evening|afternoon))\b/.test(lower))
     return { kind: "greeting" };
   if (/^(help|what can you do|commands|how does this work)/.test(lower)) return { kind: "help" };
   if (/\b(attest\w*|verify me|otp|upgrade (my )?(tier|identity))\b/.test(lower))
@@ -88,8 +88,10 @@ export function parseIntent(raw: string): Intent {
     return { kind: "search", query: query || text, maxPricePaise, results };
   }
 
-  // last resort: try it as a product query
-  const results = searchCatalog(lower, 3);
+  // last resort: try it as a product query — but only on a confident hit.
+  // A stray 2-point substring (the "up" inside "Supply") must not turn small
+  // talk into a product card (D5-3).
+  const results = searchCatalog(lower, 3, { minScore: 3 });
   if (results.length > 0) {
     return { kind: "search", query: text, maxPricePaise: parsePriceCeiling(lower), results };
   }

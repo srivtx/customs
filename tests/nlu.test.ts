@@ -25,4 +25,20 @@ describe("nlu: attest triggers (D5-2)", () => {
       expect(parseIntent(phrase)).toMatchObject({ kind: "checkout" });
     }
   );
+
+  test.each(["whats up", "what's up", "thanks", "who are you"])(
+    "small talk greets instead of searching (D5-3): %q",
+    (phrase) => {
+      expect(parseIntent(phrase)).toMatchObject({ kind: "greeting" });
+    }
+  );
+
+  test("last resort is confident-only: a strong product word still searches", () => {
+    expect(parseIntent("earbuds")).toMatchObject({ kind: "search" });
+  });
+
+  test("last resort is confident-only: substring noise cannot invent a product", () => {
+    const intent = parseIntent("up up up");
+    expect(intent.kind).not.toBe("search");
+  });
 });

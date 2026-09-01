@@ -796,3 +796,34 @@ is available).
 the live golden path re-walked over the API: search → attest (tier flips to
 ATTESTED) → add → checkout → the desk signs the ₹4,999 mandate and the
 approval card renders.
+
+---
+
+## 2026-09-01 — D5-3: "whats up" returned a solid-state drive — the forced last resort
+
+**What happened:** a human typed "whats up". The parser's last resort — *try
+any unmatched text as a product query* — ran a fuzzy catalog search in which
+the token "up" substring-matched inside "**Su**p**p**ly" (the merchant
+haystack). One random product card later, the desk had answered a greeting
+with a SSD. The deterministic brain force-parsed casual speech instead of
+admitting it didn't understand.
+
+**Why it matters:** a deterministic agent earns trust by being honest at its
+own boundary. Forcing every utterance into the nearest tool is exactly the
+LLM failure mode the ablation criticizes — rules-brain edition.
+
+**Fix (three layers):**
+1. small talk ("whats up", "thanks", "who are you", …) greets — it never
+   searches;
+2. the last resort now requires a **confident hit** (`minScore: 3` — a real
+   name match, not a stray substring);
+3. `searchCatalog` dedupes tokens — repeated words stacked their scores
+   ("up up up" scored 6), which the new regression test caught on the first
+   run of the fix.
+
+**The test it became:** `tests/nlu.test.ts` — small talk greets, "earbuds"
+still searches (strong hit passes), substring noise cannot invent a product.
+
+**Validation:** 22/22 tests · `make verify` green · live re-walk: "whats up"
+→ greeting · "up up up" → "I didn't catch that." · "earbuds" → products ·
+"search keyboard" → products.

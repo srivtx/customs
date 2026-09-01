@@ -82,12 +82,13 @@ const SYNONYMS: Record<string, string[]> = {
 export function searchCatalog(
   query: string,
   limit = 3,
-  opts?: { ceilingPaise?: number | null }
+  opts?: { ceilingPaise?: number | null; minScore?: number }
 ): Product[] {
   const q = query.toLowerCase().trim();
   if (!q) return [];
   const ceiling = opts?.ceilingPaise ?? null;
-  const tokens = q.split(/[^a-z0-9]+/).filter((t) => t.length > 1);
+  const minScore = opts?.minScore ?? 1;
+  const tokens = [...new Set(q.split(/[^a-z0-9]+/).filter((t) => t.length > 1))];
   const scored = CATALOG.map((p) => {
     const name = p.name.toLowerCase();
     const haystack = `${name} ${p.tagline} ${p.category} ${p.tags.join(" ")}`.toLowerCase();
@@ -101,7 +102,7 @@ export function searchCatalog(
     }
     return { p, score };
   })
-    .filter((s) => s.score > 0)
+    .filter((s) => s.score >= minScore)
     .sort(
       (a, b) =>
         b.score - a.score ||
