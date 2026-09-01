@@ -398,7 +398,7 @@ export function FloatingAgent({ view }: { view: View }) {
           then the green. Both peek from behind the head and tuck away. */}
       {toast === "blue" && (
         <div className="agent-badge pointer-events-none absolute bottom-auto right-[calc(100%+14px)] top-[-8px] z-0" aria-hidden>
-          <span className="inline-flex -rotate-2 items-center gap-1 whitespace-nowrap rounded-[4px] bg-[#3395FF] px-2.5 py-1 font-sans text-[9.5px] font-semibold tracking-[0.04em] text-white">
+          <span className="inline-flex -rotate-2 items-center gap-1 whitespace-nowrap rounded-[4px] bg-[#3395FF] px-2 py-1 font-sans text-[9px] font-semibold tracking-[0.02em] text-white">
             Built for Razorpay
           </span>
         </div>
