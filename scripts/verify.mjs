@@ -76,6 +76,25 @@ ok("ablation reports three protocol arms", Array.isArray(ablation?.arms) && abla
 const project = results["project"];
 ok("projection declares its formula + assumptions", !!project?.formula && !!project?.assumptions);
 
+// 3b. the at-1M net figure must match project.json everywhere it is stated —
+// catches hand-typed ₹ drift (the class of bug where JUDGE.md said 1,06,19,000
+// for a 10,61,90,000 projection: right digits, one zero short).
+const fmtINR = (n) => {
+  const s = String(Math.round(Math.abs(n)));
+  if (s.length <= 3) return s;
+  return s.slice(0, -3).replace(/\B(?=(\d{2})+(?!\d))/g, ",") + "," + s.slice(-3);
+};
+const net = project?.metrics?.at1MPerMonth?.netInr;
+const netStr = `₹${fmtINR(net)}`;
+const wrongStr = `₹${fmtINR(net / 10)}`;
+for (const f of ["JUDGE.md", "README.md", "docs/FORM_ANSWERS.md"]) {
+  const txt = readFileSync(join(ROOT, f), "utf8");
+  ok(`${f} states the at-1M net as ${netStr} (regenerated, not hand-typed)`, txt.includes(netStr));
+  if (txt.includes(wrongStr))
+    ok(`${f} states the at-1M net as ${netStr} (regenerated, not hand-typed)`, false,
+      `found the off-by-10 figure ${wrongStr}`);
+}
+
 // 4. JUDGE.md: every results/ reference must exist; no pending metric rows remain
 const judge = readFileSync(join(ROOT, "JUDGE.md"), "utf8");
 const refd = [...judge.matchAll(/results\/([a-z_]+)\.json/g)].map((m) => m[1]);
@@ -94,6 +113,8 @@ ok(
 // 5. URL discipline: every external URL in judge-facing files is allowlisted
 const URL_ALLOW = [
   /^https:\/\/github\.com\/srivtx\//,
+  /^https:\/\/customs\.srivtx\.xyz\/?$/,
+  /^https:\/\/customs-phi\.vercel\.app\/?$/,
   /^https:\/\/github\.com\/HRaj07\/eacp$/,
   /^https:\/\/(www\.)?razorpay\.com\/docs\//,
   /^https:\/\/(www\.)?razorpay\.com\/buildathon\/?$/,
@@ -109,7 +130,7 @@ for (const f of META_FILES) {
   const text = readFileSync(join(ROOT, f), "utf8");
   for (const url of text.match(urlRe) || []) {
     urlCount++;
-    const clean = url.replace(/[.,]$/, "");
+    const clean = url.replace(/[.,)\]*:]+$/, "");
     const allowed = URL_ALLOW.some((re) => re.test(clean));
     ok(`url allowed (${f}): ${clean}`, allowed);
   }

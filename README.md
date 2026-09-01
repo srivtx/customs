@@ -108,8 +108,8 @@ deterministic rules brain runs everything, replayable.
 | ₹ AI cost per captured payment | ₹0.03 — `make meter` |
 | channel P&amp;L @ 1M payments/month | net ₹10,61,90,000 — `make project` |
 | audit chain | 257 events · tamper control detected — `make audit` |
-| D1-1 payment spike | `blocked-no-keys` — code ready; set test keys and `make spike-d1-1` |
-| Live deployment | PENDING — `DEPLOY.md` is the runbook; CI enforces every shipped link |
+| D1-1 payment spike | executed 2026-09-01 — Orders API verified; demo rail = hosted checkout on real test rails (B), simulation stays the volume/no-keys fallback |
+| Live deployment | **[customs.srivtx.xyz](https://customs.srivtx.xyz)** — real Razorpay test-mode rails; `/api/health` verifies the chain live |
 
 Numbers enter this repo only through regeneration — never by hand
 (`AGENTS.md`, invariant 1). The full shipped/simulated/not-yet ledger lives in

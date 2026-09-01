@@ -44,14 +44,16 @@ command that regenerates it. No number lives only in this document.
    `results/conformance_matrix.json` (12/12), `results/audit_chain.json`,
    `ENGINEERING_LOG.md`, `make fuzz`.
 
-9. **What's working end to end?** Buyer chat → mandate → gate → capture →
-   manifest, on the labeled simulation rail by default; Razorpay test-mode
-   code present and keyed (D1-1 spike ready). Evidence: `make demo`,
-   `results/d1_1_spike.json`.
+9. **What's working end to end?** Live at https://customs.srivtx.xyz: buyer
+   chat → mandate → gate → capture → manifest on **real Razorpay test-mode
+   rails** (D1-1 spike executed 2026-09-01 — Orders API verified, hosted-
+   checkout completion chosen, receipts in the log). Evidence:
+   `/api/health` (`rail: razorpay-test, simulated:false`),
+   `results/d1_1_spike.json`, `make demo`.
 
 10. **What metrics matter?** Agent GMV ₹63,732 / 12 captures on the
     deterministic ledger; ₹0.03 AI cost per captured payment; at 1M
-    payments/month the channel nets ₹1,06,19,000 (formula + labeled
+    payments/month the channel nets ₹10,61,90,000 (formula + labeled
     assumptions). Evidence: `results/cost_meter.json`, `results/project.json`,
     `make meter`, `make project`.
 
@@ -64,8 +66,8 @@ command that regenerates it. No number lives only in this document.
     machine: `JUDGE.md` maps claims to files and commands, `make verify` runs
     the same checks as CI with zero dependencies, no number is hand-written,
     no URL ships until it answers 200, and the scope ledger states the limits
-    (simulation default, no live deploy yet, x402 = stretch). Evidence:
-    `JUDGE.md`, `make triage`.
+    (simulation stays the volume/no-keys fallback, x402 = stretch). Evidence:
+    `JUDGE.md`, `make triage`, https://customs.srivtx.xyz/api/health.
 
 *(Adjust wording to the live form's exact fields — the claim/evidence/command
 pattern is what carries.)*

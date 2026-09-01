@@ -68,7 +68,7 @@ public URL answers at 3 a.m. without a keep-alive hack.
 
    | Variable | Value | What it flips |
    |---|---|---|
-   | `NEXT_PUBLIC_SITE_URL` | `https://<project>.vercel.app` | absolute OG/social URLs (recommended) |
+   | `SITE_URL` | `https://customs.srivtx.xyz` | absolute OG/social URLs, server-only (recommended) |
    | `RAZORPAY_KEY_ID` | `rzp_test_…` | rail from labeled simulation → real **test-mode** |
    | `RAZORPAY_KEY_SECRET` | from the Razorpay test dashboard | with the above |
    | `RAZORPAY_WEBHOOK_SECRET` | from webhook settings (§4) | HMAC-verified webhook |

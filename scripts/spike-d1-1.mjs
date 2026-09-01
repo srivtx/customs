@@ -18,6 +18,15 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+
+// zero-dep .env loader — `make spike-d1-1` must work without hand-exporting vars
+if (existsSync(join(ROOT, ".env"))) {
+  for (const line of readFileSync(join(ROOT, ".env"), "utf8").split("\n")) {
+    const m = line.match(/^\s*([A-Z_][A-Z0-9_]*)\s*=\s*(.*?)\s*$/);
+    if (m && process.env[m[1]] === undefined) process.env[m[1]] = m[2];
+  }
+}
+
 const API = "https://api.razorpay.com/v1";
 const KEY_ID = process.env.RAZORPAY_KEY_ID || "";
 const KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || "";

@@ -1,8 +1,48 @@
 {
-  "status": "blocked-no-keys",
-  "started_at": "2026-08-31T18:54:01.497Z",
-  "key": null,
-  "steps": {},
-  "verdict": null,
-  "notes": "Spike code shipped and ready; awaiting rzp_test_* keys from the operator. Until then the app runs the labeled simulation rail (path C). Set the keys and re-run `make spike-d1-1` to execute paths A/B and flip the live rail."
+  "status": "run",
+  "started_at": "2026-09-01T18:41:58.255Z",
+  "key": "rzp_test_TWs…(redacted)",
+  "steps": {
+    "account": {
+      "status": 404
+    },
+    "order_create": {
+      "status": 200,
+      "id": "order_TWsKOTexAwD82e"
+    },
+    "links_existing": {
+      "status": 200,
+      "count": null
+    },
+    "links_created": 5,
+    "links_cap_hit": {
+      "index": 6,
+      "status": 429,
+      "error": {
+        "description": "Too many requests",
+        "code": "BAD_REQUEST_ERROR"
+      }
+    },
+    "customer_create": {
+      "status": 200,
+      "id": "cust_TWsKTwxuousRMk"
+    },
+    "token_attempt": {
+      "status": 400,
+      "id": null,
+      "error": "type is/are not required and should not be sent"
+    }
+  },
+  "verdict": {
+    "orders_api": "works",
+    "payment_link_cap": {
+      "hit_at": 6,
+      "capped": false,
+      "scope_note": "n/a"
+    },
+    "mechanism_A": "not available server-side",
+    "mechanism_B": "hosted-checkout completion — wire Playwright next (this spike's orders API works as substrate)",
+    "mechanism_C": "labeled simulation — always available, always labeled"
+  },
+  "suggested_log_entry": "## 2026-09-01 — D1-1 result (auto-suggested; paste/adjust in ENGINEERING_LOG.md)\n- Orders API: works\n- Link cap: {\"hit_at\":6,\"capped\":false,\"scope_note\":\"n/a\"}\n- Path A (tokenized): not available server-side\n- Path B substrate: order create ok (order_TWsKOTexAwD82e)\n- Decision: <A | B | C> — <one sentence why>\n- The test it became: link-cap guard + mechanism-labeled audit records"
 }

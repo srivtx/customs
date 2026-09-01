@@ -40,6 +40,21 @@ and flip the rail; the log entry updates itself from the results file.
 **The test it became:** live-key refusal at construction (invariant 8) + the
 rail-label discipline in every capture event.
 
+**Result (test keys arrived same day — spike executed for real):**
+`results/d1_1_spike.json` carries the receipts. Orders API verified live
+(`order_TWsKOTexAwD82e`). Path A is **dead in test mode** — customer creation
+succeeds, but server-side token creation refuses (`400`: "type is/are not
+required and should not be sent"); tokens require the Checkout surface, so a
+zero-UI agent payment does not exist in test mode. The 429 at link 6 is an API
+**rate limit, not** the documented 30/business link cap — cap scope stays
+unresolved, and the volume-runs-on-simulation constraint holds regardless.
+**Decision (final):** **B — hosted-checkout completion on real rails** (order →
+Checkout → documented test card → signature-verified, id-deduped webhook
+capture) is the demo mechanism; C remains the no-keys fallback and the volume
+path; A is re-classified as impossible in test mode, with the receipts to
+prove it. Machine-driven path B completion (Playwright) is the declared
+stretch for the on-camera autonomous payment.
+
 ---
 
 ## 2026-09-01 — D1-2: the ledger is a JSONL file, not a database

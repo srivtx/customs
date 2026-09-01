@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: process.env.NEXT_PUBLIC_SITE_URL ? new URL(process.env.NEXT_PUBLIC_SITE_URL) : undefined,
+  metadataBase: process.env.SITE_URL ? new URL(process.env.SITE_URL) : undefined,
   title: "Customs — both sides of the agentic counter",
   description:
     "A two-sided agentic checkout: the storefront AI buyers transact on, and the merchant desk that lets a payments company trust them — bounded, metered, replayable, provable in 60 seconds. Razorpay AI Buildathon 2026, Track 1. Test mode only.",

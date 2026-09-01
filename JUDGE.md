@@ -21,8 +21,9 @@ make verify     # the exact checks CI runs on every push (zero deps — node onl
 make test       # fuzz + ablation + audit harnesses, exit codes propagate
 ```
 
-The product itself: `make demo` (or `bun install && bun run dev`) — no keys
-needed; captures are stamped SIMULATED until Razorpay test keys land in `.env`.
+The product itself is live: **https://customs.srivtx.xyz** (or `make demo`
+locally — without keys captures are stamped SIMULATED; the live rail is real
+test mode).
 
 ## Mapped to the judging criteria
 
@@ -90,7 +91,7 @@ captured, and the whole sequence is replayable.
 | agent GMV (deterministic 48h ledger) | ₹63,732 · 12 captures | `results/cost_meter.json` | `make meter` |
 | ₹ AI cost per captured payment | ₹0.03 | `results/cost_meter.json` | `make meter` |
 | p50 / p99 gate decision latency | sub-millisecond on the build machine (machine-dependent — never cited as a promise) | `results/cost_meter.json` | `make meter` |
-| channel P&L @ 1M payments/month | net ₹1,06,19,000 (formula + labeled assumptions inside) | `results/project.json` | `make project` |
+| channel P&L @ 1M payments/month | net ₹10,61,90,000 (formula + labeled assumptions inside) | `results/project.json` | `make project` |
 | audit chain | 257 events · tamper control detected | `results/audit_chain.json` | `make audit` |
 | ablation (same batch, three protocols) | 8/8 verdicts · wire 443B / 4,150B / 9,862B | `results/ablation.json` | `make ablation` |
 
@@ -103,14 +104,18 @@ regenerated, never promised.
 - Reading surfaces: the Why view (problem, architecture diagram, scope ledger)
   and the Paper view + `PAPER.md` (protocol, economics, evaluation) ship in-app
   and in-repo; the paper's §5–§6 numbers are the live ledger's, never printed.
-- Live deployment: PENDING — deployment is the operator's step after this
-  build; `DEPLOY.md` is the runbook (free tier, no-spin-down plan included).
-  CI enforces every link that appears, so no URL is shipped until it answers.
-- D1-1 payment mechanism: `results/d1_1_spike.json` status `blocked-no-keys` —
-  path C (labeled simulation) is the shipped default; the Orders + Checkout +
-  signature + webhook code for test-mode rails is present and keyed off
-  `RAZORPAY_KEY_ID/SECRET` in `.env`. Set test keys and run `make spike-d1-1`
-  to execute paths A/B and flip the rail.
+- Live deployment: **https://customs.srivtx.xyz** — `/api/health` answers
+  `ok:true` with `rail: razorpay-test, simulated:false` (real test-mode rails),
+  chain verified, deterministic seed, ephemeral state honestly labeled.
+  CI keeps the URL in this file on every push.
+- D1-1 payment mechanism: **executed with test keys on 2026-09-01**
+  (`results/d1_1_spike.json`) — Orders API verified live; server-side
+  tokenization refused by test mode (path A impossible, receipt in the log);
+  decision **B: hosted-checkout completion on real rails** (order → Checkout →
+  documented test card → signature-verified, id-deduped webhook capture), with
+  the labeled simulation rail as the no-keys/volume fallback. Playwright
+  auto-completion of the hosted page is the declared stretch for the
+  on-camera autonomous payment.
 - x402 adapter: pre-declared **stretch goal**, not core scope. If cut, the cut
   is logged in `ENGINEERING_LOG.md` as scope discipline — the matrix's value
   is conformance, not protocol count.

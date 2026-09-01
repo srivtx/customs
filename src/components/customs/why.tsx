@@ -191,7 +191,7 @@ export function WhyPage({ onEnter }: { onEnter: (v: View) => void }) {
               <Stamp kind="refused" animate={false}>not yet · honest gaps</Stamp>
               <ul className="mt-4 space-y-2.5 text-[12.5px] leading-relaxed text-inksoft">
                 {[
-                  "A public deployment URL — DEPLOY.md is the 10-minute runbook (Vercel free tier); not yet deployed at submission-time of this build",
+                  "Live at customs.srivtx.xyz — real Razorpay test-mode rails (D1-1 spike executed; see results/d1_1_spike.json). Simulation stays the volume/no-keys fallback",
                   "Real third-party agent interop — the buyer agent is in-house; no external agent has paid through the gate yet",
                   "Multi-merchant tenancy and merchant auth — one demo desk, one catalog (Fieldnote Supply)",
                   "Refunds and cancellations — deliberately cut; mandate expiry and refusal handling carry the failure story, and the cut is logged in ENGINEERING_LOG.md",
