@@ -19,7 +19,10 @@ import { DeskHead } from "./bits";
 import type { View } from "./shell";
 import type { ChatEvent } from "@/lib/customs/agent/loop";
 
-const POS_KEY = "customs-agent-pos";
+/* v2: the default dock moved from bottom-right to top-right (~15% down);
+   the key is version-bumped so every browser gets the new dock once —
+   saved v1 positions predate the top dock and would mask it forever */
+const POS_KEY = "customs-agent-pos-v2";
 const SESSION_KEY = "customs-agent-session";
 
 interface Line {
@@ -123,7 +126,7 @@ export function FloatingAgent({ view }: { view: View }) {
     return () => window.removeEventListener("pointerdown", onDown);
   }, [open]);
 
-  /* position: restored, or docked bottom-right on first visit */
+  /* position: restored, or docked top-right on first visit */
   useEffect(() => {
     try {
       const raw = localStorage.getItem(POS_KEY);
@@ -140,7 +143,10 @@ export function FloatingAgent({ view }: { view: View }) {
     } catch {
       /* private mode: dock default, no persistence */
     }
-    setPos({ x: window.innerWidth - 88, y: window.innerHeight - 150 });
+    /* the fresh visit: the desk greets from above — top-right, ~15%
+       down the edge, clear of the page's footer rails; the panel then
+       opens below it */
+    setPos({ x: window.innerWidth - 88, y: Math.max(8, window.innerHeight * 0.15) });
   }, []);
 
   useEffect(() => {
