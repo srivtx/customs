@@ -398,8 +398,9 @@ export function FloatingAgent({ view }: { view: View }) {
           then the green. Both peek from behind the head and tuck away. */}
       {toast === "blue" && (
         <div className="agent-badge pointer-events-none absolute bottom-auto right-[calc(100%+14px)] top-[-8px] z-0" aria-hidden>
-          <span className="inline-flex -rotate-2 items-center gap-1 whitespace-nowrap rounded-[4px] bg-[#3395FF] px-2 py-1 font-sans text-[9px] font-semibold tracking-[0.02em] text-white">
-            Built for Razorpay
+          <span className="flex w-[96px] -rotate-2 flex-col items-center rounded-[4px] bg-[#3395FF] px-2 py-1.5 text-center font-sans text-[9.5px] font-semibold leading-tight tracking-[0.02em] text-white">
+            <span>Built for</span>
+            <span>Razorpay</span>
           </span>
         </div>
       )}
@@ -411,8 +412,9 @@ export function FloatingAgent({ view }: { view: View }) {
           )}
           aria-hidden
         >
-          <span className="agent-badge inline-flex rotate-2 items-center gap-1 whitespace-nowrap rounded-[4px] bg-[#2aa06a] px-2.5 py-1 font-sans text-[10px] font-semibold tracking-[0.03em] text-white">
-            now we can finally pay
+          <span className="agent-badge flex w-[96px] rotate-2 flex-col items-center rounded-[4px] bg-[#2aa06a] px-2 py-1.5 text-center font-sans text-[9.5px] font-semibold leading-tight tracking-[0.02em] text-white">
+            <span>now we can</span>
+            <span>finally pay</span>
           </span>
         </div>
       )}
