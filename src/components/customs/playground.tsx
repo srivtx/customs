@@ -50,6 +50,7 @@ interface ChatResponse {
   cart: [string, number][];
   awaitingMandateApproval: boolean;
   events: ChatEvent[];
+  suggestions?: string[];
   brain: string;
   rail: { id: string; label: string; simulated: boolean };
   error?: string;
@@ -65,6 +66,7 @@ export function Playground() {
   const [rail, setRail] = useState<ChatResponse["rail"] | null>(null);
   const [brain, setBrain] = useState("rules");
   const [sessionFresh, setSessionFresh] = useState(true);
+  const [chips, setChips] = useState<string[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -102,6 +104,7 @@ export function Playground() {
           setBrain(data.brain);
           setSessionFresh(false);
           setEvents((prev) => [...prev, ...data.events]);
+          setChips(data.suggestions ?? []);
         } else {
           setEvents((prev) => [
             ...prev,
@@ -191,6 +194,18 @@ export function Playground() {
           )}
         </div>
 
+        {/* suggested next step — the counter never leaves you guessing */}
+        {chips.length > 0 && !busy && (
+          <div className="flex flex-wrap items-center gap-2 border-t border-line bg-paper2/40 px-4 py-2">
+            <span className="label-caps mr-1 text-inksoft">next</span>
+            {chips.map((c) => (
+              <GhostButton key={c} onClick={() => send(c)}>
+                {c}
+              </GhostButton>
+            ))}
+          </div>
+        )}
+
         {/* composer */}
         <form
           className="flex items-center gap-2 border-t border-line bg-paper2/40 px-4 py-3"
@@ -241,6 +256,7 @@ export function Playground() {
                   setTier(t);
                   setSessionId(null);
                   setEvents([]);
+                  setChips([]);
                   setSessionFresh(true);
                 }}
               >

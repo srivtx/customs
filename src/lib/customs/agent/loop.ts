@@ -65,6 +65,26 @@ export interface TurnResult {
   events: ChatEvent[];
   session: BuyerSession;
   needCheckoutRefresh: boolean;
+  suggestions: string[];
+}
+
+/**
+ * The next one-tap replies, derived from the session's final state — the
+ * counter should never leave a human wondering what to type next (D5-2's
+ * lesson: "attested" worked, but nobody knew to say "checkout" again).
+ * Pure function of (cart, tier, approval state) so it is unit-testable.
+ */
+export function suggestionsFor(
+  lines: { quantity: number; unitPricePaise: number }[],
+  tier: TrustTier,
+  awaitingApproval: boolean
+): string[] {
+  if (awaitingApproval && lines.length) return ["approve"];
+  if (lines.length) {
+    const total = lines.reduce((s, l) => s + l.unitPricePaise * l.quantity, 0);
+    return total > TRUST_TIERS[tier].maxAmountPaise ? ["attest"] : ["checkout"];
+  }
+  return ["search headphones under 5000"];
 }
 
 export async function agentTurn(
@@ -231,7 +251,12 @@ export async function agentTurn(
     events.push({ id: eid(), ts: now(), kind: "step", tool: name, adapter, summary: `${summary} · ${ADAPTERS[adapter].label}`, detail, ms });
   }
 
-  return { events, session, needCheckoutRefresh: toolLog.some((t) => t.name === "bind_and_pay" || t.name === "request_mandate") };
+  return {
+    events,
+    session,
+    needCheckoutRefresh: toolLog.some((t) => t.name === "bind_and_pay" || t.name === "request_mandate"),
+    suggestions: intent.kind === "unknown" ? ["help", ...suggestionsFor(cartLines(rt, session), session.tier, session.awaitingMandateApproval)] : suggestionsFor(cartLines(rt, session), session.tier, session.awaitingMandateApproval),
+  };
 }
 
 /* ------------------------- tool implementations ------------------------- */

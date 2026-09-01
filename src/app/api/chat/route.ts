@@ -33,6 +33,7 @@ export async function POST(req: NextRequest) {
       cart: [...session.cart.entries()],
       awaitingMandateApproval: session.awaitingMandateApproval,
       events: result.events,
+      suggestions: result.suggestions,
       brain: brainMode(),
       rail: railInfo(),
     });
