@@ -302,7 +302,7 @@ export function FloatingAgent({ view }: { view: View }) {
     <div ref={wrapRef} className="fixed z-50 select-none" style={{ left: pos.x, top: pos.y }}>
       {open && (
         <div
-          className="absolute right-0 flex max-h-[470px] w-[330px] flex-col overflow-hidden rounded-[6px] border border-line-strong bg-card"
+          className="animate-rise absolute right-0 flex max-h-[470px] w-[330px] flex-col overflow-hidden rounded-[6px] border border-line-strong bg-card"
           style={panelBelow ? { top: "72px" } : { bottom: "84px" }}
           role="dialog"
           aria-label="the desk agent chat"
@@ -409,7 +409,12 @@ export function FloatingAgent({ view }: { view: View }) {
         title="the desk agent — drag me, click to chat"
         className="relative z-10 block cursor-grab touch-none active:cursor-grabbing"
       >
-        <DeskHead size={56} thinking={busy} className={cn("text-ink transition-transform", open ? "scale-105" : "hover:scale-105")} />
+        <DeskHead
+          size={56}
+          thinking={busy}
+          money={toast === "green" && view === "home"}
+          className={cn("text-ink transition-transform", open ? "scale-105" : "hover:scale-105")}
+        />
       </button>
 
       {/* the game toasts — home only, once per load: Razorpay blue first,

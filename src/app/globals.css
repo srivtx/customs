@@ -434,6 +434,18 @@ html.light {
     60% { transform: translateY(0.5px) scaleY(0.2); }
   }
 
+  /* the money tell — dollar-sign eyes jiggling while the green toast
+     is up: the face smells money moving */
+  @keyframes desk-money {
+    0%, 100% { transform: rotate(-9deg) scale(1); }
+    50% { transform: rotate(9deg) scale(1.18); }
+  }
+  .desk-money {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: desk-money 0.55s ease-in-out infinite;
+  }
+
   /* the everywhere-agent's badge — a game toast in Razorpay's own blue.
      It peeks out from BEHIND the head toward the top-left once on load,
      holds a beat, and tucks itself back away. The head renders above
@@ -786,6 +798,7 @@ html.light {
   .type-caret::after,
   .desk-eye-g,
   .desk-eye,
+  .desk-money,
   .agent-badge,
   .hb-bot,
   .hb-eye,
