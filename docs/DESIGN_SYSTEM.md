@@ -140,6 +140,11 @@ never a wide bar.
 - `prefers-reduced-motion: reduce`: every CSS loop is listed in the global
   kill-switch; SMIL is paused via `svg.pauseAnimations()` in the component.
   Theme flips and hover states remain (they are state, not motion).
+- **Transcript cascade:** a chat turn's batch settles top-to-bottom — the last
+  two children of `.chat-scroll` rise 70/140ms after the rest (a `--d` delay on
+  the existing `.animate-rise`; transform/opacity only). The mark's diamond
+  carries one subtle corner rounding (d=5 quadratic at each vertex) — sharp
+  corners read blunt at badge sizes.
 - Scrollbars: the window keeps one thin themed pill; inner panels hide theirs
   entirely and scroll on wheel/touch. **Chain rule:** a horizontal-only
   overflow window (`.quiet-scroll` — wide `<pre>`/`<table>` blocks) must NEVER
@@ -188,6 +193,14 @@ Lowercase for actions and system labels ("see the protocol run live",
 (`refused: mandate expired`). Nothing says "revolutionary", "magic", "powered by".
 Test mode is always labeled where money is shown. Numbers that came from the
 ledger say so (`make meter`), numbers that did not exist yet do not appear.
+
+**The chat speaks human.** One idea per bubble, two short sentences max. The
+words "Razorpay", "test mode" and crypto ("Ed25519") never appear in prose —
+the rail lives in the header stamp (`SANDBOX`/`SIM`) and the receipt's mono
+footer, the signature hash lives on the mandate card, amounts live in the
+cards (§3: amounts never use sans). Prose carries intent ("Paid.", "You're
+verified.", "That's over your current limit."); chips carry the next step,
+with human labels and parser-exact payloads (`Raise limit` → `attest`).
 
 ## 9. Do / Don't
 

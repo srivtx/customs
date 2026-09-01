@@ -41,7 +41,7 @@ export function LogoMark({ size = 28, className }: { size?: number; className?: 
       <path
         fill="currentColor"
         fillRule="evenodd"
-        d="M48 9 L87 48 L48 87 L9 48 Z M41 36 A7 7 0 0 1 55 36 L55 60 A7 7 0 0 1 41 60 Z"
+        d="M44.46 12.54 Q48 9 51.54 12.54 L83.46 44.46 Q87 48 83.46 51.54 L51.54 84.46 Q48 87 44.46 84.46 L12.54 51.54 Q9 48 12.54 44.46 Z M41 36 A7 7 0 0 1 55 36 L55 60 A7 7 0 0 1 41 60 Z"
       />
     </svg>
   );

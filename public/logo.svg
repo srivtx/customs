@@ -2,5 +2,5 @@
   <!-- Customs — the gate diamond (the mark, on the night tile) -->
   <rect x="0.5" y="0.5" width="95" height="95" rx="18" fill="#050505" stroke="rgba(255,255,255,0.14)"/>
   <path fill="#f4f4f0" fill-rule="evenodd"
-    d="M48 13 L83 48 L48 83 L13 48 Z M42 36 A6 6 0 0 1 54 36 L54 60 A6 6 0 0 1 42 60 Z"/>
+    d="M44.46 16.54 Q48 13 51.54 16.54 L79.46 44.46 Q83 48 79.46 51.54 L51.54 79.46 Q48 83 44.46 79.46 L16.54 51.54 Q13 48 16.54 44.46 Z M42 36 A6 6 0 0 1 54 36 L54 60 A6 6 0 0 1 42 60 Z"/>
 </svg>

@@ -10,7 +10,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { ChatEventView } from "./chat-events";
 import { InkButton, SectionLabel, Stamp, TierChip, GhostButton, Typing, ManifestRow, inr, Kbd, LogoMark } from "./bits";
-import type { ChatEvent } from "@/lib/customs/agent/loop";
+import type { ChatEvent, Suggestion } from "@/lib/customs/agent/loop";
 import type { AdapterId } from "@/lib/customs/adapters";
 import { ADAPTERS } from "@/lib/customs/adapters";
 import { TRUST_TIERS, TrustTier } from "@/lib/customs/gate/types";
@@ -18,13 +18,9 @@ import { TRUST_TIERS, TrustTier } from "@/lib/customs/gate/types";
 const ADAPTER_ORDER: AdapterId[] = ["naive", "mcp", "acp"];
 const TIERS: TrustTier[] = ["UNVERIFIED", "ATTESTED", "MANDATED"];
 
-const SUGGESTIONS = [
-  "search headphones under 5000",
-  "add bud-pro-earbuds",
-  "search keyboard",
-  "checkout",
-  "attest",
-  "attack: tampered-signature",
+const EMPTY_CHIPS: Suggestion[] = [
+  { label: "Find something", value: "search headphones under 5000" },
+  { label: "Attack the desk", value: "attack: tampered-signature" },
 ];
 
 const RED_TEAM = [
@@ -50,7 +46,7 @@ interface ChatResponse {
   cart: [string, number][];
   awaitingMandateApproval: boolean;
   events: ChatEvent[];
-  suggestions?: string[];
+  suggestions?: Suggestion[];
   brain: string;
   rail: { id: string; label: string; simulated: boolean };
   error?: string;
@@ -66,7 +62,7 @@ export function Playground() {
   const [rail, setRail] = useState<ChatResponse["rail"] | null>(null);
   const [brain, setBrain] = useState("rules");
   const [sessionFresh, setSessionFresh] = useState(true);
-  const [chips, setChips] = useState<string[]>([]);
+  const [chips, setChips] = useState<Suggestion[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -140,10 +136,9 @@ export function Playground() {
           <div className="flex items-center gap-2">
             {rail && (
               <Stamp kind={rail.simulated ? "sim" : "cleared"} animate={false}>
-                {rail.simulated ? "SIMULATED RAIL" : "RAZORPAY TEST"}
+                {rail.simulated ? "SIM" : "SANDBOX"}
               </Stamp>
             )}
-            <Stamp kind="ink" animate={false}>BRAIN: {brain}</Stamp>
           </div>
         </header>
 
@@ -172,9 +167,9 @@ export function Playground() {
                 <Kbd>attest</Kbd>, then push the desk with the red team.
               </p>
               <div className="mt-5 flex flex-wrap justify-center gap-2">
-                {SUGGESTIONS.map((s) => (
-                  <GhostButton key={s} onClick={() => send(s)}>
-                    {s}
+                {EMPTY_CHIPS.map((c) => (
+                  <GhostButton key={c.value} onClick={() => send(c.value)}>
+                    {c.label}
                   </GhostButton>
                 ))}
               </div>
@@ -188,7 +183,7 @@ export function Playground() {
               <LogoMark size={16} className="text-inksoft" />
               <Typing />
               <span className="text-[12px] text-inksoft">
-                parsing intent · calling tools through {ADAPTERS[adapter].label} · gate checks pending
+                the desk is working
               </span>
             </div>
           )}
@@ -198,10 +193,14 @@ export function Playground() {
         {chips.length > 0 && !busy && (
           <div className="flex flex-wrap items-center gap-2 border-t border-line bg-paper2/40 px-4 py-2">
             <span className="label-caps mr-1 text-inksoft">next</span>
-            {chips.map((c) => (
-              <GhostButton key={c} onClick={() => send(c)}>
-                {c}
-              </GhostButton>
+            {chips.map((c, i) => (
+              <span
+                key={c.value}
+                className="animate-rise inline-flex"
+                style={{ animationDelay: `${i * 60}ms` }}
+              >
+                <GhostButton onClick={() => send(c.value)}>{c.label}</GhostButton>
+              </span>
             ))}
           </div>
         )}
@@ -243,6 +242,7 @@ export function Playground() {
             <ManifestRow left="distinct items" right={String(TRUST_TIERS[tier].maxItems)} />
             <ManifestRow left="mandate lifetime" right={`${Math.round(TRUST_TIERS[tier].mandateTtlMs / 60000)} min`} />
             <ManifestRow left="human desk over" right={inr(1_000_000)} />
+            <ManifestRow left="brain" right={brain} />
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
             {TIERS.map((t) => (

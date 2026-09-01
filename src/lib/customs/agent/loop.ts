@@ -65,26 +65,36 @@ export interface TurnResult {
   events: ChatEvent[];
   session: BuyerSession;
   needCheckoutRefresh: boolean;
-  suggestions: string[];
+  suggestions: Suggestion[];
+}
+
+export interface Suggestion {
+  label: string;
+  value: string;
 }
 
 /**
  * The next one-tap replies, derived from the session's final state — the
  * counter should never leave a human wondering what to type next (D5-2's
  * lesson: "attested" worked, but nobody knew to say "checkout" again).
+ * Labels speak human ("Raise limit"); payloads stay parser-exact ("attest").
  * Pure function of (cart, tier, approval state) so it is unit-testable.
  */
 export function suggestionsFor(
   lines: { quantity: number; unitPricePaise: number }[],
   tier: TrustTier,
-  awaitingApproval: boolean
-): string[] {
-  if (awaitingApproval && lines.length) return ["approve"];
+  awaitingApproval: boolean,
+  found?: { id: string; name: string } | null
+): Suggestion[] {
+  if (awaitingApproval && lines.length) return [{ label: "Approve", value: "approve" }];
   if (lines.length) {
     const total = lines.reduce((s, l) => s + l.unitPricePaise * l.quantity, 0);
-    return total > TRUST_TIERS[tier].maxAmountPaise ? ["attest"] : ["checkout"];
+    return total > TRUST_TIERS[tier].maxAmountPaise
+      ? [{ label: "Raise limit", value: "attest" }]
+      : [{ label: "Checkout", value: "checkout" }];
   }
-  return ["search headphones under 5000"];
+  if (found) return [{ label: `Add ${found.name}`, value: `add ${found.id}` }];
+  return [{ label: "Find something", value: "search headphones under 5000" }];
 }
 
 export async function agentTurn(
@@ -96,6 +106,7 @@ export async function agentTurn(
 ): Promise<TurnResult> {
   const events: ChatEvent[] = [];
   const say = (text: string) => events.push({ id: eid(), ts: Date.now(), role: "agent", text });
+  let firstMatch: { id: string; name: string } | null = null;
   const session = opts?.sessionless
     ? { sessionId: "ses_adhoc", buyerId: "buyer-adhoc", tier: "UNVERIFIED" as TrustTier, cart: new Map<string, number>(), mandate: null, awaitingMandateApproval: false, lastOrderId: null, createdAtMs: Date.now() }
     : rt.sessions.get(sessionId) ?? newSession(rt);
@@ -167,14 +178,16 @@ export async function agentTurn(
       }
       session.tier = next;
       rt.ledger.append("tier.raised", { sessionId: session.sessionId, buyerId: session.buyerId, to: next, via: "attest (OTP-bound in production)" });
-      events.push({ id: eid(), ts: now(), kind: "tier", tier: next, note: `attested — ${TRUST_TIERS[next].blurb}` });
-      say(`Attested. You now clear as **${TRUST_TIERS[next].label}**: ${TRUST_TIERS[next].blurb}`);
+      const t = TRUST_TIERS[next];
+      events.push({ id: eid(), ts: now(), kind: "tier", tier: next, note: `${rupees(t.maxAmountPaise)} cap · ${t.maxItems} item${t.maxItems > 1 ? "s" : ""} · ${Math.round(t.mandateTtlMs / 60000)} min` });
+      say(next === "ATTESTED" ? "You're verified." : "Standing mandate — the highest limits.");
       break;
     }
     case "search": {
       // the ceiling rides with the intent — the cleaned query no longer
       // carries "under 5,000", so re-parsing it from text would lose it
-      await runTool("search_catalog", { query: intent.query, maxPricePaise: intent.maxPricePaise }, "Searched the catalog");
+      const res = await runTool("search_catalog", { query: intent.query, maxPricePaise: intent.maxPricePaise }, "Searched the catalog");
+      firstMatch = Array.isArray(res) && res[0]?.id ? { id: String(res[0].id), name: String(res[0].name) } : null;
       break;
     }
     case "add": {
@@ -195,7 +208,7 @@ export async function agentTurn(
     case "cart": {
       const lines = cartLines(rt, session);
       events.push({ id: eid(), ts: now(), kind: "cart", lines, totalPaise: lines.reduce((s, l) => s + l.unitPricePaise * l.quantity, 0) });
-      say(lines.length ? `That's the cart. Say **checkout** and I'll request a mandate from the desk.` : `The cart is empty — search for something first.`);
+      say(lines.length ? `That's the cart.` : `The cart is empty — search for something first.`);
       break;
     }
     case "checkout": {
@@ -206,10 +219,7 @@ export async function agentTurn(
       }
       const total = lines.reduce((s, l) => s + l.unitPricePaise * l.quantity, 0);
       if (total > TRUST_TIERS[session.tier].maxAmountPaise) {
-        say(
-          `The cart totals ${rupees(total)}, over the ${rupees(TRUST_TIERS[session.tier].maxAmountPaise)} bound for a ${TRUST_TIERS[session.tier].label}. ` +
-            `I won't ask the desk — it would be refused on sight. Remove something, or type "attest" to raise your tier.`
-        );
+        say(`That's over your current limit.`);
         break;
       }
       await runTool("request_mandate", {}, "Requested a mandate from the desk");
@@ -234,10 +244,7 @@ export async function agentTurn(
       break;
     }
     case "unknown": {
-      say(
-        `I couldn't map that to the catalog. I'm a deterministic agent — try "search <item>", e.g. "search keyboard". ` +
-          `For free-form conversation, set AGENT_BRAIN=llm with a key (the ablation measures both brains).`
-      );
+      say(`I didn't catch that.`);
       break;
     }
   }
@@ -249,13 +256,17 @@ export async function agentTurn(
     const detail = res.wire.map((w) => `${w.dir === "out" ? "→" : "←"} ${w.method ?? ""} ${w.body.slice(0, 220)}`).join("\n");
     toolLog.push({ name, ms, wire: res.wire.map((w) => ({ dir: w.dir, bytes: w.bytes, body: w.body })) });
     events.push({ id: eid(), ts: now(), kind: "step", tool: name, adapter, summary: `${summary} · ${ADAPTERS[adapter].label}`, detail, ms });
+    return res.value;
   }
 
   return {
     events,
     session,
     needCheckoutRefresh: toolLog.some((t) => t.name === "bind_and_pay" || t.name === "request_mandate"),
-    suggestions: intent.kind === "unknown" ? ["help", ...suggestionsFor(cartLines(rt, session), session.tier, session.awaitingMandateApproval)] : suggestionsFor(cartLines(rt, session), session.tier, session.awaitingMandateApproval),
+    suggestions:
+      intent.kind === "unknown"
+        ? [{ label: "Help", value: "help" }, ...suggestionsFor(cartLines(rt, session), session.tier, session.awaitingMandateApproval)]
+        : suggestionsFor(cartLines(rt, session), session.tier, session.awaitingMandateApproval, firstMatch),
   };
 }
 
@@ -281,8 +292,8 @@ async function executeTool(
       events.push({ id: eid(), ts: Date.now(), kind: "products", products: results, note });
       say(
         results.length
-          ? `Found ${results.length} match${results.length > 1 ? "es" : ""}${note ? ` (${note})` : ""}. I can add any of them — "add ${results[0].id}".`
-          : `Nothing matched${ceiling ? ` under ${rupees(ceiling)}` : ""}. Try a broader search.`
+          ? results.length === 1 ? `One match.` : `${results.length} matches.`
+          : `Nothing matched — try a broader search.`
       );
       return results.map((p) => ({ id: p.id, name: p.name, pricePaise: p.pricePaise, stock: p.stock }));
     }
@@ -298,7 +309,7 @@ async function executeTool(
       const lines = cartLines(rt, session);
       const total = lines.reduce((s, l) => s + l.unitPricePaise * l.quantity, 0);
       events.push({ id: eid(), ts: Date.now(), kind: "cart", lines, totalPaise: total });
-      say(`Cart: ${lines.map((l) => `${l.name} ×${l.quantity}`).join(", ")} — ${rupees(total)} total. Say **checkout** to request a mandate.`);
+      say(`Added.`);
       return { added: true, cartLines: lines.length, totalPaise: total };
     }
     case "request_mandate": {
@@ -338,9 +349,8 @@ async function executeTool(
       events.push({ id: eid(), ts: Date.now(), kind: "mandate", mandate: view, pendingApproval: true });
       const over10k = total >= 1_000_000;
       say(
-        `The desk signed a mandate for ${rupees(total)} — cap, items, and a ${Math.round((mandate.expiresAtMs - Date.now()) / 60000)}-minute expiry, Ed25519 over canonical JSON. ` +
-          `Approve it and I bind and pay within those bounds.` +
-          (over10k ? ` Note: over ₹10,000 also waits for the merchant desk's human approval before capture.` : ``)
+        `The desk approved your mandate — it holds for ${Math.round((mandate.expiresAtMs - Date.now()) / 60000)} minutes.` +
+          (over10k ? ` It's above ₹10,000, so the merchant desk signs off too.` : ``)
       );
       return { mandateId: mandate.id, cap: mandate.amountCapPaise, expiresAtMs: mandate.expiresAtMs };
     }
@@ -362,8 +372,8 @@ async function executeTool(
         const manifestNo = `FN-MA-${String(rt.ledger.all().length).padStart(6, "0")}`;
         events.push({ id: eid(), ts: Date.now(), kind: "receipt", orderId: tx.orderId, manifestNo, lines: lines.map((l) => ({ name: l.name, quantity: l.quantity, unitPricePaise: l.unitPricePaise })), totalPaise: tx.decision.totalPaise, rail: rail.id, simulated: rail.simulated });
         say(
-          `Cleared and ${rail.simulated ? "captured (SIMULATED — no keys configured)" : "captured on Razorpay test mode"}: ${rupees(tx.decision.totalPaise)}. ` +
-            `Every check passed — the checklist is above, the spans are in the ledger, and the manifest is ${manifestNo}. The cart is empty again.`
+          `Paid.` +
+            (rail.simulated ? ` (simulated)` : ``)
         );
         session.cart.clear();
         session.mandate = null;
@@ -371,11 +381,11 @@ async function executeTool(
       }
       if (tx.decision.kind === "HOLD_FOR_APPROVAL") {
         events.push({ id: eid(), ts: Date.now(), kind: "payment", orderId: tx.orderId, totalPaise: tx.decision.totalPaise, status: "held", rail: "none", simulated: false });
-        say(`${rupees(tx.decision.totalPaise)} is over the ₹10,000 human-approval threshold. The order is HELD at the merchant desk — approve it in the Control Room and I'll capture on the next bind.`);
+        say(`Above ₹10,000 — the merchant desk holds it. Approve it in the Control Room.`);
         return { bound: true, held: true, orderId: tx.orderId };
       }
       events.push({ id: eid(), ts: Date.now(), kind: "payment", orderId: tx.orderId, totalPaise: 0, status: "refused", rail: "none", simulated: false });
-      say(`The gate refused: ${tx.decision.reason}. The audit entry is written; the Control Room's Blocks panel has the one-liner.`);
+      say(`The gate said no — the card above shows why.`);
       return { bound: false, refused: true, code: tx.decision.code, orderId: tx.orderId };
     }
     default:

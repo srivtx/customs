@@ -130,7 +130,7 @@ export function ChatEventView({
           <div className="flex items-center gap-3">
             {event.status === "captured" && (
               <Stamp kind={event.simulated ? "sim" : "cleared"}>
-                {event.simulated ? "SIMULATED CAPTURE" : "CAPTURED · TEST MODE"}
+                {event.simulated ? "SIMULATED CAPTURE" : "CAPTURED · SANDBOX"}
               </Stamp>
             )}
             {event.status === "held" && <Stamp kind="held">HELD AT DESK</Stamp>}
@@ -204,7 +204,7 @@ export function ChatEventView({
       return (
         <div className="animate-rise my-2 flex items-center gap-3 rounded-[4px] border border-cleared/30 bg-cleared-ink px-3.5 py-2.5">
           <TierChip tier={event.tier} />
-          <span className="text-[12px] text-ink">{event.note}</span>
+          <span className="font-mono text-[11px] text-ink">{event.note}</span>
         </div>
       );
     default:
