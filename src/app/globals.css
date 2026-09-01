@@ -368,6 +368,18 @@ html.light {
     animation: rise 0.28s cubic-bezier(0.25, 1, 0.5, 1) both;
     animation-delay: var(--d, 0ms);
   }
+
+  /* the desk head's thinking tell — three dots breathing in sequence.
+     The eyes squeeze down to dot height first (the morph), then pulse. */
+  @keyframes desk-dot {
+    0%, 100% { transform: scaleY(1); opacity: 1; }
+    50% { transform: scaleY(0.35); opacity: 0.5; }
+  }
+  .desk-head.thinking .desk-dot {
+    animation: desk-dot 1.05s ease-in-out infinite;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
   /* a demo beat — softer and longer than a UI row: it must read as
      one motion with the stack's glide beneath it, so the arrival
      curve is expo-out and the travel is a touch further. No
@@ -706,6 +718,7 @@ html.light {
   .row-fresh,
   .view-enter,
   .type-caret::after,
+  .desk-head.thinking .desk-dot,
   .hb-bot,
   .hb-eye,
   .hb-eye-unit,

@@ -29,19 +29,33 @@ export function monoId(id: string, max = 14): string {
  * two eyes, nothing else (no mouth: it listens, it doesn't grin). Ink on
  * paper via tokens, so it inverts with the theme: a dark head with pale
  * eyes on the light desk, a pale head with dark eyes on the night desk.
+ *
+ * `thinking` morphs the eyes into three pulsing dots — the desk is working
+ * tell (grok-style): the face compresses, the dots breathe in sequence,
+ * and the reply arrives while the last dot is still mid-pulse.
  */
-export function DeskHead({ size = 18, className }: { size?: number; className?: string }) {
+export function DeskHead({ size = 18, thinking = false, className }: { size?: number; thinking?: boolean; className?: string }) {
   return (
     <svg
       width={size}
       height={size}
       viewBox="0 0 32 32"
       aria-hidden="true"
-      className={cn("shrink-0", className)}
+      className={cn("desk-head shrink-0", thinking && "thinking", className)}
     >
       <circle cx="16" cy="16" r="13" fill="currentColor" />
-      <circle cx="11.5" cy="14.5" r="2.1" fill="var(--paper)" />
-      <circle cx="20.5" cy="14.5" r="2.1" fill="var(--paper)" />
+      {thinking ? (
+        <>
+          <circle className="desk-dot" style={{ animationDelay: "0ms" }} cx="9.5" cy="16.5" r="2" fill="var(--paper)" />
+          <circle className="desk-dot" style={{ animationDelay: "160ms" }} cx="16" cy="16.5" r="2" fill="var(--paper)" />
+          <circle className="desk-dot" style={{ animationDelay: "320ms" }} cx="22.5" cy="16.5" r="2" fill="var(--paper)" />
+        </>
+      ) : (
+        <>
+          <circle className="desk-eye" cx="11.5" cy="14.5" r="2.1" fill="var(--paper)" />
+          <circle className="desk-eye" cx="20.5" cy="14.5" r="2.1" fill="var(--paper)" />
+        </>
+      )}
     </svg>
   );
 }

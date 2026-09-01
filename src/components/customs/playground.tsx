@@ -9,7 +9,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { ChatEventView } from "./chat-events";
-import { InkButton, SectionLabel, Stamp, TierChip, GhostButton, Typing, ManifestRow, inr, Kbd, LogoMark } from "./bits";
+import { InkButton, SectionLabel, Stamp, TierChip, GhostButton, DeskHead, ManifestRow, inr, Kbd, LogoMark } from "./bits";
 import type { ChatEvent, Suggestion } from "@/lib/customs/agent/loop";
 import type { AdapterId } from "@/lib/customs/adapters";
 import { ADAPTERS } from "@/lib/customs/adapters";
@@ -20,7 +20,7 @@ const TIERS: TrustTier[] = ["UNVERIFIED", "ATTESTED", "MANDATED"];
 
 const EMPTY_CHIPS: Suggestion[] = [
   { label: "Show me headphones", value: "search headphones under 5000" },
-  { label: "Desk setup under ₹10,000", value: "search desk under 10000" },
+  { label: "Desk accessories under ₹10,000", value: "search desk under 10000" },
   { label: "Attack the desk", value: "attack: tampered-signature" },
 ];
 
@@ -184,12 +184,9 @@ export function Playground() {
             <ChatEventView key={e.id} event={e} onSend={send} delay={delays.current.get(e.id) ?? 0} />
           ))}
           {busy && (
-            <div className="flex items-center gap-3 px-1 py-2">
-              <LogoMark size={16} className="text-inksoft" />
-              <Typing />
-              <span className="text-[12px] text-inksoft">
-                the desk is working
-              </span>
+            <div className="flex animate-rise items-center gap-3 px-1 py-2">
+              <DeskHead size={24} thinking className="text-ink" />
+              <span className="text-[12px] text-inksoft">the desk is working</span>
             </div>
           )}
         </div>

@@ -99,20 +99,19 @@ function ChatEventInner({
               <button
                 key={p.id}
                 onClick={() => onSend(`add ${p.id}`)}
-                className="card-lift group overflow-hidden rounded-[4px] border border-line bg-card text-left focus-visible:outline-2 focus-visible:outline-ink"
+                className="card-lift group flex overflow-hidden rounded-[4px] border border-line bg-card text-left focus-visible:outline-2 focus-visible:outline-ink sm:block"
               >
-                {/* product photo — square, full color, center-cropped: the
-                    same frame every commerce shelf uses. Plain img: local
-                    files, fixed sizes, no remote optimizer. */}
+                {/* product still — square on desktop, a compact row on
+                    mobile: full-width photos at 375px read as zoomed crops */}
                 <img
                   src={p.image}
                   alt={p.name}
                   width={640}
                   height={640}
                   loading="lazy"
-                  className="aspect-square w-full border-b border-line object-cover"
+                  className="h-24 w-28 shrink-0 border-r border-line object-cover sm:h-auto sm:w-full sm:border-b sm:border-r-0"
                 />
-                <div className="px-3 py-2">
+                <div className="flex min-w-0 flex-1 flex-col justify-center px-3 py-2 sm:block">
                   <div className="truncate text-[12px] font-medium text-ink">{p.name}</div>
                   <div className="flex items-baseline justify-between gap-2">
                     <span className="tnum font-mono text-[13px] font-semibold text-ink">{inr(p.pricePaise)}</span>
