@@ -164,7 +164,7 @@ the **Why it exists** view and `PAPER.md` §7.
 | `src/lib/customs/adapters/index.ts` | naive / MCP-style / ACP-style transports |
 | `src/lib/customs/fuzz/corpus.ts` | the authored attack corpus |
 | `src/lib/customs/meter.ts` | channel P&L + projection (assumptions declared) |
-| `src/lib/customs/store/catalog.ts` | Fieldnote Supply — 20 products, integer paise |
+| `src/lib/customs/store/catalog.ts` | Fieldnote Supply — 21 products, integer paise |
 | `src/lib/customs/runtime.ts` | wiring + deterministic 48h seed history |
 | `src/app/page.tsx` | one route, five surfaces |
 | `src/app/icon.svg` | the gate diamond — favicon (night tile) |

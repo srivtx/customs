@@ -9,9 +9,9 @@ const line = (qty: number, unitPaise: number) => ({ quantity: qty, unitPricePais
 const values = (s: { label: string; value: string }[]) => s.map((x) => x.value);
 
 describe("suggestionsFor — the counter always offers the next step", () => {
-  test("empty cart → find something", () => {
+  test("empty cart → keep browsing", () => {
     expect(suggestionsFor([], "UNVERIFIED", false)).toEqual([
-      { label: "Find something", value: "search headphones under 5000" },
+      { label: "Keep browsing", value: "search audio" },
     ]);
   });
 

@@ -94,7 +94,7 @@ export function suggestionsFor(
       : [{ label: "Checkout", value: "checkout" }];
   }
   if (found) return [{ label: `Add ${found.name}`, value: `add ${found.id}` }];
-  return [{ label: "Find something", value: "search headphones under 5000" }];
+  return [{ label: "Keep browsing", value: "search audio" }];
 }
 
 export async function agentTurn(
@@ -146,7 +146,7 @@ export async function agentTurn(
   switch (intent.kind) {
     case "greeting": {
       say(
-        `Customs desk, open. I'm your buying agent for Fieldnote Supply — 20 items in the catalog. ` +
+        `Customs desk, open. I'm your buying agent for Fieldnote Supply — ${rt.catalog.byId.size} items in the catalog. ` +
           `Tell me what you need ("noise cancelling headphones under ₹5,000") and I'll search, build a cart, and ask the desk for a bounded mandate. ` +
           `Your trust tier is **${TRUST_TIERS[session.tier].label}** (${TRUST_TIERS[session.tier].blurb}).`
       );

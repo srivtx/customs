@@ -19,7 +19,8 @@ const ADAPTER_ORDER: AdapterId[] = ["naive", "mcp", "acp"];
 const TIERS: TrustTier[] = ["UNVERIFIED", "ATTESTED", "MANDATED"];
 
 const EMPTY_CHIPS: Suggestion[] = [
-  { label: "Find something", value: "search headphones under 5000" },
+  { label: "Show me headphones", value: "search headphones under 5000" },
+  { label: "Desk setup under ₹10,000", value: "search desk under 10000" },
   { label: "Attack the desk", value: "attack: tampered-signature" },
 ];
 
@@ -63,6 +64,9 @@ export function Playground() {
   const [brain, setBrain] = useState("rules");
   const [sessionFresh, setSessionFresh] = useState(true);
   const [chips, setChips] = useState<Suggestion[]>([]);
+  /* per-event cascade: each event in a turn's batch mounts 90ms after the
+     one above it (capped) — the transcript settles like speech, not a dump */
+  const delays = useRef(new Map<string, number>());
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -99,6 +103,7 @@ export function Playground() {
           setRail(data.rail);
           setBrain(data.brain);
           setSessionFresh(false);
+          data.events.forEach((e, i) => delays.current.set(e.id, Math.min(i * 90, 400)));
           setEvents((prev) => [...prev, ...data.events]);
           setChips(data.suggestions ?? []);
         } else {
@@ -176,7 +181,7 @@ export function Playground() {
             </div>
           )}
           {events.map((e) => (
-            <ChatEventView key={e.id} event={e} onSend={send} />
+            <ChatEventView key={e.id} event={e} onSend={send} delay={delays.current.get(e.id) ?? 0} />
           ))}
           {busy && (
             <div className="flex items-center gap-3 px-1 py-2">

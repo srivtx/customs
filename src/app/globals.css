@@ -368,12 +368,6 @@ html.light {
     animation: rise 0.28s cubic-bezier(0.25, 1, 0.5, 1) both;
     animation-delay: var(--d, 0ms);
   }
-
-  /* transcript cascade — a turn's batch settles top-to-bottom, the way a
-     good chat reads: the newest two children arrive a breath apart instead
-     of in one frame. Pure delay on an existing transform/opacity enter. */
-  .chat-scroll > *:nth-last-child(1) { --d: 140ms; }
-  .chat-scroll > *:nth-last-child(2) { --d: 70ms; }
   /* a demo beat — softer and longer than a UI row: it must read as
      one motion with the stack's glide beneath it, so the arrival
      curve is expo-out and the travel is a touch further. No

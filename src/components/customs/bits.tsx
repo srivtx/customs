@@ -25,6 +25,28 @@ export function monoId(id: string, max = 14): string {
 /* ---------------- the gate diamond — the Customs mark ---------------- */
 
 /**
+ * The desk head — the agent's avatar in the transcript. A round head and
+ * two eyes, nothing else (no mouth: it listens, it doesn't grin). Ink on
+ * paper via tokens, so it inverts with the theme: a dark head with pale
+ * eyes on the light desk, a pale head with dark eyes on the night desk.
+ */
+export function DeskHead({ size = 18, className }: { size?: number; className?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 32 32"
+      aria-hidden="true"
+      className={cn("shrink-0", className)}
+    >
+      <circle cx="16" cy="16" r="13" fill="currentColor" />
+      <circle cx="11.5" cy="14.5" r="2.1" fill="var(--paper)" />
+      <circle cx="20.5" cy="14.5" r="2.1" fill="var(--paper)" />
+    </svg>
+  );
+}
+
+/**
  * A solid diamond with a negative-space mandate slot cut through it:
  * value passes only through the authorization. CurrentColor so it sits
  * on any ground; one shape from favicon to footer.

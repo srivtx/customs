@@ -7,7 +7,7 @@
  */
 import { ReactNode, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import { inr, Stamp, TierChip, InkButton, LogoMark, monoId, ManifestRow } from "./bits";
+import { inr, Stamp, TierChip, InkButton, DeskHead, monoId, ManifestRow } from "./bits";
 import type { ChatEvent as ChatEventT } from "@/lib/customs/agent/loop";
 import type { Product } from "@/lib/customs/store/catalog";
 
@@ -40,6 +40,24 @@ function tsOf(ts: number) {
 export function ChatEventView({
   event,
   onSend,
+  delay = 0,
+}: {
+  event: ChatEventT;
+  onSend: (text: string) => void;
+  delay?: number;
+}) {
+  /* the per-event cascade delay rides a CSS variable so every enter
+     animation inside the event reads the same clock */
+  return (
+    <div style={{ "--d": `${delay}ms` } as React.CSSProperties}>
+      <ChatEventInner event={event} onSend={onSend} />
+    </div>
+  );
+}
+
+function ChatEventInner({
+  event,
+  onSend,
 }: {
   event: ChatEventT;
   onSend: (text: string) => void;
@@ -48,7 +66,7 @@ export function ChatEventView({
     const isUser = event.role === "user";
     return (
       <div className={cn("animate-rise flex gap-3 py-2", isUser ? "justify-end" : "justify-start")}>
-        {!isUser && <LogoMark size={18} className="mt-1 shrink-0 text-ink/70" />}
+        {!isUser && <DeskHead size={20} className="mt-1 shrink-0 text-ink" />}
         <div
           className={cn(
             "max-w-[82%] rounded-[4px] border px-3.5 py-2.5 text-[13.5px] leading-relaxed",
