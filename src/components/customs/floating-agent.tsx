@@ -67,9 +67,30 @@ export function FloatingAgent() {
   const inputRef = useRef<HTMLInputElement>(null);
   const idRef = useRef(1);
   const drag = useRef({ active: false, moved: false, px: 0, py: 0, ox: 0, oy: 0 });
+  const idleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
   /* the fresh page: the conversation fades before it clears — a reset
      should read as turning a sheet over, not a wipe */
   const [clearing, setClearing] = useState(false);
+
+  /* the panel minds itself: it closes on outside click, and if a visitor
+     walks away mid-thought, it closes itself after 45 quiet seconds */
+  const armAutoClose = () => {
+    if (idleRef.current) clearTimeout(idleRef.current);
+    idleRef.current = setTimeout(() => setOpen(false), 45_000);
+  };
+  useEffect(() => {
+    if (!open) {
+      if (idleRef.current) clearTimeout(idleRef.current);
+      return;
+    }
+    armAutoClose();
+    const onDown = (e: PointerEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    window.addEventListener("pointerdown", onDown);
+    return () => window.removeEventListener("pointerdown", onDown);
+  }, [open]);
 
   /* position: restored, or docked bottom-right on first visit */
   useEffect(() => {
@@ -201,7 +222,7 @@ export function FloatingAgent() {
   if (!pos) return null;
 
   return (
-    <div className="fixed z-50 select-none" style={{ left: pos.x, top: pos.y }}>
+    <div ref={wrapRef} className="fixed z-50 select-none" style={{ left: pos.x, top: pos.y }}>
       {open && (
         <div
           className="absolute right-0 flex max-h-[470px] w-[330px] flex-col overflow-hidden rounded-[6px] border border-line-strong bg-card"
@@ -279,7 +300,10 @@ export function FloatingAgent() {
               <input
                 ref={inputRef}
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={(e) => {
+                setInput(e.target.value);
+                armAutoClose();
+              }}
                 placeholder="ask the desk…"
                 aria-label="message the desk agent"
                 className="h-6 flex-1 bg-transparent text-[12.5px] text-ink placeholder:text-inksoft/60 focus:outline-none"
@@ -311,11 +335,11 @@ export function FloatingAgent() {
         <DeskHead size={56} thinking={busy} className={cn("text-ink transition-transform", open ? "scale-105" : "hover:scale-105")} />
       </button>
 
-      {/* the game toast — Razorpay blue, peeking from behind the head
-          toward the top-left once on load, then tucking itself away */}
-      <div className="agent-badge pointer-events-none absolute -top-8 left-[-16px] z-0" aria-hidden>
+      {/* the game toast — Razorpay blue, fully clear of the head: to its
+          left, just above head height, peeking in from behind on load */}
+      <div className="agent-badge pointer-events-none absolute bottom-auto right-[calc(100%+14px)] top-[-8px] z-0" aria-hidden>
         <span className="inline-flex -rotate-2 items-center gap-1 rounded-[4px] bg-[#3395FF] px-2 py-1 font-sans text-[9.5px] font-semibold tracking-[0.04em] text-white">
-          Powered by Razorpay
+          Built for Razorpay
         </span>
       </div>
     </div>
