@@ -311,11 +311,11 @@ export function FloatingAgent() {
         <DeskHead size={56} thinking={busy} className={cn("text-ink transition-transform", open ? "scale-105" : "hover:scale-105")} />
       </button>
 
-      {/* the game toast — peeks out from behind the head once on load,
-          holds, and tucks itself away; the head renders above it */}
-      <div className="agent-badge pointer-events-none absolute -bottom-8 right-2 z-0" aria-hidden>
-        <span className="block rounded-[3px] border border-line bg-card px-2 py-0.5 font-mono text-[8px] uppercase tracking-[0.16em] text-inksoft/80">
-          powered by razorpay
+      {/* the game toast — Razorpay blue, peeking from behind the head
+          toward the top-left once on load, then tucking itself away */}
+      <div className="agent-badge pointer-events-none absolute -top-8 left-[-16px] z-0" aria-hidden>
+        <span className="inline-flex -rotate-2 items-center gap-1 rounded-[4px] bg-[#3395FF] px-2 py-1 font-sans text-[9.5px] font-semibold tracking-[0.04em] text-white">
+          Powered by Razorpay
         </span>
       </div>
     </div>

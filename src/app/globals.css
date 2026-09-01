@@ -434,13 +434,14 @@ html.light {
     60% { transform: translateY(0.5px) scaleY(0.2); }
   }
 
-  /* the everywhere-agent's badge — a game toast: it peeks out from
-     BEHIND the head once on load, holds a beat, and tucks itself away.
-     The head renders above it, so the peek reads as from-behind. */
+  /* the everywhere-agent's badge — a game toast in Razorpay's own blue.
+     It peeks out from BEHIND the head toward the top-left once on load,
+     holds a beat, and tucks itself back away. The head renders above
+     it, so the peek reads as from-behind. */
   @keyframes agent-badge-peek {
-    0% { opacity: 0; transform: translateY(-14px) scale(0.7); }
-    12%, 76% { opacity: 1; transform: translateY(0) scale(1); }
-    100% { opacity: 0; transform: translateY(-12px) scale(0.75); }
+    0% { opacity: 0; transform: translate(14px, 18px) scale(0.6); }
+    14%, 74% { opacity: 1; transform: translate(0, 0) scale(1); }
+    100% { opacity: 0; transform: translate(12px, 15px) scale(0.7); }
   }
   .agent-badge {
     animation: agent-badge-peek 5.5s cubic-bezier(0.22, 1, 0.36, 1) 0.9s both;
