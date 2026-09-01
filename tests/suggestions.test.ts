@@ -36,6 +36,6 @@ describe("suggestionsFor — the counter always offers the next step", () => {
   });
 
   test("post-capture (cart cleared) → back to search", () => {
-    expect(values(suggestionsFor([], "MANDATED", false))).toEqual(["search headphones under 5000"]);
+    expect(values(suggestionsFor([], "MANDATED", false))).toEqual(["search audio"]);
   });
 });
