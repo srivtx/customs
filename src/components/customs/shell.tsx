@@ -15,7 +15,9 @@ import { WhyPage } from "./why";
 import { PaperPage } from "./paper";
 import { Playground } from "./playground";
 import { ControlRoom } from "./control-room";
+import { FloatingAgent } from "./floating-agent";
 import { SiteFooter } from "./footer";
+import { SystemThemeAsk } from "./theme";
 
 export type View = "home" | "why" | "paper" | "agent" | "merchant";
 
@@ -152,6 +154,10 @@ export function CustomsApp() {
 
       {/* ------------------------------ footer ------------------------------ */}
       <SiteFooter onEnter={go} />
+
+      {/* the everywhere-agent — draggable, on every view, real shopping */}
+      <FloatingAgent view={view} />
+      <SystemThemeAsk />
     </div>
   );
 }

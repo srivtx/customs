@@ -10,7 +10,7 @@ import { randomUUID, createHmac } from "node:crypto";
 import { CustomsRuntime, BuyerSession } from "../runtime";
 import { parseIntent, Intent } from "./nlu";
 import { adapterCall, AdapterId, ADAPTERS } from "../adapters";
-import { getLlmBrain, brainMode } from "./llm";
+import { getLlmBrain, brainMode, getChatVoice } from "./llm";
 import { Product, searchCatalog, parsePriceCeiling } from "../store/catalog";
 import { GateDecision, TrustTier, TRUST_TIERS, Mandate } from "../gate/types";
 import { signMandate, buildMandateBody } from "../gate/mandate";
@@ -119,6 +119,23 @@ export async function agentTurn(
   let tokensIn = 0;
   let tokensOut = 0;
   const llm = brainMode() === "llm" ? getLlmBrain() : null;
+  /* the companion voice — independent of AGENT_BRAIN: any provider key
+     unlocks it, because casual chat is not the demo-critical intent path */
+  const voice = getChatVoice();
+  const speakThroughVoice = async (message: string, fallback: string) => {
+    if (!voice) {
+      say(fallback);
+      return;
+    }
+    const t0 = performance.now();
+    const { reply, usage, model } = await voice.chat(message);
+    newSpan(rt.deps, `tr_ses_${session.sessionId}`, session.lastOrderId ?? "none", "llm.chat", Math.round(performance.now() - t0), adapter, {
+      tokensIn: usage.tokensIn,
+      tokensOut: usage.tokensOut,
+      model,
+    });
+    say(reply || fallback);
+  };
   if (llm) {
     const t0 = performance.now();
     const { intent: parsed, usage } = await llm.parseIntent(message);
@@ -145,7 +162,10 @@ export async function agentTurn(
 
   switch (intent.kind) {
     case "greeting": {
-      say(
+      /* a greeting is casual speech — when the cheap voice is available it
+         answers like a person; without a key, the canned desk-open line */
+      await speakThroughVoice(
+        message,
         `Customs desk, open. I'm your buying agent for Fieldnote Supply — ${rt.catalog.byId.size} items in the catalog. ` +
           `Tell me what you need ("noise cancelling headphones under ₹5,000") and I'll search, build a cart, and ask the desk for a bounded mandate. ` +
           `Your trust tier is **${TRUST_TIERS[session.tier].label}** (${TRUST_TIERS[session.tier].blurb}).`
@@ -244,7 +264,11 @@ export async function agentTurn(
       break;
     }
     case "unknown": {
-      say(`I didn't catch that.`);
+      /* the desk admits what it didn't understand — and the cheap voice
+         answers casual questions briefly. Shopping commands never reach
+         here (regex caught them above), so this path costs a few tokens
+         only when a human actually chats. */
+      await speakThroughVoice(message, `I didn't catch that.`);
       break;
     }
   }

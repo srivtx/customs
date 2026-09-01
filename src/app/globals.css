@@ -433,6 +433,88 @@ html.light {
     40% { transform: translateY(-2.5px) scaleY(0.5); }
     60% { transform: translateY(0.5px) scaleY(0.2); }
   }
+
+  /* the money tell — x.ai/grok language, take two: a scaled circle is
+     forever an ellipse, so the round eye does NOT stretch itself. A
+     capsule (rect, rx = half width — round caps, straight parallel
+     sides) grows OUT of the circle instead: at every scale >= 0.56 it
+     fully contains the circle (same width, same center), so the
+     capsule alone morphs — opaque the whole way — while the circle
+     never fades and never moves. The return is ease-IN-OUT off the
+     hold, so the capsule glides back down around the circle instead
+     of snapping shut; the capsule only dissolves at the end, when it
+     is nearly the circle's own size and the handback is invisible.
+     Eye, capsule and $ share one clock (5.6s) and the badge's 0.9s
+     peek delay; e2 trails 140ms like a real face. Only the money tell
+     morphs — idle and thinking keep the circle. */
+  @keyframes desk-money-circle {
+    0%, 78% { transform: scaleY(1); }
+    86% { transform: scaleY(1.1); }
+    94%, 100% { transform: scaleY(1); }
+  }
+  @keyframes desk-money-capsule {
+    0% { opacity: 0; transform: scaleY(0.58); }
+    3% { opacity: 1; transform: scaleY(0.58); }
+    5% { transform: scaleY(0.62); }
+    11% { transform: scaleY(1); }
+    30% { animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); transform: scaleY(1); }
+    40% { transform: scaleY(0.58); }
+    43% { opacity: 1; }
+    47% { opacity: 0; transform: scaleY(0.58); }
+    100% { opacity: 0; transform: scaleY(0.58); }
+  }
+  @keyframes desk-money-pop {
+    0%, 3% { opacity: 0; transform: translateY(2.4px) scale(0.45); }
+    12% { opacity: 1; transform: translateY(-0.5px) scale(1.08); }
+    16% { opacity: 1; transform: translateY(0) scale(1); }
+    44% { opacity: 1; transform: translateY(0) scale(1); }
+    52% { opacity: 1; transform: translateY(0) scale(1.16); }
+    60% { opacity: 1; transform: translateY(0) scale(1); }
+    82% { opacity: 1; transform: translateY(0) scale(1); }
+    92%, 100% { opacity: 0; transform: translateY(1.6px) scale(0.5); }
+  }
+  .desk-eye-capsule {
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .desk-money {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .desk-head.money .desk-eye-g {
+    /* the tell needs a steady gaze: the idle wander PAUSES wherever it
+       is — no snap to center — and resumes exactly in phase when the
+       money tell ends. Outside money the ball jumps as always. */
+    animation-play-state: paused;
+  }
+  .desk-head.money .desk-eye {
+    animation: desk-money-circle 5.6s cubic-bezier(0.22, 1, 0.36, 1) 0.9s infinite both;
+  }
+  .desk-head.money .desk-eye-capsule {
+    animation: desk-money-capsule 5.6s cubic-bezier(0.22, 1, 0.36, 1) 0.9s infinite both;
+  }
+  .desk-head.money .desk-money {
+    animation: desk-money-pop 5.6s cubic-bezier(0.22, 1, 0.36, 1) 0.9s infinite both;
+  }
+  .desk-head.money .desk-eye-g.e2 .desk-eye,
+  .desk-head.money .desk-eye-g.e2 .desk-eye-capsule,
+  .desk-head.money .desk-eye-g.e2 .desk-money {
+    animation-delay: 1.04s;
+  }
+
+  /* the everywhere-agent's badge — a game toast in Razorpay's own blue.
+     It peeks out from BEHIND the head toward the top-left once on load,
+     holds a beat, and tucks itself back away. The head renders above
+     it, so the peek reads as from-behind. */
+  @keyframes agent-badge-peek {
+    0% { opacity: 0; transform: translate(14px, 18px) scale(0.6); }
+    14%, 74% { opacity: 1; transform: translate(0, 0) scale(1); }
+    100% { opacity: 0; transform: translate(12px, 15px) scale(0.7); }
+  }
+  .agent-badge {
+    animation: agent-badge-peek 5.5s cubic-bezier(0.22, 1, 0.36, 1) 0.9s both;
+  }
   /* a demo beat — softer and longer than a UI row: it must read as
      one motion with the stack's glide beneath it, so the arrival
      curve is expo-out and the travel is a touch further. No
@@ -773,6 +855,9 @@ html.light {
   .type-caret::after,
   .desk-eye-g,
   .desk-eye,
+  .desk-eye-capsule,
+  .desk-money,
+  .agent-badge,
   .hb-bot,
   .hb-eye,
   .hb-eye-unit,

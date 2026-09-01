@@ -169,7 +169,15 @@ export function Playground() {
         </div>
 
         {/* transcript */}
-        <div ref={scrollRef} className="chat-scroll flex-1 space-y-1 overflow-y-auto px-4 py-4" style={{ maxHeight: "min(62vh, 660px)" }}>
+        <div
+          ref={scrollRef}
+          role="log"
+          aria-live="polite"
+          aria-atomic="false"
+          aria-label="agent conversation"
+          className="chat-scroll flex-1 space-y-1 overflow-y-auto px-4 py-4"
+          style={{ maxHeight: "min(62vh, 660px)" }}
+        >
           {events.length === 0 && (
             <div className="py-12 text-center">
               <LogoMark size={40} className="mx-auto mb-4 text-ink/80" />

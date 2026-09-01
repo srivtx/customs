@@ -827,3 +827,50 @@ still searches (strong hit passes), substring noise cannot invent a product.
 **Validation:** 22/22 tests · `make verify` green · live re-walk: "whats up"
 → greeting · "up up up" → "I didn't catch that." · "earbuds" → products ·
 "search keyboard" → products.
+
+---
+
+## 2026-09-01 — D6-2: the voice round — chat speaks human, the head is alive, the demo obeys its own gate
+
+**What happened:** the first human walk of the product (not the code) found
+three classes of wrongness, all shipped by an agent building features faster
+than it was building feel.
+
+1. **The chat spoke engineer.** "Ed25519 over canonical JSON", "Razorpay test
+   mode", "OTP-bound" — architecture prose in a buyer's conversation. The
+   design contract already had the law (§8: test mode is labeled *where money
+   is shown*); the chat violated it. Every bubble is now one idea, two short
+   sentences; rail truth lives in the `SANDBOX` stamp and the receipt's mono
+   footer; chips carry the next step with human labels and parser-exact
+   payloads (`Raise limit` → `attest`).
+2. **The demo disobeyed its own gate.** The landing player showed a ₹6,998
+   mandate on an ATTESTED tier whose cap is ₹5,000 — the fiction contradicted
+   the engine any judge could run. The script now walks the real policy:
+   ₹4,999, refused at ₹500, attested, mandated, captured.
+3. **The demo truncated text on some runs.** Beats advanced on fixed timers
+   while typing ran on its own: "get me the bud-pro earbuds" needed ~1090ms
+   on a 900ms stage, and the updater targeted "the last entry" — so the
+   tail of the line leaked into the *next* beat. Durations are now derived
+   from content (typing + reading beat; gate ticks + hold), and updates
+   target entries by stable id. The "sometimes it shows the full text"
+   glitch is dead by construction.
+
+**Also this round:** the desk head replaced the diamond in chat (round head,
+two eyes, no mouth — the mouth accusation came from a squash that dropped the
+eyes toward jaw height; the squash now stays at eye height, by rule), the
+idle choreography (look-up stretch, glances, blink), the thinking morph
+(stretch → squash → dance at eye height) with a 1500ms minimum stage time,
+guided quick-reply chips, real product stills with a mismatch audit
+(four wrong subjects caught by eye, two unsourceable products removed, three
+added — the ₹499 hardcover makes the walk-in tier purchasable), branded 404
+and error boundary, `aria-live` transcript, and a copy-the-receipt
+affirmordance.
+
+**The test it became:** `tests/nlu.test.ts` (small talk, fragments, attestation
+family), `tests/suggestions.test.ts` (chip boundaries at every tier cap) —
+plus the seed bug CI caught: `data/state` persisted locally while CI re-seeded,
+so the removed `port-webcam-2k` crashed only the fresh clone. The seed now
+references shipped products only, and all numbers regenerate from the new
+catalog (GMV ₹60,530 · 13 captures · net@1M ₹9,30,93,000).
+
+---
