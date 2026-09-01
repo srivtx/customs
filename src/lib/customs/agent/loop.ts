@@ -244,7 +244,22 @@ export async function agentTurn(
       break;
     }
     case "unknown": {
-      say(`I didn't catch that.`);
+      /* the desk admits what it didn't understand — and, when a brain is
+         configured, the cheap chat voice answers casual questions briefly.
+         Shopping commands never reach here (regex caught them above), so
+         this path costs a few tokens only when a human actually chats. */
+      if (llm?.chat) {
+        const t0 = performance.now();
+        const { reply, usage, model } = await llm.chat(message);
+        newSpan(rt.deps, `tr_ses_${session.sessionId}`, session.lastOrderId ?? "none", "llm.chat", Math.round(performance.now() - t0), adapter, {
+          tokensIn: usage.tokensIn,
+          tokensOut: usage.tokensOut,
+          model,
+        });
+        say(reply || `I didn't catch that.`);
+      } else {
+        say(`I didn't catch that.`);
+      }
       break;
     }
   }

@@ -433,6 +433,15 @@ html.light {
     40% { transform: translateY(-2.5px) scaleY(0.5); }
     60% { transform: translateY(0.5px) scaleY(0.2); }
   }
+
+  /* the everywhere-agent's badge — a quiet breath, not a glow */
+  @keyframes agent-pill-breathe {
+    0%, 100% { opacity: 0.55; }
+    50% { opacity: 0.9; }
+  }
+  .agent-pill {
+    animation: agent-pill-breathe 4.5s ease-in-out infinite;
+  }
   /* a demo beat — softer and longer than a UI row: it must read as
      one motion with the stack's glide beneath it, so the arrival
      curve is expo-out and the travel is a touch further. No
@@ -773,6 +782,7 @@ html.light {
   .type-caret::after,
   .desk-eye-g,
   .desk-eye,
+  .agent-pill,
   .hb-bot,
   .hb-eye,
   .hb-eye-unit,

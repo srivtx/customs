@@ -7,7 +7,7 @@
  * by CSS so hydration never flickers. Choice persists in localStorage
  * and is applied pre-paint by the no-flash script in layout.tsx.
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 const NIGHT_THEME_COLOR = "#050505";
@@ -73,5 +73,68 @@ export function ThemeToggle({ className }: { className?: string }) {
         <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
       </svg>
     </button>
+  );
+}
+
+/**
+ * SystemThemeAsk — the one necessary question. On a first visit (no stored
+ * choice) from a device whose OS prefers dark, the desk asks whether to
+ * match it; the answer is remembered and the question never returns.
+ * Everything else defaults to light, silently.
+ */
+export function SystemThemeAsk() {
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    try {
+      if (localStorage.getItem("customs-theme")) return;
+      if (localStorage.getItem("customs-theme-ask") === "done") return;
+      if (!window.matchMedia("(prefers-color-scheme: dark)").matches) return;
+    } catch {
+      /* private mode: no stored choice to consult — stay light, ask nothing */
+      return;
+    }
+    /* deferred a tick so the ask never fires a synchronous re-render */
+    const t = setTimeout(() => setShow(true), 400);
+    return () => clearTimeout(t);
+  }, []);
+
+  if (!show) return null;
+
+  const settle = (dark: boolean) => {
+    const root = document.documentElement;
+    root.classList.toggle("light", !dark);
+    try {
+      localStorage.setItem("customs-theme", dark ? "dark" : "light");
+      localStorage.setItem("customs-theme-ask", "done");
+    } catch {
+      /* the toggle still worked for this visit */
+    }
+    document
+      .querySelectorAll('meta[name="theme-color"]')
+      .forEach((m) => m.setAttribute("content", dark ? NIGHT_THEME_COLOR : DAY_THEME_COLOR));
+    setShow(false);
+  };
+
+  return (
+    <div className="animate-rise fixed bottom-20 left-5 z-50 max-w-[250px] rounded-[4px] border border-line bg-card px-3.5 py-3">
+      <p className="text-[12.5px] leading-relaxed text-ink">
+        Your system prefers dark. Should the desk match it?
+      </p>
+      <div className="mt-2.5 flex gap-2">
+        <button
+          onClick={() => settle(true)}
+          className="inline-flex h-8 items-center rounded-[4px] bg-ink px-3 text-[12px] font-medium text-paper transition-opacity hover:opacity-90"
+        >
+          go dark
+        </button>
+        <button
+          onClick={() => settle(false)}
+          className="inline-flex h-8 items-center rounded-[4px] border border-line2 px-3 text-[12px] font-medium text-ink transition-colors hover:border-ink/30"
+        >
+          keep light
+        </button>
+      </div>
+    </div>
   );
 }

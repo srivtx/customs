@@ -54,7 +54,7 @@ export const viewport: Viewport = {
 
 /* Applied before first paint so the saved theme never flashes: the
    night ledger is the default; "light" rides the document root. */
-const THEME_BOOT = `(function(){try{var t=localStorage.getItem("customs-theme");if(t==="light")document.documentElement.classList.add("light")}catch(e){}})();`;
+const THEME_BOOT = `(function(){try{var t=localStorage.getItem("customs-theme");if(t!=="dark")document.documentElement.classList.add("light")}catch(e){}})();`;
 
 export default function RootLayout({
   children,
