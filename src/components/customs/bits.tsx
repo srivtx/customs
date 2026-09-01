@@ -44,18 +44,9 @@ export function DeskHead({ size = 18, thinking = false, className }: { size?: nu
       className={cn("desk-head shrink-0", thinking && "thinking", className)}
     >
       <circle cx="16" cy="16" r="13" fill="currentColor" />
-      {thinking ? (
-        <>
-          <circle className="desk-dot" style={{ animationDelay: "0ms" }} cx="9.5" cy="16.5" r="2" fill="var(--paper)" />
-          <circle className="desk-dot" style={{ animationDelay: "160ms" }} cx="16" cy="16.5" r="2" fill="var(--paper)" />
-          <circle className="desk-dot" style={{ animationDelay: "320ms" }} cx="22.5" cy="16.5" r="2" fill="var(--paper)" />
-        </>
-      ) : (
-        <>
-          <circle className="desk-eye" cx="11.5" cy="14.5" r="2.1" fill="var(--paper)" />
-          <circle className="desk-eye" cx="20.5" cy="14.5" r="2.1" fill="var(--paper)" />
-        </>
-      )}
+      <circle className="desk-eye" cx="11.5" cy="14.5" r="2.1" fill="var(--paper)" />
+      <circle className="desk-eye" cx="20.5" cy="14.5" r="2.1" fill="var(--paper)" />
+      <circle className="desk-dot-c" cx="16" cy="16.5" r="2" fill="var(--paper)" />
     </svg>
   );
 }

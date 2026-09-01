@@ -369,16 +369,38 @@ html.light {
     animation-delay: var(--d, 0ms);
   }
 
-  /* the desk head's thinking tell — three dots breathing in sequence.
-     The eyes squeeze down to dot height first (the morph), then pulse. */
-  @keyframes desk-dot {
-    0%, 100% { transform: scaleY(1); opacity: 1; }
-    50% { transform: scaleY(0.35); opacity: 0.5; }
-  }
-  .desk-head.thinking .desk-dot {
-    animation: desk-dot 1.05s ease-in-out infinite;
+  /* the desk head — alive in every state. Idle: it blinks once every
+     few seconds. Thinking: the eyes stretch, squash into three dots and
+     breathe in sequence until the reply lands (the grok tell). All
+     transform/opacity; the morph is a transition so it also plays
+     backwards when the reply arrives. */
+  .desk-eye {
     transform-box: fill-box;
     transform-origin: center;
+    animation: desk-blink 6s ease-in-out infinite;
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease;
+  }
+  .desk-head.thinking .desk-eye {
+    transform: scaleY(0.26) translateY(2.5px);
+    animation: desk-breathe 1.05s ease-in-out 0.5s infinite;
+  }
+  .desk-dot-c {
+    transform-box: fill-box;
+    transform-origin: center;
+    opacity: 0;
+    transition: opacity 0.3s ease 0.15s;
+  }
+  .desk-head.thinking .desk-dot-c {
+    opacity: 1;
+    animation: desk-breathe 1.05s ease-in-out 0.62s infinite;
+  }
+  @keyframes desk-blink {
+    0%, 93%, 100% { transform: scaleY(1); }
+    95.5% { transform: scaleY(0.12); }
+  }
+  @keyframes desk-breathe {
+    0%, 100% { transform: scaleY(0.26) translateY(2.5px); opacity: 1; }
+    50% { transform: scaleY(0.5) translateY(2.5px); opacity: 0.6; }
   }
   /* a demo beat — softer and longer than a UI row: it must read as
      one motion with the stack's glide beneath it, so the arrival
@@ -718,7 +740,8 @@ html.light {
   .row-fresh,
   .view-enter,
   .type-caret::after,
-  .desk-head.thinking .desk-dot,
+  .desk-eye,
+  .desk-dot-c,
   .hb-bot,
   .hb-eye,
   .hb-eye-unit,

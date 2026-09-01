@@ -90,6 +90,12 @@ export function Playground() {
       if (!message || busy) return;
       setBusy(true);
       setInput("");
+      /* the desk takes a breath before answering: a reply that lands in
+         80ms reads as fake (and the thinking morph never plays). Hold the
+         thinking state for at least a beat — the grok tell needs stage
+         time to be believed. */
+      const thinkFrom = performance.now();
+      const MIN_THINK_MS = 900;
       try {
         const res = await fetch("/api/chat", {
           method: "POST",
@@ -97,6 +103,8 @@ export function Playground() {
           body: JSON.stringify({ sessionId, message, adapter }),
         });
         const data = (await res.json()) as ChatResponse;
+        const rest = MIN_THINK_MS - (performance.now() - thinkFrom);
+        if (rest > 0) await new Promise((r) => setTimeout(r, rest));
         if (data.ok) {
           setSessionId(data.sessionId);
           setTier(data.tier);
