@@ -57,6 +57,32 @@ function summarize(events: ChatEvent[], startId: number): Line[] {
 
 type Toast = "idle" | "blue" | "green" | "done";
 
+/**
+ * TypeLine — the desk's voice arrives like speech: a smooth left-to-right
+ * reveal (~80 chars/s), not a paste. Respects reduced-motion (instant).
+ */
+function TypeLine({ text, className }: { text: string; className?: string }) {
+  const [n, setN] = useState(0);
+  useEffect(() => {
+    setN(0);
+    if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setN(text.length);
+      return;
+    }
+    const iv = setInterval(() => {
+      setN((v) => {
+        if (v >= text.length) {
+          clearInterval(iv);
+          return v;
+        }
+        return Math.min(v + 2, text.length);
+      });
+    }, 24);
+    return () => clearInterval(iv);
+  }, [text]);
+  return <span className={className}>{text.slice(0, n)}</span>;
+}
+
 export function FloatingAgent({ view }: { view: View }) {
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
   const [open, setOpen] = useState(false);
@@ -139,13 +165,16 @@ export function FloatingAgent({ view }: { view: View }) {
     }
   }, []);
 
-  /* the toast sequence — gated on a fully loaded page, home only */
+  /* the toast sequence — blue greets every view once per load; green is
+     the home-page beat. Timings never collide: blue finishes before
+     green starts. Navigating away fades green smoothly instead of
+     snapping it out of existence. */
   useEffect(() => {
-    if (view !== "home" || toast !== "idle") return;
+    if (toast !== "idle") return;
     const arm = () => {
       const t1 = setTimeout(() => setToast("blue"), 900);
-      const t2 = setTimeout(() => setToast("green"), 6600);
-      const t3 = setTimeout(() => setToast("done"), 12400);
+      const t2 = setTimeout(() => setToast("green"), 7200);
+      const t3 = setTimeout(() => setToast("done"), 13500);
       cleanup = () => {
         clearTimeout(t1);
         clearTimeout(t2);
@@ -159,7 +188,7 @@ export function FloatingAgent({ view }: { view: View }) {
       cleanup = () => window.removeEventListener("load", arm);
     }
     return () => cleanup?.();
-  }, [view, toast]);
+  }, [toast]);
 
   useEffect(() => {
     if (open) inputRef.current?.focus();
@@ -312,7 +341,7 @@ export function FloatingAgent({ view }: { view: View }) {
                 </div>
               ) : l.who === "agent" ? (
                 <p key={l.id} className="animate-rise text-[12.5px] leading-relaxed text-ink">
-                  {l.text}
+                  <TypeLine text={l.text} />
                 </p>
               ) : (
                 <p key={l.id} className="animate-rise border-l border-line pl-2 font-mono text-[10.5px] leading-relaxed text-inksoft">
@@ -366,16 +395,22 @@ export function FloatingAgent({ view }: { view: View }) {
 
       {/* the game toasts — home only, once per load: Razorpay blue first,
           then the green. Both peek from behind the head and tuck away. */}
-      {view === "home" && toast === "blue" && (
+      {toast === "blue" && (
         <div className="agent-badge pointer-events-none absolute bottom-auto right-[calc(100%+14px)] top-[-8px] z-0" aria-hidden>
           <span className="inline-flex -rotate-2 items-center gap-1 rounded-[4px] bg-[#3395FF] px-2 py-1 font-sans text-[9.5px] font-semibold tracking-[0.04em] text-white">
             Built for Razorpay
           </span>
         </div>
       )}
-      {view === "home" && toast === "green" && (
-        <div className="agent-badge pointer-events-none absolute bottom-auto right-[calc(100%+14px)] top-[-8px] z-0" aria-hidden>
-          <span className="inline-flex rotate-2 items-center gap-1 rounded-[4px] bg-[#2aa06a] px-2 py-1 font-sans text-[9.5px] font-semibold tracking-[0.04em] text-white">
+      {toast === "green" && (
+        <div
+          className={cn(
+            "pointer-events-none absolute bottom-auto right-[calc(100%+14px)] top-[-8px] z-0 transition-opacity duration-500",
+            view === "home" ? "opacity-100" : "opacity-0"
+          )}
+          aria-hidden
+        >
+          <span className="agent-badge inline-flex rotate-2 items-center gap-1 rounded-[4px] bg-[#2aa06a] px-2 py-1 font-sans text-[9.5px] font-semibold tracking-[0.04em] text-white">
             now we can finally pay
           </span>
         </div>
