@@ -163,30 +163,33 @@ export function FloatingAgent({ view }: { view: View }) {
     }
   }, []);
 
-  /* the toast sequence — blue greets every view once per load; green is
-     the home-page beat. Timings never collide: blue finishes before
-     green starts. Navigating away fades green smoothly instead of
-     snapping it out of existence. */
+  /* the toast sequence — armed ONCE on load, immune to phase changes.
+     The old version scheduled all three toasts in an effect keyed on
+     `toast`, so the blue phase's own cleanup cancelled green's timer
+     before it could fire: blue showed, green never did. Now the
+     sequence runs to completion unless the component unmounts. */
   useEffect(() => {
-    if (toast !== "idle") return;
+    let cancelled = false;
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const at = (ms: number, fn: () => void) =>
+      timers.push(setTimeout(() => { if (!cancelled) fn(); }, ms));
     const arm = () => {
-      const t1 = setTimeout(() => setToast("blue"), 900);
-      const t2 = setTimeout(() => setToast("green"), 7200);
-      const t3 = setTimeout(() => setToast("done"), 13500);
-      cleanup = () => {
-        clearTimeout(t1);
-        clearTimeout(t2);
-        clearTimeout(t3);
-      };
+      at(900, () => setToast("blue"));
+      at(7200, () => setToast("green"));
+      at(13500, () => setToast("done"));
     };
-    let cleanup: (() => void) | undefined;
     if (document.readyState === "complete") arm();
     else {
       window.addEventListener("load", arm, { once: true });
-      cleanup = () => window.removeEventListener("load", arm);
+      at(4000, () => {
+        if (document.readyState !== "complete") arm();
+      });
     }
-    return () => cleanup?.();
-  }, [toast]);
+    return () => {
+      cancelled = true;
+      timers.forEach(clearTimeout);
+    };
+  }, []);
 
   useEffect(() => {
     if (open) inputRef.current?.focus();
