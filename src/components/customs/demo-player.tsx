@@ -57,20 +57,20 @@ const GATE_CHECKS = [
 const SCRIPT: (Beat & { hold?: number })[] = [
   { t: "user", text: "get me the bud-pro earbuds", hold: 900 },
   { t: "tool", tag: "AGENT", text: "catalog.search(\"bud-pro\") → 1 match" },
-  { t: "product", name: "Bud Pro Earbuds", price: "₹3,499", note: "24h battery · anc · usb-c", image: "/products/bud-pro-earbuds.jpg" },
-  { t: "user", text: "add 2 to my cart", hold: 700 },
-  { t: "cart", name: "Bud Pro Earbuds", qty: 2, price: "₹6,998", image: "/products/bud-pro-earbuds.jpg" },
-  { t: "refuse", code: "AMOUNT_OVER_TIER", note: "₹6,998 exceeds the ₹500 unverified envelope" },
-  { t: "say", text: "The desk refuses politely. Escalate trust — say \"attest\" and the envelope rises to ₹5,000." },
+  { t: "product", name: "Bud Pro Earbuds", price: "₹4,999", note: "anc · wireless case · multipoint", image: "/products/bud-pro-earbuds.jpg" },
+  { t: "user", text: "add to my cart", hold: 700 },
+  { t: "cart", name: "Bud Pro Earbuds", qty: 1, price: "₹4,999", image: "/products/bud-pro-earbuds.jpg" },
+  { t: "refuse", code: "AMOUNT_OVER_TIER", note: "₹4,999 is over the ₹500 walk-in envelope" },
+  { t: "say", text: "That's over your current limit." },
   { t: "user", text: "attest", hold: 500 },
-  { t: "tier", tier: "ATTESTED", note: "envelope raised to ₹5,000 per transaction" },
-  { t: "say", text: "Escalated. Requesting a spending mandate from the desk…" },
-  { t: "mandate", cap: "₹6,998", sig: "ed25519:z3Fq…9cA" },
-  { t: "say", text: "The principal must approve this envelope before anything binds." },
+  { t: "tier", tier: "ATTESTED", note: "verified — up to ₹5,000 per transaction" },
+  { t: "say", text: "Requesting a spending mandate from the desk…" },
+  { t: "mandate", cap: "₹4,999", sig: "ed25519:z3Fq…9cA" },
+  { t: "say", text: "Approve the envelope and I bind within its bounds." },
   { t: "user", text: "approve", hold: 600 },
   { t: "gate", checks: GATE_CHECKS, hold: 260 },
-  { t: "capture", order: "ord_7f3k29", amount: "₹6,998" },
-  { t: "ledger", order: "ord_7f3k29", amount: "₹6,998", status: "captured" },
+  { t: "capture", order: "ord_7f3k29", amount: "₹4,999" },
+  { t: "ledger", order: "ord_7f3k29", amount: "₹4,999", status: "captured" },
 ];
 
 /* beat durations (ms) — the pacing of the loop */
@@ -85,6 +85,7 @@ const WINDOW_BEATS = 7;
 /* ------------------------------ the player ------------------------------ */
 
 interface Played {
+  id: number; // stable identity — updates target THIS entry, never "last"
   beat: Beat & { hold?: number };
   typed: string; // typed-so-far for user beats
   gateN: number; // checks ticked so far for gate beats
@@ -113,6 +114,12 @@ export function DemoPlayer() {
      double-invoke, the tab-switch throttle, and the scroll-out clear
      all used to leave two chains racing in the same transcript) */
   const genRef = useRef(0);
+  /* stable per-entry identity: the typing and gate-tick updaters target
+     their own entry by id — the old code wrote into "the last entry",
+     so when a beat advanced mid-type, the remaining characters leaked
+     into the NEXT beat and the line stayed truncated (the "sometimes
+     it shows the full text" glitch) */
+  const seqRef = useRef(0);
 
   const clearTimers = () => {
     timers.current.forEach(clearTimeout);
@@ -140,40 +147,44 @@ export function DemoPlayer() {
     setDone(false);
     setFading(false);
     if (reduce) {
-      setPlayed(SCRIPT.map((beat) => ({ beat, typed: "text" in beat ? beat.text : "", gateN: 99 })));
+      setPlayed(SCRIPT.map((beat) => ({ id: (seqRef.current += 1), beat, typed: "text" in beat ? beat.text : "", gateN: 99 })));
       setDone(true);
       return;
     }
 
     let i = 0;
     const runBeat = (beat: Beat & { hold?: number }) => {
-      const entry: Played = { beat, typed: "", gateN: 0 };
+      const id = (seqRef.current += 1);
+      const entry: Played = { id, beat, typed: "", gateN: 0 };
       setPlayed((p) => [...p, entry]);
 
-      // typing effect for user beats
+      /* how long this beat owns the stage: long enough for its own
+         animation to FINISH — typing completes, every gate row ticks —
+         plus a reading beat. Fixed durations were the glitch: a long
+         line was still typing when the beat advanced. */
+      const ownMs =
+        beat.t === "user"
+          ? 240 + beat.text.length * TYPE_MS + 420
+          : beat.t === "gate"
+            ? 320 + beat.checks.length * GATE_STEP_MS + 520
+            : Math.max(BEAT_MS, beat.hold ?? 0);
+
+      // typing effect for user beats — targeted by id
       if (beat.t === "user") {
         let c = 0;
         const typeNext = () => {
           c += 1;
-          setPlayed((p) => {
-            const copy = [...p];
-            copy[copy.length - 1] = { ...copy[copy.length - 1], typed: beat.text.slice(0, c) };
-            return copy;
-          });
+          setPlayed((p) => p.map((e) => (e.id === id ? { ...e, typed: beat.text.slice(0, c) } : e)));
           if (c < beat.text.length) later(typeNext, TYPE_MS);
         };
         later(typeNext, 240);
       }
-      // gate checks tick in one by one
+      // gate checks tick in one by one — targeted by id
       if (beat.t === "gate") {
         let n = 0;
         const tick = () => {
           n += 1;
-          setPlayed((p) => {
-            const copy = [...p];
-            copy[copy.length - 1] = { ...copy[copy.length - 1], gateN: n };
-            return copy;
-          });
+          setPlayed((p) => p.map((e) => (e.id === id ? { ...e, gateN: n } : e)));
           if (n < beat.checks.length) later(tick, GATE_STEP_MS);
         };
         later(tick, 320);
@@ -190,7 +201,7 @@ export function DemoPlayer() {
           later(() => setFading(true), Math.max(0, LOOP_HOLD_MS - 460));
           later(start, LOOP_HOLD_MS);
         }
-      }, Math.max(BEAT_MS, beat.hold ?? 0));
+      }, ownMs);
     };
 
     runBeat(SCRIPT[0]);
@@ -330,7 +341,7 @@ export function DemoPlayer() {
           {/* the boot line — the desk is open before the first word is typed */}
           <div className="flex items-center gap-2 px-1 font-mono text-[10.5px] text-inksoft">
             <span className="h-1.5 w-1.5 rounded-full bg-cleared/70" aria-hidden />
-            desk open · 20 catalog items · rail: simulation (labeled)
+            desk open · 21 catalog items · rail: sandbox (labeled)
           </div>
           {window_.map((p, i) => (
             <BeatView key={played.length - window_.length + i} p={p} last={i === window_.length - 1} />
