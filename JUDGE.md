@@ -64,7 +64,7 @@ codes; a tamper control proves the audit chain catches a single flipped byte;
 real incidents are dated in the engineering log, and every incident becomes a
 test.
 Evidence: `results/conformance_matrix.json` → `make fuzz` (12/12) ·
-`results/audit_chain.json` → `make audit` (257 events, tamper detected at the
+`results/audit_chain.json` → `make audit` (258 events, tamper detected at the
 mutated seq) · `ENGINEERING_LOG.md` (the check-ordering incident is the
 worked example).
 
@@ -88,11 +88,11 @@ captured, and the whole sequence is replayable.
 | Number | Value | File | Regenerate |
 |---|---|---|---|
 | attacks blocked / authored | 12/12 | `results/conformance_matrix.json` | `make fuzz` |
-| agent GMV (deterministic 48h ledger) | ₹63,732 · 12 captures | `results/cost_meter.json` | `make meter` |
+| agent GMV (deterministic 48h ledger) | ₹60,530 · 13 captures | `results/cost_meter.json` | `make meter` |
 | ₹ AI cost per captured payment | ₹0.03 | `results/cost_meter.json` | `make meter` |
 | p50 / p99 gate decision latency | sub-millisecond on the build machine (machine-dependent — never cited as a promise) | `results/cost_meter.json` | `make meter` |
-| channel P&L @ 1M payments/month | net ₹10,61,90,000 (formula + labeled assumptions inside) | `results/project.json` | `make project` |
-| audit chain | 257 events · tamper control detected | `results/audit_chain.json` | `make audit` |
+| channel P&L @ 1M payments/month | net ₹9,30,93,000 (formula + labeled assumptions inside) | `results/project.json` | `make project` |
+| audit chain | 258 events · tamper control detected | `results/audit_chain.json` | `make audit` |
 | ablation (same batch, three protocols) | 8/8 verdicts · wire 443B / 4,150B / 9,862B | `results/ablation.json` | `make ablation` |
 
 Deterministic values (fixed seed, fixed catalog, fixed clock) regenerate

@@ -1,14 +1,14 @@
 {
   "status": "measured",
-  "measured_at": "2026-08-31T22:29:16.273Z",
+  "measured_at": "2026-09-01T21:16:10.486Z",
   "metrics": {
-    "avgTicketPaise": 531100,
+    "avgTicketPaise": 465615,
     "aiCostPerCapturedPaise": 3,
     "at1MPerMonth": {
       "paymentsPerMonth": 1000000,
-      "channelRevenueInr": 106220000,
+      "channelRevenueInr": 93123000,
       "aiServingCostInr": 30000,
-      "netInr": 106190000
+      "netInr": 93093000
     }
   },
   "formula": "revenue = avgTicket × N × MDR% ; aiCost = measured ₹/captured-payment × N ; net = revenue − aiCost",

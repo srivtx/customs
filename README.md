@@ -102,10 +102,10 @@ deterministic rules brain runs everything, replayable.
 | | |
 |---|---|
 | attacks blocked / authored | 12/12 — `results/conformance_matrix.json` (`make fuzz`) |
-| agent GMV (deterministic 48h ledger) | ₹63,732 · 12 captures — `make meter` |
+| agent GMV (deterministic 48h ledger) | ₹60,530 · 13 captures — `make meter` |
 | ₹ AI cost per captured payment | ₹0.03 — `make meter` |
-| channel P&amp;L @ 1M payments/month | net ₹10,61,90,000 — `make project` |
-| audit chain | 257 events · tamper control detected — `make audit` |
+| channel P&amp;L @ 1M payments/month | net ₹9,30,93,000 — `make project` |
+| audit chain | 258 events · tamper control detected — `make audit` |
 | D1-1 payment spike | executed 2026-09-01 — Orders API verified; demo rail = hosted checkout on real test rails (B), simulation stays the volume/no-keys fallback |
 | Live deployment | **[customs.srivtx.xyz](https://customs.srivtx.xyz)** — real Razorpay test-mode rails; `/api/health` verifies the chain live |
 

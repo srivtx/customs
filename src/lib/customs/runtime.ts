@@ -134,8 +134,8 @@ const SHOPPING_TRIPS: { buyer: (typeof BUYERS)[number]; items: { productId: stri
   { buyer: BUYERS[2], items: [{ productId: "beacon-speaker", quantity: 1 }] },
   { buyer: BUYERS[3], items: [{ productId: "trail-anc-headphones", quantity: 1 }] },           // unverified, refused
   { buyer: BUYERS[4], items: [{ productId: "riser-stand", quantity: 1 }] },
-  { buyer: BUYERS[0], items: [{ productId: "port-webcam-2k", quantity: 1 }] },
-  { buyer: BUYERS[2], items: [{ productId: "sentry-dashcam", quantity: 1 }] },
+  { buyer: BUYERS[0], items: [{ productId: "shade-sunglasses", quantity: 1 }] },
+  { buyer: BUYERS[2], items: [{ productId: "paper-ereader", quantity: 3 }] },
   { buyer: BUYERS[4], items: [{ productId: "summit-drone-4k", quantity: 1 }] },                // >₹50k → refused
   { buyer: BUYERS[1], items: [{ productId: "temp-ir-thermometer", quantity: 2 }] },
   { buyer: BUYERS[0], items: [{ productId: "bud-pro-earbuds", quantity: 2 }, { productId: "slate-desk-mat", quantity: 1 }] },
