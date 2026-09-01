@@ -15,7 +15,7 @@
  */
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import { DeskHead, InkButton } from "./bits";
+import { DeskHead } from "./bits";
 import type { ChatEvent } from "@/lib/customs/agent/loop";
 
 const POS_KEY = "customs-agent-pos";
@@ -67,6 +67,9 @@ export function FloatingAgent() {
   const inputRef = useRef<HTMLInputElement>(null);
   const idRef = useRef(1);
   const drag = useRef({ active: false, moved: false, px: 0, py: 0, ox: 0, oy: 0 });
+  /* the fresh page: the conversation fades before it clears — a reset
+     should read as turning a sheet over, not a wipe */
+  const [clearing, setClearing] = useState(false);
 
   /* position: restored, or docked bottom-right on first visit */
   useEffect(() => {
@@ -113,6 +116,31 @@ export function FloatingAgent() {
     const el = bodyRef.current;
     if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [open, lines]);
+
+  /* esc closes the panel — the same courtesy the composer's "/" opens it with */
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  const resetChat = () => {
+    if (clearing) return;
+    setClearing(true);
+    setTimeout(() => {
+      setLines([]);
+      setSessionId(null);
+      try {
+        localStorage.removeItem(SESSION_KEY);
+      } catch {
+        /* private mode: nothing was stored anyway */
+      }
+      setClearing(false);
+    }, 260);
+  };
 
   /* drag vs click: a drag moves the head, a still press toggles the panel */
   const onDown = (e: React.PointerEvent<HTMLButtonElement>) => {
@@ -176,60 +204,97 @@ export function FloatingAgent() {
     <div className="fixed z-50 select-none" style={{ left: pos.x, top: pos.y }}>
       {open && (
         <div
-          className="absolute right-0 flex max-h-[430px] w-[300px] flex-col overflow-hidden rounded-[6px] border border-line bg-card"
+          className="absolute right-0 flex max-h-[470px] w-[330px] flex-col overflow-hidden rounded-[6px] border border-line-strong bg-card"
           style={panelBelow ? { top: "72px" } : { bottom: "84px" }}
           role="dialog"
           aria-label="the desk agent chat"
         >
-          <div className="flex items-center justify-between border-b border-line px-3 py-2">
-            <span className="label-caps">the desk agent</span>
+          {/* the header: the head IS the identity, the status is one dot */}
+          <div className="flex items-center gap-2.5 border-b border-line px-3.5 py-2.5">
+            <DeskHead size={24} thinking={busy} className="text-ink" />
+            <div className="flex-1">
+              <div className="label-caps">desk agent</div>
+              <div className="mt-0.5 flex items-center gap-1.5 text-[10.5px] text-inksoft">
+                <span aria-hidden className={cn("h-1 w-1 rounded-full", busy ? "bg-held" : "bg-cleared/80")} />
+                {busy ? "thinking" : "on the desk"}
+              </div>
+            </div>
+            <button
+              onClick={resetChat}
+              aria-label="fresh page — clear this conversation"
+              title="fresh page"
+              className="px-0.5 text-[12px] leading-none text-inksoft transition-colors hover:text-ink"
+            >
+              ↻
+            </button>
             <button
               onClick={() => setOpen(false)}
               aria-label="close the agent chat"
-              className="text-[12px] text-inksoft transition-colors hover:text-ink"
+              className="text-[13px] leading-none text-inksoft transition-colors hover:text-ink"
             >
               ✕
             </button>
           </div>
-          <div ref={bodyRef} role="log" aria-live="polite" className="flex-1 space-y-1.5 overflow-y-auto px-3 py-2.5" style={{ maxHeight: "300px" }}>
-            {lines.length === 0 && (
-              <p className="py-3 text-center text-[12px] leading-relaxed text-inksoft">
+
+          {/* the conversation: the visitor's words are the only filled
+              surface — the desk's voice sits straight on the ground,
+              unhoused, the way x.ai lets answers breathe */}
+          <div
+            ref={bodyRef}
+            role="log"
+            aria-live="polite"
+            className={cn(
+              "flex-1 space-y-2.5 overflow-y-auto px-3.5 py-3 transition-opacity duration-300",
+              clearing && "opacity-0"
+            )}
+            style={{ maxHeight: "330px" }}
+          >
+            {lines.length === 0 && !clearing && (
+              <p className="animate-rise py-4 text-center text-[12px] leading-relaxed text-inksoft">
                 The desk is open. Shopping runs on the house brain — ask it
                 for something, or just say hi.
               </p>
             )}
             {lines.map((l) =>
               l.who === "user" ? (
-                <div key={l.id} className="flex justify-end">
-                  <div className="max-w-[85%] rounded-[4px] bg-ink px-2.5 py-1.5 text-[12px] text-paper">{l.text}</div>
+                <div key={l.id} className="animate-rise flex justify-end">
+                  <div className="max-w-[85%] rounded-[4px] bg-ink px-2.5 py-1.5 text-[12.5px] text-paper">{l.text}</div>
                 </div>
               ) : l.who === "agent" ? (
-                <div key={l.id} className="max-w-[92%] rounded-[4px] border border-line bg-paper2/60 px-2.5 py-1.5 text-[12px] leading-relaxed text-ink">
+                <p key={l.id} className="animate-rise text-[12.5px] leading-relaxed text-ink">
                   {l.text}
-                </div>
+                </p>
               ) : (
-                <div key={l.id} className="font-mono text-[10.5px] leading-relaxed text-inksoft">{l.text}</div>
+                <p key={l.id} className="animate-rise border-l border-line pl-2 font-mono text-[10.5px] leading-relaxed text-inksoft">
+                  {l.text}
+                </p>
               )
             )}
-            {busy && (
-              <div className="flex items-center gap-2 px-1 py-1">
-                <DeskHead size={20} thinking className="text-ink" />
-                <span className="text-[11px] text-inksoft">the desk is working</span>
-              </div>
-            )}
+            {busy && <p className="animate-rise text-[11px] text-inksoft">the desk is working…</p>}
           </div>
-          <form onSubmit={send} className="flex items-center gap-2 border-t border-line p-2">
-            <input
-              ref={inputRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="ask the desk…"
-              aria-label="message the desk agent"
-              className="h-8 flex-1 rounded-[4px] border border-line2 bg-paper2 px-2.5 text-[12px] text-ink placeholder:text-inksoft/60 focus:border-ink/30 focus:outline-none"
-            />
-            <InkButton type="submit" disabled={busy || !input.trim()} ariaLabel="send to the desk agent" className="h-8 px-2.5 text-[11px]">
-              Send
-            </InkButton>
+
+          {/* the composer: a sunken well, one arrow — nothing else */}
+          <form onSubmit={send} className="border-t border-line p-2.5">
+            <div className="flex items-center gap-2 rounded-[4px] border border-line2 bg-paper2 px-2.5 py-1.5 transition-colors focus-within:border-ink/30">
+              <input
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="ask the desk…"
+                aria-label="message the desk agent"
+                className="h-6 flex-1 bg-transparent text-[12.5px] text-ink placeholder:text-inksoft/60 focus:outline-none"
+              />
+              <button
+                type="submit"
+                disabled={busy || !input.trim()}
+                aria-label="send to the desk agent"
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[3px] bg-ink text-paper transition-opacity hover:opacity-90 disabled:opacity-30"
+              >
+                <svg viewBox="0 0 16 16" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="M8 13V3M4 7l4-4 4 4" />
+                </svg>
+              </button>
+            </div>
           </form>
         </div>
       )}
@@ -241,13 +306,15 @@ export function FloatingAgent() {
         onPointerUp={onUp}
         aria-label="the desk agent — drag to move, click to chat"
         title="the desk agent — drag me, click to chat"
-        className="block cursor-grab touch-none active:cursor-grabbing"
+        className="relative z-10 block cursor-grab touch-none active:cursor-grabbing"
       >
-        <DeskHead size={56} thinking={busy} className={cn("text-ink drop-shadow-none transition-transform", open ? "scale-105" : "hover:scale-105")} />
+        <DeskHead size={56} thinking={busy} className={cn("text-ink transition-transform", open ? "scale-105" : "hover:scale-105")} />
       </button>
 
-      <div className="agent-pill pointer-events-none mt-1 flex justify-center" aria-hidden>
-        <span className="rounded-[3px] border border-line bg-card px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.16em] text-inksoft/80">
+      {/* the game toast — peeks out from behind the head once on load,
+          holds, and tucks itself away; the head renders above it */}
+      <div className="agent-badge pointer-events-none absolute -bottom-8 right-2 z-0" aria-hidden>
+        <span className="block rounded-[3px] border border-line bg-card px-2 py-0.5 font-mono text-[8px] uppercase tracking-[0.16em] text-inksoft/80">
           powered by razorpay
         </span>
       </div>

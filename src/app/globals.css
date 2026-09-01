@@ -434,13 +434,16 @@ html.light {
     60% { transform: translateY(0.5px) scaleY(0.2); }
   }
 
-  /* the everywhere-agent's badge — a quiet breath, not a glow */
-  @keyframes agent-pill-breathe {
-    0%, 100% { opacity: 0.55; }
-    50% { opacity: 0.9; }
+  /* the everywhere-agent's badge — a game toast: it peeks out from
+     BEHIND the head once on load, holds a beat, and tucks itself away.
+     The head renders above it, so the peek reads as from-behind. */
+  @keyframes agent-badge-peek {
+    0% { opacity: 0; transform: translateY(-14px) scale(0.7); }
+    12%, 76% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-12px) scale(0.75); }
   }
-  .agent-pill {
-    animation: agent-pill-breathe 4.5s ease-in-out infinite;
+  .agent-badge {
+    animation: agent-badge-peek 5.5s cubic-bezier(0.22, 1, 0.36, 1) 0.9s both;
   }
   /* a demo beat — softer and longer than a UI row: it must read as
      one motion with the stack's glide beneath it, so the arrival
@@ -782,7 +785,7 @@ html.light {
   .type-caret::after,
   .desk-eye-g,
   .desk-eye,
-  .agent-pill,
+  .agent-badge,
   .hb-bot,
   .hb-eye,
   .hb-eye-unit,
