@@ -29,6 +29,15 @@ import { cn } from "@/lib/utils";
  * rect read as a small rectangle on the forehead in both themes; a
  * sheen with no boundary cannot read as a shape at all.
  *
+ * The eyes follow the same containment law as the aurora: each eye
+ * is ONE unit — dark rect and glint together — so they blink as one
+ * (a squashed eye squashes its highlight too; the old v5 face let the
+ * glints float at full size beside a closed eye, reading as dots
+ * fallen out of it). The glance carries the whole eye window, and
+ * the glints' counter-drift lives INSIDE a clip of each eye's own
+ * rectangle — the wet-eye tell survives, but the paint can never
+ * leave the eye it belongs to, no matter where the glance goes.
+ *
  * Structure: the body's volume comes from light, not line-art (lit from
  * above, ambient occlusion at the foot, gloss across the crown, a
  * ground shadow that breathes with the float). Every structural color
@@ -111,6 +120,13 @@ export function HeroBot({ className }: { className?: string }) {
         <clipPath id="hb-clip">
           <path d="M240 106 C304 106 344 150 344 214 C344 278 300 320 240 320 C180 320 136 278 136 214 C136 150 176 106 240 106 Z" />
         </clipPath>
+        {/* the eye windows — the face's containment law: each glint is
+            clipped to its eye's own rectangle, so no glance, blink, or
+            drift can ever paint a dot outside the eye it lives in */}
+        <clipPath id="hb-eye-win">
+          <rect x="210" y="182" width="13" height="24" rx="6.5" />
+          <rect x="257" y="182" width="13" height="24" rx="6.5" />
+        </clipPath>
         {/* the ground shadow's softness */}
         <filter id="hb-blur" x="-60%" y="-60%" width="220%" height="220%">
           <feGaussianBlur stdDeviation="9" />
@@ -163,18 +179,20 @@ export function HeroBot({ className }: { className?: string }) {
         <ellipse cx="240" cy="132" rx="40" ry="7" fill="url(#hb-gloss)" filter="url(#hb-sheen-blur)" />
 
         {/* ---------------- the face — drawn on the body, no frame ---------------- */}
+        {/* the glance carries the whole eye window — eyes AND glints
+            travel together, and each glint adds only a small
+            counter-drift of its own, clipped to its eye */}
         <g className="hb-eyes">
-          {/* the eyes — big, glossy, alive: ink with a wet glint */}
-          <rect className="hb-eye" x="210" y="182" width="13" height="24" rx="6.5" fill="var(--ink)" />
-          <rect className="hb-eye" x="257" y="182" width="13" height="24" rx="6.5" fill="var(--ink)" />
-        </g>
-        {/* the glints — the specular dots that make eyes read as eyes.
-            They sit in their own group so they can drift a half-step
-            AGAINST the glance: a highlight follows the room's light,
-            not the eye — the smallest possible tell of a wet surface */}
-        <g className="hb-glints">
-          <circle cx="213.5" cy="187.5" r="2.6" fill="var(--paper)" opacity="0.9" />
-          <circle cx="260.5" cy="187.5" r="2.6" fill="var(--paper)" opacity="0.9" />
+          <g clipPath="url(#hb-eye-win)">
+            <g className="hb-eye-unit">
+              <rect className="hb-eye" x="210" y="182" width="13" height="24" rx="6.5" fill="var(--ink)" />
+              <circle className="hb-glint" cx="213.5" cy="187.5" r="2.6" fill="var(--paper)" opacity="0.9" />
+            </g>
+            <g className="hb-eye-unit">
+              <rect className="hb-eye" x="257" y="182" width="13" height="24" rx="6.5" fill="var(--ink)" />
+              <circle className="hb-glint" cx="260.5" cy="187.5" r="2.6" fill="var(--paper)" opacity="0.9" />
+            </g>
+          </g>
         </g>
         {/* the blush — one soft breath of warmth under each eye */}
         <ellipse className="hb-blush" cx="204" cy="216" rx="10" ry="5.5" fill="#d9a8a8" opacity="0.4" filter="url(#hb-blush-blur)" />

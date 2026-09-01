@@ -678,3 +678,73 @@ aurora +0.1 — SHIP. Paper CTAs re-measured by DOM geometry: 396 vs 397
 (the text column) — aligned. tsc / eslint / build / `make verify` /
 `make test` all green. The regression test for this bug is codified in
 `docs/DESIGN_SYSTEM.md` §10.4 (bot containment checklist).
+
+## D14-1 — 2026-09-01 · the dots that left the eyes, the frozen page, the sudden transcript
+
+**What happened:** Three reports in one message. (1) On the hero bot, "the eye
+dots are moving out of the eye when the eye is moving right or blinking."
+(2) On `/paper`, "sometimes the scrolling stucks, may be near the jsons."
+(3) In the watch-it-clear demo, "the messages are bit sudden — why don't they
+come cool and smooth."
+
+**Root causes:**
+
+1. *The glints were structurally homeless.* The v5 face drew the two glints
+   in a sibling group BELOW the eyes group: the glance translated the eyes
+   +4.5px while the glints counter-drifted −2px on their own clock — a
+   −6.5px relative shift into ~0.9px of room. The white dots slid fully out
+   of the dark eyes. And the blink scaled each eye rect to `scaleY(0.08)`
+   while the glints, outside the eye, stayed full-size circles floating
+   beside a 2px slit.
+2. *A horizontal window that swallowed vertical scroll.* `.quiet-scroll`
+   (the paper's wide `<pre>` JSON and tables) is `overflow-x: auto`, which
+   computes `overflow-y: auto` — a scroll container in BOTH axes that can
+   never scroll vertically. It also carried `overscroll-behavior: contain`
+   (swept in with the real scroll panels), so a wheel or touch gesture that
+   latched it consumed the scroll chain: the page froze under the cursor.
+   Exactly "stuck near the jsons", exactly "sometimes" — only when the
+   gesture began over those blocks.
+3. *A bottom-pinned list teleports on insert.* The demo window anchors its
+   transcript to the bottom edge, so every arriving beat moved everything
+   above it by the beat's full height in one frame; the old 0.28s entrance
+   animated the new card, not the jump. A second defect hid in my first
+   fix attempt: the FLIP effect reset `transition`/`transform` on every
+   commit, so typing ticks (34ms) cancelled each 420ms glide mid-flight —
+   snapping the stack back to "sudden". A third: the computed-transform
+   parser read `matrix(a, b, c, d, tx, ty)` at index 4 — the horizontal
+   translate, always 0 — so the in-flight glide corrupted the layout
+   measurement and the stack oscillated.
+
+**Fixes:**
+
+1. *Eyes follow the containment law* (same proof as the aurora): each eye
+   is ONE group — dark rect and glint together — so blink scales them as
+   one (a squashed eye squashes its highlight); the glance carries the
+   whole eye window; and both glints are clipped to `hb-eye-win`, a
+   clipPath of the two eye rectangles. The counter-drift survives at
+   ≤1.2px, now relative to the eye and clipped at its edge — the wet-eye
+   tell without the escape. Paint cannot leave geometry; the face cannot
+   leak dots again.
+2. *Horizontal-only windows chain.* `overscroll-behavior: contain` removed
+   from `.quiet-scroll` alone; the true scroll panels (chat, rails, live
+   ledger) keep it. Wheel over the JSON now chains: 10×80px over the
+   pre scrolls exactly 800px.
+3. *The transcript glides.* A FLIP effect on the stack wrapper: derive the
+   layout top arithmetically (`rect.top − ty`, ty parsed at matrix index
+   5), hold the last painted visual position (in-flight remainder + shift)
+   for one frame, transition to rest over 420ms; no-op commits touch
+   nothing so glides are never cancelled; shrinks (restart) snap on
+   purpose; the transform clears on arrival (no lingering containing
+   block — D12-1). Beats enter on a softer 0.4s expo-out curve, gate rows
+   stagger, the loop fades its last line out before clearing the desk,
+   and product photos preload so cards never pop half-formed.
+
+**Validation:** eyes measured by DOM geometry at home / glance-right /
+glance-left / blink-closed / blink-mid-glance (glints inside or clipped
+≤0.3px; blink rides to 0.4px with the lid) + VLM SHIP on all five frozen
+phases and the light theme; /paper wheel chains exactly over the JSON;
+the glide verified by sampling the computed transform (decaying ease-out
+sequences at real card heights, e.g. 92 → 49 → 18 → 8 → 2); console clean;
+tsc / eslint / build / `make verify` / `make test` green. The eye-window
+law, the FLIP rule, and the scroll-chain rule are codified in
+`docs/DESIGN_SYSTEM.md`.

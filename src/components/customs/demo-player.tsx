@@ -13,8 +13,18 @@
  * latest beats, older ones dissolving into the top fade. Nothing inside
  * this panel can scroll, so the page's own wheel and touch scrolling
  * pass straight through it — no sticking, no scrollbar to style.
+ *
+ * The smoothness: the window is bottom-pinned, so every arriving beat
+ * (every unrolled gate check, every wrapped typed line) would move
+ * everything above it by a whole card height in one frame — a
+ * teleport the eye reads as “sudden”. Instead the stack is held at
+ * its previous visual position for one frame (a transform) and then
+ * glides to the new layout — the FLIP technique — so the whole
+ * transcript flows like a real chat. Beats themselves arrive on a
+ * longer, softer curve, the gate’s rows stagger in one by one, and
+ * the loop fades its last line out before it clears the desk.
  */
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useReducedMotion } from "framer-motion";
 import { Stamp } from "./bits";
@@ -86,9 +96,17 @@ export function DemoPlayer() {
   const [done, setDone] = useState(false);
   const [paused, setPaused] = useState(false);
   const [visible, setVisible] = useState(false);
+  /* the loop's farewell: the last line fades before the desk clears,
+     so the restart reads as a breath, not a cut */
+  const [fading, setFading] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
+  const stackRef = useRef<HTMLDivElement>(null);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const pausedRef = useRef(false);
+  /* the stack's layout position at the end of the last commit — the
+     “first” of FLIP: where the transcript visually sat before the
+     newest beat moved it */
+  const stackTopRef = useRef<number | null>(null);
   /* the generation: every (re)start mints a new one, and every pending
      callback checks it before firing — so an old chain can never leak a
      beat or half-type a word into a fresh run (the StrictMode
@@ -120,6 +138,7 @@ export function DemoPlayer() {
     clearTimers();
     setPlayed([]);
     setDone(false);
+    setFading(false);
     if (reduce) {
       setPlayed(SCRIPT.map((beat) => ({ beat, typed: "text" in beat ? beat.text : "", gateN: 99 })));
       setDone(true);
@@ -165,6 +184,10 @@ export function DemoPlayer() {
         if (i < SCRIPT.length) runBeat(SCRIPT[i]);
         else {
           setDone(true);
+          /* fade the last line out just before the loop clears the
+             desk — a soft cut, and it obeys the hover-hold because it
+             rides the same polite timer chain */
+          later(() => setFading(true), Math.max(0, LOOP_HOLD_MS - 460));
           later(start, LOOP_HOLD_MS);
         }
       }, Math.max(BEAT_MS, beat.hold ?? 0));
@@ -203,6 +226,63 @@ export function DemoPlayer() {
     }
   }, [visible]);
 
+  /* the product photos ride inside beats that arrive mid-animation —
+     preload them so a card never pops half-formed when its image
+     lands late. The panel weighs nothing; the photos are the only
+     bytes it needs, and it needs them immediately. */
+  useEffect(() => {
+    SCRIPT.forEach((beat) => {
+      if ("image" in beat) {
+        const img = new Image();
+        img.decoding = "async";
+        img.src = beat.image;
+      }
+    });
+  }, []);
+
+  /* THE GLIDE — FLIP for a bottom-pinned window. Runs after every
+     transcript commit, before paint. The stack's layout position is
+     derived, not written: rect.top minus whatever translate an
+     in-flight glide is holding right now. If the layout moved up
+     (a beat landed, a gate row unrolled, a typed line wrapped), the
+     stack is held at its last painted position for this frame — the
+     in-flight remainder plus the shift — and then glides to rest.
+     Commits that barely move the layout (typing ticks) touch
+     NOTHING, so a running glide is never cancelled mid-flight — the
+     eye sees one continuous flow, never a teleport, never a snap.
+     Shrinks (the restart clear) are skipped on purpose: an empty
+     desk is a new scene, not a motion. */
+  useLayoutEffect(() => {
+    const el = stackRef.current;
+    if (!el || reduce) return;
+    const rect = el.getBoundingClientRect();
+    const m = getComputedStyle(el).transform;
+    let ty = 0;
+    if (m && m !== "none") {
+      const parts = m.slice(m.indexOf("(") + 1, m.length - 1).split(",").map(parseFloat);
+      ty = parts[5] || 0; // matrix(a, b, c, d, tx, ty) — the Y translate is the last
+    }
+    const nowTop = rect.top - ty; // the pure layout top, post-update
+    const prevTop = stackTopRef.current;
+    stackTopRef.current = nowTop;
+    const delta = prevTop == null ? 0 : prevTop - nowTop; // positive: grew upward
+    if (delta <= 0.5 || delta > 320) return;
+    // hold the last painted visual position, then glide home —
+    // transform only, cleared on arrival so nothing lingers as a
+    // containing block (D12-1)
+    el.style.transition = "none";
+    el.style.transform = `translateY(${(ty + delta).toFixed(2)}px)`;
+    void el.getBoundingClientRect();
+    el.style.transition = "transform 420ms cubic-bezier(0.22, 1, 0.36, 1)";
+    el.style.transform = "translateY(0)";
+    const clear = () => {
+      el.style.transition = "";
+      el.style.transform = "";
+    };
+    el.addEventListener("transitionend", clear, { once: true });
+    el.addEventListener("transitioncancel", clear, { once: true });
+  }, [played, reduce]);
+
   const restart = () => {
     start();
   };
@@ -237,16 +317,25 @@ export function DemoPlayer() {
 
       {/* the window — the newest beats, bottom-anchored; the oldest
           dissolve into the top fade. It cannot scroll, so the visitor's
-          wheel and touch go straight to the page, where they belong. */}
-      <div className="demo-window flex h-[400px] flex-col justify-end gap-2.5 overflow-hidden px-4 py-4 sm:h-[420px] sm:px-5" aria-live="off">
-        {/* the boot line — the desk is open before the first word is typed */}
-        <div className="flex items-center gap-2 px-1 font-mono text-[10.5px] text-inksoft">
-          <span className="h-1.5 w-1.5 rounded-full bg-cleared/70" aria-hidden />
-          desk open · 20 catalog items · rail: simulation (labeled)
+          wheel and touch go straight to the page, where they belong.
+          The stack is the FLIP target: it glides, its beats do not. */}
+      <div className="demo-window flex h-[400px] flex-col justify-end overflow-hidden px-4 py-4 sm:h-[420px] sm:px-5" aria-live="off">
+        <div
+          ref={stackRef}
+          className={cn(
+            "flex flex-col gap-2.5 transition-opacity duration-[420ms]",
+            fading && !reduce && "opacity-0"
+          )}
+        >
+          {/* the boot line — the desk is open before the first word is typed */}
+          <div className="flex items-center gap-2 px-1 font-mono text-[10.5px] text-inksoft">
+            <span className="h-1.5 w-1.5 rounded-full bg-cleared/70" aria-hidden />
+            desk open · 20 catalog items · rail: simulation (labeled)
+          </div>
+          {window_.map((p, i) => (
+            <BeatView key={played.length - window_.length + i} p={p} last={i === window_.length - 1} />
+          ))}
         </div>
-        {window_.map((p, i) => (
-          <BeatView key={played.length - window_.length + i} p={p} last={i === window_.length - 1} />
-        ))}
       </div>
 
       {/* the loop bar — the whole sequence, one hairline of progress.
@@ -266,7 +355,10 @@ export function DemoPlayer() {
 
 function BeatView({ p, last }: { p: Played; last: boolean }) {
   const b = p.beat;
-  const cls = "animate-rise";
+  /* beat-in, not animate-rise: a demo beat is a small event on a
+     stage, not a UI row — it takes a longer, softer curve so each
+     arrival reads as one motion with the stack's glide beneath it */
+  const cls = "beat-in";
   switch (b.t) {
     case "user":
       return (
@@ -367,7 +459,7 @@ function BeatView({ p, last }: { p: Played; last: boolean }) {
           </div>
           <ul className="px-3.5 py-2">
             {b.checks.slice(0, Math.max(1, p.gateN)).map((c, j) => (
-              <li key={j} className="flex items-baseline gap-2.5 border-b border-line/60 py-1.5 last:border-b-0 text-[12.5px]">
+              <li key={j} className="demo-gate-row flex items-baseline gap-2.5 border-b border-line/60 py-1.5 last:border-b-0 text-[12.5px]">
                 <span className={cn("shrink-0 font-mono font-semibold", j < p.gateN ? "text-cleared" : "text-inksoft")}>✓</span>
                 <span className="text-inksoft">{c}</span>
               </li>

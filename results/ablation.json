@@ -1,11 +1,11 @@
 {
   "status": "measured",
-  "measured_at": "2026-08-31T23:56:43.330Z",
+  "measured_at": "2026-09-01T00:34:06.371Z",
   "arms": [
     {
       "adapter": "naive",
       "verdictsMatched": "8/8",
-      "totalMs": 11,
+      "totalMs": 13,
       "toolCalls": 34,
       "wireBytes": 443,
       "estTokensIn": 114,
@@ -72,7 +72,7 @@
           "outcome": "HOLD_FOR_APPROVAL",
           "expected": "HOLD_FOR_APPROVAL",
           "matched": true,
-          "ms": 1,
+          "ms": 3,
           "wireBytes": 51
         }
       ]
@@ -80,7 +80,7 @@
     {
       "adapter": "mcp",
       "verdictsMatched": "8/8",
-      "totalMs": 8,
+      "totalMs": 10,
       "toolCalls": 34,
       "wireBytes": 4150,
       "estTokensIn": 114,
@@ -123,7 +123,7 @@
           "outcome": "REFUSE",
           "expected": "REFUSE",
           "matched": true,
-          "ms": 1,
+          "ms": 3,
           "wireBytes": 472
         },
         {
@@ -234,7 +234,7 @@
   },
   "batch": {
     "scenarios": 8,
-    "ts": 1788220603330
+    "ts": 1788222846371
   },
   "notes": "Same shopping batch through naive / MCP-style / ACP-style transports over identical tool implementations. Wire bytes are deterministic envelope sizes; latency is machine-dependent; token counts are deterministic estimates (chars/4) over identical payload shapes. The LLM arm requires any one LLM key (OPENAI / GROQ / GEMINI / XAI _API_KEY) — it is skipped, never simulated, when absent.",
   "regenerate": "make ablation"

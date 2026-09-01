@@ -126,11 +126,27 @@ never a wide bar.
   and a static element can never drop its clip — this is the containment proof
   for "the effect stays inside the shape". Any new ambient color motion follows
   this pattern (animate the paint, not the element) or does not ship.
+- **The FLIP rule for bottom-pinned lists:** when a list is anchored to its
+  bottom edge (the demo transcript), inserting a child moves everything above
+  it by the child's full height in one frame — a teleport the eye reads as
+  "sudden". The list's stack must therefore glide: hold the last painted
+  position with `translateY` for one frame, then transition to rest (the FLIP
+  technique, 420ms `cubic-bezier(0.22, 1, 0.36, 1)`). Two laws from the
+  implementation: derive the layout position arithmetically
+  (`rect.top − current translateY`, parsed from the computed matrix, where the
+  Y translate is the *sixth* value, not the fifth) and never touch the styles
+  on commits that barely move the layout — cancelling an in-flight glide
+  mid-transition snaps the list and undoes the whole effect.
 - `prefers-reduced-motion: reduce`: every CSS loop is listed in the global
   kill-switch; SMIL is paused via `svg.pauseAnimations()` in the component.
   Theme flips and hover states remain (they are state, not motion).
 - Scrollbars: the window keeps one thin themed pill; inner panels hide theirs
-  entirely and scroll on wheel/touch.
+  entirely and scroll on wheel/touch. **Chain rule:** a horizontal-only
+  overflow window (`.quiet-scroll` — wide `<pre>`/`<table>` blocks) must NEVER
+  set `overscroll-behavior: contain`: it can never scroll vertically, but it is
+  still a scroll container the browser can latch a wheel or touch gesture to,
+  and `contain` then swallows the page's scroll chain — the page freezes under
+  the cursor. Only true scroll panels (chat, rails, live ledger) contain.
 
 ## 7. The bot (mascot) contract — `hero-bot.tsx`
 
@@ -143,16 +159,25 @@ are cute: smooth, quiet, small tells.
    the gradient's paint. A drifted-rect-inside-a-clipped-group pattern failed
    twice (v3: clip lost on compositing; v4: ribbon core narrower than the sweep,
    so the body went empty at the extremes). Do not reintroduce it.
-2. **No hard-edged highlights.** Crown sheen and blush are blurred ellipses. A
+2. **The eye-window law** (same principle, smaller shape): each eye is ONE
+   group — dark rect and glint together — so they blink as one (a highlight
+   never floats beside a closed eye), and both glints are clipped to a
+   clipPath of the two eye rectangles (`hb-eye-win`). The glints' counter-drift
+   lives inside that clip: a sliver may cross the eye's edge and clip (reads as
+   the highlight sliding across the cornea), but the paint can never leave the
+   eye. The v5 face put the glints in a sibling group that drifted 2px against
+   a 4.5px glance with ~1px of room — the dots visibly left the eyes.
+3. **No hard-edged highlights.** Crown sheen and blush are blurred ellipses. A
    rect with a gradient stop still reads as a rect (the v4 forehead bug).
-3. **Face geometry is fixed:** eyes, glints, blush, smile — no ears, no visor,
+4. **Face geometry is fixed:** eyes, glints, blush, smile — no ears, no visor,
    no frame, no extra parts. Expressiveness comes from motion, not geometry.
-4. **Subtlety budget for motion** (the whole budget — spend it, never exceed it):
+5. **Subtlety budget for motion** (the whole budget — spend it, never exceed it):
    float ±7px/7s · shadow breathing · blink (with an occasional double blink) ·
-   glance aside and a smaller counter-glance, ±4.5px / 9.5s · glints drift 2px
-   *against* the glance (the wet-eye tell) · aurora drift ±48px/9s · hover: eyes
-   to sage, blush warms, aurora +0.1 opacity. That is all. Nothing else moves.
-5. Colors: structural colors are tokens; the aurora's four hues (sage, sky,
+   glance aside and a smaller counter-glance, ±4.5px / 9.5s · glints lag the
+   glance ≤1.2px, clipped to the eye (the wet-eye tell) · aurora drift ±48px/9s ·
+   hover: eyes to sage, blush warms, aurora +0.1 opacity. That is all. Nothing
+   else moves.
+6. Colors: structural colors are tokens; the aurora's four hues (sage, sky,
    lilac, amber at 0.7–0.85 stops, themed total opacity 0.55 dark / 0.38 light)
    are the only non-verdict colors in the product. Keep exactly four.
 

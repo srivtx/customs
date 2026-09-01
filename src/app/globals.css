@@ -279,13 +279,26 @@ html.light {
     scrollbar-color: var(--sb-thumb) transparent;
     overscroll-behavior: contain;
   }
+  /* real inner scroll panels — these genuinely scroll, so they keep
+     the wheel and the chain to themselves (the counter's transcript,
+     the rails, the live ledger) */
   .chat-scroll,
   .rail-scroll,
-  .ledger-scroll,
-  .quiet-scroll {
+  .ledger-scroll {
     scrollbar-width: none;
     -ms-overflow-style: none;
     overscroll-behavior: contain;
+  }
+  /* horizontal-only windows (the paper's wide <pre> JSON and tables):
+     these can never scroll vertically, but overflow-x: auto still
+     computes overflow-y: auto, which makes them scroll containers the
+     browser can latch a wheel or touch gesture to. With
+     overscroll-behavior: contain they then swallowed the page's scroll
+     chain — the page froze whenever a gesture began over the JSON.
+     They must chain, so the page keeps moving under the visitor. */
+  .quiet-scroll {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
   .chat-scroll::-webkit-scrollbar,
   .rail-scroll::-webkit-scrollbar,
@@ -353,6 +366,19 @@ html.light {
 
   .animate-rise {
     animation: rise 0.28s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+  /* a demo beat — softer and longer than a UI row: it must read as
+     one motion with the stack's glide beneath it, so the arrival
+     curve is expo-out and the travel is a touch further. No
+     fill-mode: the transform must not linger (D12-1). */
+  .beat-in {
+    animation: beat-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  /* the gate's rows unroll one check at a time — each row rises a
+     hair as it lands, so the card reads as unrolling, not as a list
+     snapping longer */
+  .demo-gate-row {
+    animation: rise 0.26s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .animate-typing span {
     animation: blink 1.2s infinite;
@@ -460,22 +486,27 @@ html.light {
 
   /* the eyes: blink on their own clock (sometimes twice — the second
      blink is the cute one); the pair glances aside, rests, returns,
-     and later takes a smaller look the other way */
+     and later takes a smaller look the other way. Each eye is one
+     unit — rect and glint blink TOGETHER, so a highlight can never
+     float beside a closed eye; the glints' counter-drift is now
+     relative to the eye and clipped to it (hb-eye-win). */
   .hb-eye {
+    transition: fill 0.3s ease;
+  }
+  .hb-eye-unit {
     transform-box: fill-box;
     transform-origin: center;
     animation: hb-blink 7.6s ease-in-out infinite;
-    transition: fill 0.3s ease;
   }
   .hb-eyes {
     transform-box: fill-box;
     transform-origin: center;
     animation: hb-glance 9.5s ease-in-out infinite;
   }
-  /* the glints share the glance clock and drift AGAINST it — a
+  /* the glints share the glance clock and lag a hair behind it — a
      specular highlight stays with the room's light, not the eye;
-     half a millimetre of counter-motion is what reads as wet */
-  .hb-glints {
+     a clipped half-millimetre of counter-motion is what reads as wet */
+  .hb-glint {
     animation: hb-glint 9.5s ease-in-out infinite;
   }
   .hero-bot:hover .hb-eye {
@@ -525,6 +556,17 @@ html.light {
   from {
     opacity: 0;
     transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes beat-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -633,6 +675,10 @@ html.light {
     transform: translate(-3px, -0.6px);
   }
 }
+/* the glint lags the glance: the eyes move +4.5px, the glint
+   counters −1.2px relative to its eye (clipped at the eye's own
+   edge by hb-eye-win, so it reads as the highlight sliding across
+   the cornea, never as a dot leaving the eye) */
 @keyframes hb-glint {
   0%,
   38%,
@@ -640,19 +686,20 @@ html.light {
   100% {
     transform: translate(0, 0);
   }
-  /* counter-drift: the highlight lags the glance, opposite sign */
   46%,
   60% {
-    transform: translate(-2px, 0);
+    transform: translate(-1.2px, 0);
   }
   76%,
   86% {
-    transform: translate(1.4px, 0);
+    transform: translate(1px, 0);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .animate-rise,
+  .beat-in,
+  .demo-gate-row,
   .animate-typing span,
   .animate-flash,
   .row-fresh,
@@ -660,8 +707,9 @@ html.light {
   .type-caret::after,
   .hb-bot,
   .hb-eye,
+  .hb-eye-unit,
   .hb-eyes,
-  .hb-glints,
+  .hb-glint,
   .hb-shadow {
     animation: none !important;
   }
