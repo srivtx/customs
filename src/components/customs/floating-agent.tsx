@@ -62,13 +62,11 @@ type Toast = "idle" | "blue" | "green" | "done";
  * reveal (~80 chars/s), not a paste. Respects reduced-motion (instant).
  */
 function TypeLine({ text, className }: { text: string; className?: string }) {
-  const [n, setN] = useState(0);
+  const instant =
+    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const [n, setN] = useState(instant ? text.length : 0);
   useEffect(() => {
-    setN(0);
-    if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setN(text.length);
-      return;
-    }
+    if (instant) return;
     const iv = setInterval(() => {
       setN((v) => {
         if (v >= text.length) {
@@ -79,7 +77,7 @@ function TypeLine({ text, className }: { text: string; className?: string }) {
       });
     }, 24);
     return () => clearInterval(iv);
-  }, [text]);
+  }, [text, instant]);
   return <span className={className}>{text.slice(0, n)}</span>;
 }
 
