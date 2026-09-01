@@ -51,9 +51,9 @@ command that regenerates it. No number lives only in this document.
    `/api/health` (`rail: razorpay-test, simulated:false`),
    `results/d1_1_spike.json`, `make demo`.
 
-10. **What metrics matter?** Agent GMV ₹63,732 / 12 captures on the
+10. **What metrics matter?** Agent GMV ₹60,530 / 13 captures on the
     deterministic ledger; ₹0.03 AI cost per captured payment; at 1M
-    payments/month the channel nets ₹10,61,90,000 (formula + labeled
+    payments/month the channel nets ₹9,30,93,000 (formula + labeled
     assumptions). Evidence: `results/cost_meter.json`, `results/project.json`,
     `make meter`, `make project`.
 
