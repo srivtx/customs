@@ -7,6 +7,8 @@ it became. If it broke once, it is a test case forever (`AGENTS.md`, invariant 7
 
 ## 2026-09-01 — D1-1: payment-mechanism spike
 
+
+
 **Question:** can an agent complete payment on Razorpay test-mode, end to end, without a
 human sitting at a checkout page — and which mechanism do we ship?
 
@@ -763,3 +765,34 @@ sequences at real card heights, e.g. 92 → 49 → 18 → 8 → 2); console clea
 tsc / eslint / build / `make verify` / `make test` green. The eye-window
 law, the FLIP rule, and the scroll-chain rule are codified in
 `docs/DESIGN_SYSTEM.md`.
+
+---
+
+## 2026-09-01 — D5-2: the word is "attested" — an NLU trigger gap on the golden path
+
+**What happened:** first real human walk of the golden path. Search → cart →
+checkout → the desk refuses over the ₹500 unverified cap and offers
+attestation. The user typed **"attested"** — a perfectly normal word — and
+nothing happened: the rules brain answered "I couldn't map that to the
+catalog" and the tier stayed UNVERIFIED. The trigger regex was
+`\b(attest|…)\b`, and `\b` has no word boundary mid-word, so "attested" fell
+through. The exact human moment the product is built around — lifting a tier
+to let a purchase proceed — silently ate the user's word.
+
+**Why it matters:** a judge will type "attested" too. The deterministic brain
+must be forgiving at the conversation surface while staying strict at the
+money surface — those are opposite requirements and both are correct.
+
+**Fix:** trigger widened to `\battest\w*` (attest, attested, attesting,
+attestation — any word beginning with the stem), plus the existing phrases.
+The fragment guard stays: "latest headphones" still does not attest.
+
+**The test it became:** `tests/nlu.test.ts` — the whole attestation word
+family maps to the attest intent, fragments don't, checkout triggers intact;
+wired into `make test` (runs under bun, skipped with a notice when only tsx
+is available).
+
+**Validation:** `bun test tests/` 10/10 · `make verify` green · tsc clean ·
+the live golden path re-walked over the API: search → attest (tier flips to
+ATTESTED) → add → checkout → the desk signs the ₹4,999 mandate and the
+approval card renders.

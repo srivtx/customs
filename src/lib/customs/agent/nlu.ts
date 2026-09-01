@@ -45,7 +45,7 @@ export function parseIntent(raw: string): Intent {
   if (/^(hi|hello|hey|namaste|yo|good (morning|evening|afternoon))\b/.test(lower))
     return { kind: "greeting" };
   if (/^(help|what can you do|commands|how does this work)/.test(lower)) return { kind: "help" };
-  if (/\b(attest|verify me|otp|upgrade (my )?(tier|identity)|get me attested)\b/.test(lower))
+  if (/\b(attest\w*|verify me|otp|upgrade (my )?(tier|identity))\b/.test(lower))
     return { kind: "attest" };
   if (/\b(status|balance|mandate status|my tier|who am i)\b/.test(lower)) return { kind: "status" };
   if (/\b(checkout|pay now|buy now|place the order|complete (the )?purchase|bind and pay)\b/.test(lower))

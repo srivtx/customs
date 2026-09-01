@@ -1,11 +1,11 @@
 {
   "status": "measured",
-  "measured_at": "2026-09-01T00:34:06.371Z",
+  "measured_at": "2026-09-01T19:28:15.483Z",
   "arms": [
     {
       "adapter": "naive",
       "verdictsMatched": "8/8",
-      "totalMs": 13,
+      "totalMs": 21,
       "toolCalls": 34,
       "wireBytes": 443,
       "estTokensIn": 114,
@@ -16,7 +16,7 @@
           "outcome": "ALLOW",
           "expected": "ALLOW",
           "matched": true,
-          "ms": 4,
+          "ms": 14,
           "wireBytes": 44
         },
         {
@@ -72,7 +72,7 @@
           "outcome": "HOLD_FOR_APPROVAL",
           "expected": "HOLD_FOR_APPROVAL",
           "matched": true,
-          "ms": 3,
+          "ms": 1,
           "wireBytes": 51
         }
       ]
@@ -80,7 +80,7 @@
     {
       "adapter": "mcp",
       "verdictsMatched": "8/8",
-      "totalMs": 10,
+      "totalMs": 8,
       "toolCalls": 34,
       "wireBytes": 4150,
       "estTokensIn": 114,
@@ -123,7 +123,7 @@
           "outcome": "REFUSE",
           "expected": "REFUSE",
           "matched": true,
-          "ms": 3,
+          "ms": 1,
           "wireBytes": 472
         },
         {
@@ -229,12 +229,12 @@
     }
   ],
   "llmArm": {
-    "status": "skipped-no-key",
-    "note": "No LLM key in env (OPENAI_API_KEY / GROQ_API_KEY / GEMINI_API_KEY / XAI_API_KEY / LLM_API_KEY) — the LLM arm is skipped rather than simulated. Rules arm measured; set any one key and re-run `make ablation` to fill it."
+    "status": "measured",
+    "note": "LLM intent-parse arm measured over the same batch (tokens billed by provider; see cost_meter)"
   },
   "batch": {
     "scenarios": 8,
-    "ts": 1788222846371
+    "ts": 1788290895483
   },
   "notes": "Same shopping batch through naive / MCP-style / ACP-style transports over identical tool implementations. Wire bytes are deterministic envelope sizes; latency is machine-dependent; token counts are deterministic estimates (chars/4) over identical payload shapes. The LLM arm requires any one LLM key (OPENAI / GROQ / GEMINI / XAI _API_KEY) — it is skipped, never simulated, when absent.",
   "regenerate": "make ablation"

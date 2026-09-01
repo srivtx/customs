@@ -13,17 +13,15 @@
 
 <p align="center">
   <a href="https://github.com/srivtx/customs/actions/workflows/verify.yml"><img src="https://github.com/srivtx/customs/actions/workflows/verify.yml/badge.svg" alt="verify" /></a>
+  <a href="https://customs.srivtx.xyz"><img src="https://img.shields.io/badge/live-customs.srivtx.xyz-00875a.svg" alt="live deployment" /></a>
+  <img src="https://img.shields.io/badge/razorpay-real%20test%20rails-a2c0a9.svg" alt="Razorpay real test rails" />
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-1b180f.svg" alt="license: MIT" /></a>
-  <img src="https://img.shields.io/badge/next.js-16-1b180f.svg" alt="Next.js 16" />
-  <img src="https://img.shields.io/badge/razorpay-test%20mode%20only-a2c0a9.svg" alt="Razorpay test mode only" />
-  <img src="https://img.shields.io/badge/money-integer%20paise-1b180f.svg" alt="integer paise" />
 </p>
 
 <p align="center">
   <a href="JUDGE.md"><img src="https://img.shields.io/badge/-JUDGE.md-1b180f.svg?label=read&logo=github" alt="read JUDGE.md" /></a>
-  <a href="PAPER.md"><img src="https://img.shields.io/badge/-PAPER.md-1b180f.svg?label=read" alt="read PAPER.md" /></a>
   <a href="ARCHITECTURE.md"><img src="https://img.shields.io/badge/-ARCHITECTURE.md-1b180f.svg?label=read" alt="read ARCHITECTURE.md" /></a>
-  <a href="DEPLOY.md"><img src="https://img.shields.io/badge/-DEPLOY.md-a2c0a9.svg?label=deploy" alt="read DEPLOY.md" /></a>
+  <a href="PAPER.md"><img src="https://img.shields.io/badge/-PAPER.md-1b180f.svg?label=read" alt="read PAPER.md" /></a>
 </p>
 
 ---

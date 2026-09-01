@@ -42,6 +42,7 @@ audit: ## regenerate results/audit_chain.json (hash-chain walk + tamper control)
 	$(RUNNER) scripts/audit.ts
 
 test: ## the harness suite — exit codes propagate
+	@if command -v bun >/dev/null 2>&1; then bun test tests/; else echo "skip: unit tests need bun"; fi
 	$(RUNNER) scripts/fuzz.ts
 	$(RUNNER) scripts/ablation.ts
 	$(RUNNER) scripts/audit.ts
