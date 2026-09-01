@@ -99,6 +99,9 @@ export function FloatingAgent({ view }: { view: View }) {
   /* the fresh page: the conversation fades before it clears — a reset
      should read as turning a sheet over, not a wipe */
   const [clearing, setClearing] = useState(false);
+  /* the toast cycle counter — 0 is the intro (both beats), later cycles
+     alternate a single toast so the desk stays present, never noisy */
+  const cycleRef = useRef(0);
   /* the home-page toasts, a two-beat sequence: blue, then green. They
      run once per load, only on home, and only after the page has fully
      loaded — a toast before the stage is set is noise. */
@@ -163,33 +166,48 @@ export function FloatingAgent({ view }: { view: View }) {
     }
   }, []);
 
-  /* the toast sequence — armed ONCE on load, immune to phase changes.
-     The old version scheduled all three toasts in an effect keyed on
-     `toast`, so the blue phase's own cleanup cancelled green's timer
-     before it could fire: blue showed, green never did. Now the
-     sequence runs to completion unless the component unmounts. */
+  /* the toast lifecycle — never fully silent, never noisy: the first
+     cycle plays the two-beat intro (blue, then green); every later
+     cycle rests 75s and shows ONE toast, alternating colors. Each
+     phase schedules exactly its own successor, so no cleanup can ever
+     cancel a future phase (the bug that killed green). */
   useEffect(() => {
     let cancelled = false;
     const timers: ReturnType<typeof setTimeout>[] = [];
     const at = (ms: number, fn: () => void) =>
       timers.push(setTimeout(() => { if (!cancelled) fn(); }, ms));
-    const arm = () => {
-      at(900, () => setToast("blue"));
-      at(7200, () => setToast("green"));
-      at(13500, () => setToast("done"));
-    };
-    if (document.readyState === "complete") arm();
-    else {
-      window.addEventListener("load", arm, { once: true });
-      at(4000, () => {
-        if (document.readyState !== "complete") arm();
-      });
+    const first = cycleRef.current === 0;
+    const odd = cycleRef.current % 2 === 1;
+    switch (toast) {
+      case "idle": {
+        const start = () => at(900, () => setToast(first || odd ? "blue" : "green"));
+        if (document.readyState === "complete") start();
+        else {
+          window.addEventListener("load", start, { once: true });
+          at(4000, () => {
+            if (document.readyState !== "complete") start();
+          });
+        }
+        break;
+      }
+      case "blue":
+        at(6300, () => setToast(first ? "green" : "done"));
+        break;
+      case "green":
+        at(6300, () => setToast("done"));
+        break;
+      case "done":
+        at(75_000, () => {
+          cycleRef.current += 1;
+          setToast("idle");
+        });
+        break;
     }
     return () => {
       cancelled = true;
       timers.forEach(clearTimeout);
     };
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     if (open) inputRef.current?.focus();
@@ -398,7 +416,7 @@ export function FloatingAgent({ view }: { view: View }) {
           then the green. Both peek from behind the head and tuck away. */}
       {toast === "blue" && (
         <div className="agent-badge pointer-events-none absolute bottom-auto right-[calc(100%+14px)] top-[-8px] z-0" aria-hidden>
-          <span className="flex w-[96px] -rotate-2 flex-col items-center rounded-[4px] bg-[#3395FF] px-2 py-1.5 text-center font-sans text-[9.5px] font-semibold leading-tight tracking-[0.02em] text-white">
+          <span className="flex w-max min-w-[84px] -rotate-2 flex-col items-center rounded-[4px] bg-[#3395FF] px-2.5 py-1 text-center font-sans text-[9.5px] font-semibold leading-[1.25] tracking-[0.02em] text-white">
             <span>Built for</span>
             <span>Razorpay</span>
           </span>
@@ -412,7 +430,7 @@ export function FloatingAgent({ view }: { view: View }) {
           )}
           aria-hidden
         >
-          <span className="agent-badge flex w-[96px] rotate-2 flex-col items-center rounded-[4px] bg-[#2aa06a] px-2 py-1.5 text-center font-sans text-[9.5px] font-semibold leading-tight tracking-[0.02em] text-white">
+          <span className="agent-badge flex w-max min-w-[84px] rotate-2 flex-col items-center rounded-[4px] bg-[#2aa06a] px-2.5 py-1 text-center font-sans text-[9.5px] font-semibold leading-[1.25] tracking-[0.02em] text-white">
             <span>now we can</span>
             <span>finally pay</span>
           </span>
