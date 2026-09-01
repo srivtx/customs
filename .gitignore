@@ -56,3 +56,6 @@ server.log
 /data/
 # packaged repo output (assembly artifact, never committed)
 /repo-out/
+
+# local recordings and gif work
+/tool-results/
