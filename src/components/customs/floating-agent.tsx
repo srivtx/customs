@@ -97,14 +97,11 @@ export function FloatingAgent({ view }: { view: View }) {
   const idleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   /* the fresh page: the conversation fades before it clears — a reset
-     should read as turning a sheet over, not a wipe */
+      should read as turning a sheet over, not a wipe */
   const [clearing, setClearing] = useState(false);
-  /* the toast cycle counter — 0 is the intro (both beats), later cycles
-     alternate a single toast so the desk stays present, never noisy */
-  const cycleRef = useRef(0);
   /* the home-page toasts, a two-beat sequence: blue, then green. They
-     run once per load, only on home, and only after the page has fully
-     loaded — a toast before the stage is set is noise. */
+      run once per load, only on home, and only after the page has fully
+      loaded — a toast before the stage is set is noise. */
   const [toast, setToast] = useState<Toast>("idle");
 
   /* the panel minds itself: it closes on outside click, and if a visitor
@@ -166,21 +163,23 @@ export function FloatingAgent({ view }: { view: View }) {
     }
   }, []);
 
-  /* the toast lifecycle — never fully silent, never noisy: the first
-     cycle plays the two-beat intro (blue, then green); every later
-     cycle rests 75s and shows ONE toast, alternating colors. Each
-     phase schedules exactly its own successor, so no cleanup can ever
-     cancel a future phase (the bug that killed green). */
+  /* the toast lifecycle — always the full two-beat: the Razorpay blue
+      peeks, tucks itself away, THEN the green "finally pay" beat arrives
+      with the money tell in the desk's eyes. The beats never touch: each
+      switch fires only after the previous animation has fully tucked
+      (badge = 0.9s peek delay + 5.5s travel; money tell = 0.9s + 5.6s),
+      and every cycle replays the pair — a lone "Built for Razorpay"
+      with no money payoff behind it reads as broken. Each phase
+      schedules exactly its own successor, so no cleanup can ever
+      cancel a future phase (the bug that killed green). */
   useEffect(() => {
     let cancelled = false;
     const timers: ReturnType<typeof setTimeout>[] = [];
     const at = (ms: number, fn: () => void) =>
       timers.push(setTimeout(() => { if (!cancelled) fn(); }, ms));
-    const first = cycleRef.current === 0;
-    const odd = cycleRef.current % 2 === 1;
     switch (toast) {
       case "idle": {
-        const start = () => at(900, () => setToast(first || odd ? "blue" : "green"));
+        const start = () => at(900, () => setToast("blue"));
         if (document.readyState === "complete") start();
         else {
           window.addEventListener("load", start, { once: true });
@@ -190,17 +189,17 @@ export function FloatingAgent({ view }: { view: View }) {
         }
         break;
       }
+      /* blue badge tucks at 6.4s; switch at 6.7 — a clean beat of quiet */
       case "blue":
-        at(6300, () => setToast(first ? "green" : "done"));
+        at(6700, () => setToast("green"));
         break;
+      /* green badge tucks at 6.4s, money tell rests at 6.5s; switch at 6.6
+          so the eyes are back to round before the prop drops */
       case "green":
-        at(6300, () => setToast("done"));
+        at(6600, () => setToast("done"));
         break;
       case "done":
-        at(75_000, () => {
-          cycleRef.current += 1;
-          setToast("idle");
-        });
+        at(75_000, () => setToast("idle"));
         break;
     }
     return () => {
@@ -412,7 +411,7 @@ export function FloatingAgent({ view }: { view: View }) {
         <DeskHead
           size={56}
           thinking={busy}
-          money={toast === "green" && view === "home"}
+          money={toast === "green" && view === "home" && !busy}
           className={cn("text-ink transition-transform", open ? "scale-105" : "hover:scale-105")}
         />
       </button>
@@ -430,12 +429,12 @@ export function FloatingAgent({ view }: { view: View }) {
       {toast === "green" && (
         <div
           className={cn(
-            "pointer-events-none absolute bottom-auto right-[calc(100%+14px)] top-[-8px] z-0 transition-opacity duration-500",
+            "agent-badge pointer-events-none absolute bottom-auto right-[calc(100%+14px)] top-[-8px] z-0 transition-opacity duration-500",
             view === "home" ? "opacity-100" : "opacity-0"
           )}
           aria-hidden
         >
-          <span className="agent-badge flex w-max min-w-[84px] rotate-2 flex-col items-center rounded-[4px] bg-[#2aa06a] px-2.5 py-1 text-center font-sans text-[9.5px] font-semibold leading-[1.25] tracking-[0.02em] text-white">
+          <span className="flex w-max min-w-[84px] rotate-2 flex-col items-center rounded-[4px] bg-[#2aa06a] px-2.5 py-1 text-center font-sans text-[9.5px] font-semibold leading-[1.25] tracking-[0.02em] text-white">
             <span>now we can</span>
             <span>finally pay</span>
           </span>

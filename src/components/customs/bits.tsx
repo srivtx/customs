@@ -51,30 +51,38 @@ export function DeskHead({
       height={size}
       viewBox="0 0 32 32"
       aria-hidden="true"
-      className={cn("desk-head shrink-0", thinking && "thinking", className)}
+      className={cn("desk-head shrink-0", thinking && "thinking", money && "money", className)}
     >
       <circle cx="16" cy="16" r="13" fill="currentColor" />
-      {money ? (
-        /* the money tell — the eyes become two jiggling dollar signs,
-           green on ink, when the green toast says "finally pay" */
-        <>
-          <text className="desk-money" x="11" y="17.5" textAnchor="middle" fontSize="10" fontWeight="800" fill="#2aa06a" style={{ fontFamily: "var(--font-geist-sans)" }}>
+      {/* the eyes never leave. When the money tell is on, the round eye
+          cross-fades into a capsule (same width, rx = half width — round
+          caps, straight parallel sides) which stretches vertically: no
+          ellipse, the width never changes. The $ rides up inside it, the
+          capsule hands back to the untouched circle, and the idle wander
+          stays paused for the whole tell — a steady gaze, resuming in
+          phase after. Timing lives in globals.css under .desk-head.money. */}
+      <g className="desk-eye-g e1">
+        <circle className="desk-eye" cx="11.5" cy="14.5" r="2.1" fill="var(--paper)" />
+        {money && (
+          <rect className="desk-eye-capsule" x="9.4" y="10.615" width="4.2" height="7.77" rx="2.1" fill="var(--paper)" />
+        )}
+        {money && (
+          <text className="desk-money" x="11.5" y="15.6" textAnchor="middle" fontSize="3.2" fontWeight="800" fill="#2aa06a" style={{ fontFamily: "var(--font-geist-sans)" }}>
             $
           </text>
-          <text className="desk-money" x="21" y="17.5" textAnchor="middle" fontSize="10" fontWeight="800" fill="#2aa06a" style={{ fontFamily: "var(--font-geist-sans)", animationDelay: "140ms" }}>
+        )}
+      </g>
+      <g className="desk-eye-g e2">
+        <circle className="desk-eye" cx="20.5" cy="14.5" r="2.1" fill="var(--paper)" />
+        {money && (
+          <rect className="desk-eye-capsule" x="18.4" y="10.615" width="4.2" height="7.77" rx="2.1" fill="var(--paper)" />
+        )}
+        {money && (
+          <text className="desk-money" x="20.5" y="15.6" textAnchor="middle" fontSize="3.2" fontWeight="800" fill="#2aa06a" style={{ fontFamily: "var(--font-geist-sans)" }}>
             $
           </text>
-        </>
-      ) : (
-        <>
-          <g className="desk-eye-g e1">
-            <circle className="desk-eye" cx="11.5" cy="14.5" r="2.1" fill="var(--paper)" />
-          </g>
-          <g className="desk-eye-g e2">
-            <circle className="desk-eye" cx="20.5" cy="14.5" r="2.1" fill="var(--paper)" />
-          </g>
-        </>
-      )}
+        )}
+      </g>
     </svg>
   );
 }
