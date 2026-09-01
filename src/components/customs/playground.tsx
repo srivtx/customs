@@ -95,7 +95,7 @@ export function Playground() {
          thinking state for at least a beat — the grok tell needs stage
          time to be believed. */
       const thinkFrom = performance.now();
-      const MIN_THINK_MS = 900;
+      const MIN_THINK_MS = 1500;
       try {
         const res = await fetch("/api/chat", {
           method: "POST",
@@ -193,7 +193,7 @@ export function Playground() {
           ))}
           {busy && (
             <div className="flex animate-rise items-center gap-3 px-1 py-2">
-              <DeskHead size={24} thinking className="text-ink" />
+              <DeskHead size={28} thinking className="text-ink" />
               <span className="text-[12px] text-inksoft">the desk is working</span>
             </div>
           )}
