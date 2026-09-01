@@ -156,7 +156,7 @@ export function CustomsApp() {
       <SiteFooter onEnter={go} />
 
       {/* the everywhere-agent — draggable, on every view, real shopping */}
-      <FloatingAgent />
+      <FloatingAgent view={view} />
       <SystemThemeAsk />
     </div>
   );

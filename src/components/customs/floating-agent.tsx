@@ -16,6 +16,7 @@
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { DeskHead } from "./bits";
+import type { View } from "./shell";
 import type { ChatEvent } from "@/lib/customs/agent/loop";
 
 const POS_KEY = "customs-agent-pos";
@@ -54,7 +55,9 @@ function summarize(events: ChatEvent[], startId: number): Line[] {
   return out;
 }
 
-export function FloatingAgent() {
+type Toast = "idle" | "blue" | "green" | "done";
+
+export function FloatingAgent({ view }: { view: View }) {
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -72,6 +75,10 @@ export function FloatingAgent() {
   /* the fresh page: the conversation fades before it clears — a reset
      should read as turning a sheet over, not a wipe */
   const [clearing, setClearing] = useState(false);
+  /* the home-page toasts, a two-beat sequence: blue, then green. They
+     run once per load, only on home, and only after the page has fully
+     loaded — a toast before the stage is set is noise. */
+  const [toast, setToast] = useState<Toast>("idle");
 
   /* the panel minds itself: it closes on outside click, and if a visitor
      walks away mid-thought, it closes itself after 45 quiet seconds */
@@ -131,6 +138,28 @@ export function FloatingAgent() {
       /* fresh session */
     }
   }, []);
+
+  /* the toast sequence — gated on a fully loaded page, home only */
+  useEffect(() => {
+    if (view !== "home" || toast !== "idle") return;
+    const arm = () => {
+      const t1 = setTimeout(() => setToast("blue"), 900);
+      const t2 = setTimeout(() => setToast("green"), 6600);
+      const t3 = setTimeout(() => setToast("done"), 12400);
+      cleanup = () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+        clearTimeout(t3);
+      };
+    };
+    let cleanup: (() => void) | undefined;
+    if (document.readyState === "complete") arm();
+    else {
+      window.addEventListener("load", arm, { once: true });
+      cleanup = () => window.removeEventListener("load", arm);
+    }
+    return () => cleanup?.();
+  }, [view, toast]);
 
   useEffect(() => {
     if (open) inputRef.current?.focus();
@@ -335,13 +364,22 @@ export function FloatingAgent() {
         <DeskHead size={56} thinking={busy} className={cn("text-ink transition-transform", open ? "scale-105" : "hover:scale-105")} />
       </button>
 
-      {/* the game toast — Razorpay blue, fully clear of the head: to its
-          left, just above head height, peeking in from behind on load */}
-      <div className="agent-badge pointer-events-none absolute bottom-auto right-[calc(100%+14px)] top-[-8px] z-0" aria-hidden>
-        <span className="inline-flex -rotate-2 items-center gap-1 rounded-[4px] bg-[#3395FF] px-2 py-1 font-sans text-[9.5px] font-semibold tracking-[0.04em] text-white">
-          Built for Razorpay
-        </span>
-      </div>
+      {/* the game toasts — home only, once per load: Razorpay blue first,
+          then the green. Both peek from behind the head and tuck away. */}
+      {view === "home" && toast === "blue" && (
+        <div className="agent-badge pointer-events-none absolute bottom-auto right-[calc(100%+14px)] top-[-8px] z-0" aria-hidden>
+          <span className="inline-flex -rotate-2 items-center gap-1 rounded-[4px] bg-[#3395FF] px-2 py-1 font-sans text-[9.5px] font-semibold tracking-[0.04em] text-white">
+            Built for Razorpay
+          </span>
+        </div>
+      )}
+      {view === "home" && toast === "green" && (
+        <div className="agent-badge pointer-events-none absolute bottom-auto right-[calc(100%+14px)] top-[-8px] z-0" aria-hidden>
+          <span className="inline-flex rotate-2 items-center gap-1 rounded-[4px] bg-[#2aa06a] px-2 py-1 font-sans text-[9.5px] font-semibold tracking-[0.04em] text-white">
+            now we can finally pay
+          </span>
+        </div>
+      )}
     </div>
   );
 }
