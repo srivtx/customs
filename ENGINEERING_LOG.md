@@ -622,3 +622,59 @@ strip: partial → complete, no freeze, no duplicate beats); mobile
 masthead + menu SHIP; why opening SHIP; bot SHIP (dark). GIF
 re-recorded (36.7s, 1.93MB). Zero console errors after the stale-HMR
 entry was cleared by a touch-recompile.
+
+---
+
+## D13-1 — 2026-09-01 · the aurora that left the egg, and the rectangle on the forehead
+
+**What happened:** Two bot bugs shipped in v4 and were reported within
+the hour. (1) A small hard-edged rectangle sat on the bot's forehead in
+both themes. (2) As the aurora swept, "the effect goes out of the
+shape" — part of the body went empty/white while a visible edge crossed
+the face, worst at the right end of the sweep.
+
+**Root causes, both geometric:**
+
+1. The forehead rectangle was the crown "gloss": a `<rect>` filled with
+   a white 0.2-opacity gradient. A rect with a fading fill still has
+   four corners — over the body's top tint it read as a sticker.
+2. The aurora was a 400px-wide gradient rect translating ±150px inside
+   a clipped group. The ribbon's opaque core (~264px) was narrower than
+   the egg (208px) plus the travel (300px) — so at each end of the sweep
+   the core mostly left the egg (empty body, "nothing there"), and the
+   ribbon's soft edge crossed the visible face ("the edge is looking").
+   The clip never failed; the geometry inside it was wrong. Separately,
+   a CSS-transformed rect clipped only by an ancestor group is a
+   compositing risk in Chrome (ancestor clips can be dropped on layer
+   invalidation, e.g. on theme repaint) — a second way the same bug
+   could present.
+
+**Fix (v5):** animate the paint, never the element. The aurora rect is
+now static, exactly the egg's bounds, clipped to the egg's own path —
+and SMIL `<animateTransform>` moves the *gradient* (userSpaceOnUse)
+through it. A fill cannot escape its geometry; a static element cannot
+misalign its clip; there is no transform layer to lose anything. The
+gradient's opaque core (offsets 0.31–0.94 of a 480px vector) is sized
+to cover the egg at both ends of the ±48px drift, so the body is never
+empty and no edge is ever visible. The forehead gloss became a blurred
+ellipse (a sheen with no boundary cannot read as a shape). The SMIL
+clock is paused under `prefers-reduced-motion` via
+`svg.pauseAnimations()`.
+
+**The verification trap:** the first VLM regression run still showed the
+v4 artifact — because `next build` had been run while `next dev` was
+live, and the dev server served stale modules from the corrupted shared
+`.next` (Fast Refresh "done" ≠ your code is live). Caught by asserting
+the live DOM (`querySelector('.hb-aurora')` attributes matched v5, not
+v4) before trusting any screenshot. Rule recorded: after any build,
+restart the dev server; before any visual verdict, check the DOM
+actually renders the new markup.
+
+**Validation:** deterministic SMIL phases (setCurrentTime 0 / 2.25 /
+4.5 / 6.75) screenshotted in dark and light, plus a theme flip
+mid-cycle: no rectangle, no escape past the silhouette, no empty phase,
+no edge (VLM SHIP ×8 frames). Hover state: eyes sage, blush warmer,
+aurora +0.1 — SHIP. Paper CTAs re-measured by DOM geometry: 396 vs 397
+(the text column) — aligned. tsc / eslint / build / `make verify` /
+`make test` all green. The regression test for this bug is codified in
+`docs/DESIGN_SYSTEM.md` §10.4 (bot containment checklist).

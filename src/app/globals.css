@@ -458,32 +458,55 @@ html.light {
     animation: hb-shadow-breathe 7s ease-in-out infinite alternate;
   }
 
-  /* the eyes: blink on their own clock; the pair glances aside,
-     rests, and returns — a small, alive motion */
+  /* the eyes: blink on their own clock (sometimes twice — the second
+     blink is the cute one); the pair glances aside, rests, returns,
+     and later takes a smaller look the other way */
   .hb-eye {
     transform-box: fill-box;
     transform-origin: center;
-    animation: hb-blink 5.4s ease-in-out infinite;
+    animation: hb-blink 7.6s ease-in-out infinite;
     transition: fill 0.3s ease;
   }
   .hb-eyes {
     transform-box: fill-box;
     transform-origin: center;
-    animation: hb-glance 9s ease-in-out infinite;
+    animation: hb-glance 9.5s ease-in-out infinite;
+  }
+  /* the glints share the glance clock and drift AGAINST it — a
+     specular highlight stays with the room's light, not the eye;
+     half a millimetre of counter-motion is what reads as wet */
+  .hb-glints {
+    animation: hb-glint 9.5s ease-in-out infinite;
   }
   .hero-bot:hover .hb-eye {
     fill: var(--cleared);
   }
 
-  /* the aurora — the rainbow under the skin: a gradient ribbon wider
-     than the body, clipped to it, gliding back and forth */
+  /* the aurora — the rainbow under the skin. The motion is SMIL on
+     the gradient's paint (see hero-bot.tsx), so this rule only owns
+     presence: themed opacity, a slow cross-fade when the desk flips,
+     and a small warm-up on hover. No CSS transform ever touches this
+     element — that is the containment contract. */
   .hb-aurora {
-    transform-box: view-box;
-    animation: hb-sweep 8s ease-in-out infinite alternate;
     opacity: 0.55;
+    transition: opacity 0.6s ease;
   }
   html.light .hb-aurora {
     opacity: 0.38;
+  }
+  .hero-bot:hover .hb-aurora {
+    opacity: 0.65;
+  }
+  html.light .hero-bot:hover .hb-aurora {
+    opacity: 0.46;
+  }
+  /* the blush warms a touch when visited — the smallest tell of a
+     happy bot; a paint-only transition, nothing structural moves */
+  .hb-blush {
+    transition: opacity 0.5s ease;
+  }
+  .hero-bot:hover .hb-blush {
+    opacity: 0.58;
   }
 }
 
@@ -574,34 +597,57 @@ html.light {
 }
 @keyframes hb-blink {
   0%,
-  91%,
+  24%,
+  30%,
+  82%,
+  94%,
   100% {
     transform: scaleY(1);
   }
-  94% {
+  27% {
     transform: scaleY(0.08);
   }
-  97% {
-    transform: scaleY(1);
+  /* the double blink — a quick reopen and close again, the one that
+     reads as cute instead of reflex */
+  85.5%,
+  90.5% {
+    transform: scaleY(0.08);
   }
 }
 @keyframes hb-glance {
   0%,
-  64%,
+  38%,
+  68%,
   100% {
-    transform: translateX(0);
+    transform: translate(0, 0);
   }
-  74%,
+  /* a look aside and slightly down, held, then home */
+  46%,
+  60% {
+    transform: translate(4.5px, 0.8px);
+  }
+  /* later in the same cycle, a smaller look the other way and a
+     hair up — enough asymmetry to feel like attention, not loop */
+  76%,
   86% {
-    transform: translateX(4.5px);
+    transform: translate(-3px, -0.6px);
   }
 }
-@keyframes hb-sweep {
-  from {
-    transform: translateX(-150px);
+@keyframes hb-glint {
+  0%,
+  38%,
+  68%,
+  100% {
+    transform: translate(0, 0);
   }
-  to {
-    transform: translateX(150px);
+  /* counter-drift: the highlight lags the glance, opposite sign */
+  46%,
+  60% {
+    transform: translate(-2px, 0);
+  }
+  76%,
+  86% {
+    transform: translate(1.4px, 0);
   }
 }
 
@@ -615,7 +661,7 @@ html.light {
   .hb-bot,
   .hb-eye,
   .hb-eyes,
-  .hb-aurora,
+  .hb-glints,
   .hb-shadow {
     animation: none !important;
   }

@@ -27,6 +27,7 @@ Test mode only; without Razorpay keys the rail is a labeled simulation.
 - README.md — product overview, quickstart, file map
 - ARCHITECTURE.md — the one diagram, decisions table, threat model
 - AGENTS.md — working guide + the 11 invariants
+- docs/DESIGN_SYSTEM.md — the design contract: tokens, type, motion rules, the mascot containment law (read before touching any UI)
 - ENGINEERING_LOG.md — dated incidents; every incident became a test
 - CLEANUP.md — what to delete before pushing to GitHub
 - DEPLOY.md — the operating runbook: run locally, keep alive, deploy free, operate

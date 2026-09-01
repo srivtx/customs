@@ -349,9 +349,15 @@ export function PaperPage({ onEnter }: { onEnter: (v: View) => void }) {
         </section>
       </article>
 
-      {/* ------------------------------ continue — off the sheet, on the desk ------------------------------ */}
+      {/* ------------------------------ continue — off the sheet, on the desk ------------------------------
+          Inset by the sheet's own padding (px-6 / sm:px-14) so the
+          buttons sit in the text column the paragraphs sit in — the
+          eye reads one left edge from abstract to action. */}
       <Reveal>
-        <section className="flex flex-wrap items-center gap-3 pt-10" aria-label="continue">
+        <section
+          className="flex flex-wrap items-center gap-3 px-6 pt-10 sm:px-14"
+          aria-label="continue"
+        >
           <InkButton onClick={() => onEnter("agent")} arrow>
             see the protocol run live
           </InkButton>

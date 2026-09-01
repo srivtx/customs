@@ -66,6 +66,12 @@ to check the repo's claims. The harnesses run the real engine, so they need one
   `src/lib/customs/adapters/index.ts` following the MCP/ACP pattern (same tool
   schemas, logged wire), add its wire-overhead accounting to the ablation, and
   add corpus cases for anything it changes.
+- **Any UI**: read `docs/DESIGN_SYSTEM.md` first — it is the design contract
+  (tokens, type scale, motion rules, the bot's containment law). Match tokens,
+  never hardcode colors; mono for machine output, sans for human words; one
+  hairline, no shadows on panels; motion is transform/opacity only, with the
+  SMIL-paint exception for ambient gradients. If the change contradicts the
+  contract, fix the contract or fix the change — never both silently.
 - **A fuzz case**: one entry in `src/lib/customs/fuzz/corpus.ts` — deterministic
   input, expected verdict (refuse + reason code), then `make fuzz`. Corpus design
   rule: attacks on legitimately-issued mandates keep valid signatures so the

@@ -136,6 +136,7 @@ the **Why it exists** view and `PAPER.md` §7.
 | `LICENSE` | MIT |
 | `llms.txt` | machine index (what / where / verify) |
 | `AGENTS.md` | how coding agents work here + the invariants |
+| `docs/DESIGN_SYSTEM.md` | the design contract — tokens, type, motion, the bot's containment law |
 | `ENGINEERING_LOG.md` | dated incidents, the honest failure story |
 | `ARCHITECTURE.md` | the one diagram + decisions table |
 | `VIDEO_TRANSCRIPT.md` | the 5:00 pitch script (recorded at submission) |
