@@ -108,6 +108,11 @@ regenerated, never promised.
   `ok:true` with `rail: razorpay-test, simulated:false` (real test-mode rails),
   chain verified, deterministic seed, ephemeral state honestly labeled.
   CI keeps the URL in this file on every push.
+- The agent kit: the counter's HTTP surface is published for outside agents —
+  `AGENT_KIT.md` (the contract) · `GET /api/agent/kit` (machine twin,
+  generated from the running constants) · `make kit` (the proof: a reference
+  client with no in-repo state walks search → add → attest → checkout →
+  approve over pure HTTP and asserts every verdict).
 - D1-1 payment mechanism: **executed with test keys on 2026-09-01**
   (`results/d1_1_spike.json`) — Orders API verified live; server-side
   tokenization refused by test mode (path A impossible, receipt in the log);
