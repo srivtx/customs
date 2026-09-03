@@ -57,15 +57,16 @@ command that regenerates it. No number lives only in this document.
     assumptions). Evidence: `results/cost_meter.json`, `results/project.json`,
     `make meter`, `make project`.
 
-11. **What would you do next?** Flip the rail with test keys (spike ready);
-    real MCP/ACP transports behind the existing adapter interface; x402 as the
-    declared stretch; mandates backed by real KYC attestation. Evidence:
-    `DEPLOY.md`, `ARCHITECTURE.md` decisions 1/9/11.
+11. **What would you do next?** A volume-backed host for the ledger (the
+    persistent desk); multi-merchant tenancy and desk auth; refunds as ledger
+    spans; mandates backed by real KYC attestation; x402 as the declared
+    stretch. Evidence: `DEPLOY.md`, `ARCHITECTURE.md` decisions 1/9/11,
+    `AGENT_KIT.md` (the real MCP/ACP transports already shipped).
 
 12. **Anything the judges should know?** The repo is built to be judged by a
     machine: `JUDGE.md` maps claims to files and commands, `make verify` runs
     the same checks as CI with zero dependencies, no number is hand-written,
-    no URL ships until it answers 200, and the scope ledger states the limits
+    no URL ships until it answers 200, and the desk ledger states the limits
     (simulation stays the volume/no-keys fallback, x402 = stretch). Evidence:
     `JUDGE.md`, `make triage`, https://customs.srivtx.xyz/api/health.
 
