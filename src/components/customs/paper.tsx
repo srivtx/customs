@@ -328,8 +328,13 @@ export function PaperPage({ onEnter }: { onEnter: (v: View) => void }) {
             operation remains out of scope by rule (live keys are refused at
             construction).
             The buyer agent is in-house — no third-party agent has yet paid through the
-            gate — and the MCP/ACP arms are protocol-shaped transports, honestly
-            labeled, rather than certified implementations. The store is a single
+            gate. The transports are real: MCP is served over Streamable HTTP at
+            `/api/mcp` (spec 2025-06-18: initialize, tools/list, tools/call,
+            Mcp-Session-Id sessions), and ACP is a core REST profile at `/api/acp`
+            whose receipts are signed with the same Ed25519 key as the mandates and
+            verifiable offline; the in-process arms of the ablation remain the
+            envelope-level measurement of the same three wire shapes. The store is a
+            single
             merchant with no tenancy or merchant auth. Refunds and cancellations were
             cut for scope; mandate expiry and refusal handling carry the
             failure-handling story, and the cut is recorded. Finally, the ledger is a

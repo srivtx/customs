@@ -66,7 +66,7 @@ surfaces halves both, and the ledger keeps them coherent.
 | 6 | Human approval threshold ₹10,000 | above it, money waits for a human regardless of tier — hold, not refuse | locked |
 | 7 | Default brain is rules-only, deterministic | replayability and reproducible results are features; the LLM arm is skipped, never simulated, without a key; whichever brain parses intent, the gate stays plain code | locked (logged D1-3) |
 | 8 | One app, two surfaces (not a monorepo of two apps) | halves deploy surface and cold starts; the ledger keeps both sides coherent | locked |
-| 9 | Protocol adapters are in-process and protocol-SHAPED | honest labeling: JSON-RPC 2.0 envelopes and signed agent-message envelopes over identical tool impls; swapping in real MCP/ACP transports is an interface change, not a logic change | locked (logged D2-1) |
+| 9 | Protocol adapters: in-process envelopes for the ablation, REAL transports alongside | the ablation measures wire shapes in-process (its subject, unchanged); the live product serves real MCP over Streamable HTTP (`/api/mcp`, spec 2025-06-18) and ACP core REST with Ed25519-signed receipts (`/api/acp`) — same tools, same gate | shipped (logged D2-1, amended D6) |
 | 10 | Tier check before mandate-cap check | a signed cap can never be wider than the tier allows — the policy ceiling fires first, giving attacks their honest reason codes | locked (logged D3-1, the incident that became a rule) |
 | 11 | x402 adapter | pre-declared stretch — cut reads as scope discipline | stretch |
 

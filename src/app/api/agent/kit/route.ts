@@ -47,6 +47,11 @@ export async function GET() {
       brain: brainMode(),
       catalogSize: CATALOG.length,
       ledger: "hash-chained JSONL — every verdict, every span, every refusal",
+      transports: {
+        mcp: "REAL Model Context Protocol server — Streamable HTTP, spec 2025-06-18, at /api/mcp (initialize → tools/list → tools/call)",
+        acp: "ACP core REST profile at /api/acp — agents, sessions, messages, Ed25519-signed receipts",
+        chat: "plain JSON at /api/chat — the same surface the playground speaks",
+      },
     },
     endpoints: {
       chat: {
@@ -75,6 +80,23 @@ export async function GET() {
       health: { method: "GET", path: "/api/health", note: "ok:true only when the ledger chain verifies" },
       state: { method: "GET", path: "/api/state", note: "the live ledger lines the control room renders" },
       reset: { method: "POST", path: "/api/reset", note: "re-seed the deterministic demo history" },
+      mcp: {
+        method: "POST",
+        path: "/api/mcp",
+        note: "REAL MCP over Streamable HTTP — point any MCP client here (Claude, Cursor, Inspector)",
+        transport: "streamable-http",
+        specVersion: "2025-06-18",
+        handshake: "initialize → notifications/initialized → tools/list → tools/call",
+        session: "Mcp-Session-Id header, assigned at initialize; DELETE to close; GET → 405",
+        protocolTools: ["attest_tier", "approve_mandate"],
+      },
+      acp: {
+        method: "POST",
+        path: "/api/acp/sessions/{id}",
+        note: "ACP core REST profile — request → ack → result → Ed25519-signed receipt",
+        agents: "GET /api/acp/agents (descriptor + the public key receipts verify against)",
+        create: "POST /api/acp/sessions",
+      },
       kit: { method: "GET", path: "/api/agent/kit", note: "this document" },
     },
     protocol: {
@@ -95,6 +117,16 @@ export async function GET() {
       ],
     },
     tools: TOOL_SCHEMAS,
+    protocolTools: [
+      {
+        name: "attest_tier",
+        description: "Raise the buyer's trust tier (UNVERIFIED → ATTESTED → MANDATED). OTP-bound in production; asserted in this demo.",
+      },
+      {
+        name: "approve_mandate",
+        description: "The principal's approval — the human in the loop. bind_and_pay refuses until this runs.",
+      },
+    ],
     trustTiers: tiers,
     events: {
       "role:user|agent": "chat text",
@@ -120,5 +152,46 @@ export async function GET() {
       run: "make kit   (BASE_URL env or the default http://localhost:3000)",
       humanTwin: "AGENT_KIT.md",
     },
+    context: buildContext(rail.id),
   });
+}
+
+/** the paste-into-your-agent context — the same block the kit page's
+    copy button puts on the clipboard; one string, maintained here */
+function buildContext(railId: string): string {
+  return `# Customs — agent context
+
+You are a buying agent operating Customs, a two-sided agentic checkout
+(Razorpay AI Buildathon 2026, test mode only — live keys are refused at
+construction). You hold NO payment credential. You shop by requesting a
+signed spending mandate, getting your principal's approval, and binding
+within its bounds. Refusals carry reason codes; every span lands in a
+hash-chained ledger.
+
+## Connect (choose one)
+- MCP: POST ${"{BASE}"}/api/mcp — real MCP over Streamable HTTP (spec 2025-06-18).
+  initialize → notifications/initialized → tools/list → tools/call.
+  Session id arrives in the Mcp-Session-Id response header.
+- Plain JSON: POST ${"{BASE}"}/api/chat with {"message": "..."}; keep the
+  sessionId the response returns.
+- ACP core REST: GET ${"{BASE}"}/api/acp/agents → POST ${"{BASE}"}/api/acp/sessions →
+  POST ${"{BASE}"}/api/acp/sessions/{id} with {"tool": "...", "args": {...}}.
+  Receipts are Ed25519-signed; verify against the public key in the agents descriptor.
+- Machine kit: GET ${"{BASE}"}/api/agent/kit — this contract, generated from the running code.
+
+## The golden path
+1. search_catalog {query}  (or chat: "search earbuds")
+2. add_to_cart {productId, quantity}
+3. attest_tier — if the tier cap is tighter than the cart (₹500 walk-in)
+4. request_mandate {} — the desk drafts and signs an Ed25519 mandate
+5. approve_mandate {} — ASK YOUR HUMAN FIRST; this is their money
+6. bind_and_pay {} — the gate re-checks every bound, then the rail captures
+
+## Rules that will not bend
+- No approval, no money: bind_and_pay refuses with MANDATE_NOT_APPROVED
+  until the principal approves.
+- Bounds are re-verified server-side at bind time from the live catalog —
+  price drift, widened caps, expired or tampered mandates are refused.
+- Money is integer paise. Floats are refused by construction.
+- Current rail: ${railId}. Every refusal is a reason code, not a vibe.`;
 }

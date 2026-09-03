@@ -32,12 +32,13 @@ Test mode only; without Razorpay keys the rail is a labeled simulation.
 - ENGINEERING_LOG.md — dated incidents; every incident became a test
 - CLEANUP.md — what to delete before pushing to GitHub
 - DEPLOY.md — the operating runbook: run locally, keep alive, deploy free, operate
-- AGENT_KIT.md — bring your own agent: the counter's HTTP contract; /api/agent/kit is its machine twin; `make kit` proves an outside client clears the counter
+- AGENT_KIT.md — bring your own agent: the counter's HTTP contract; /api/mcp is a REAL MCP server (Streamable HTTP, 2025-06-18), /api/acp a core REST profile with Ed25519-signed receipts; `make kit` proves an outside client clears the counter
 - src/lib/customs/gate/ — mandate contract, canonical JSON, decision checklist
 - src/lib/customs/ledger/ — hash-chained JSONL audit trail (the database)
 - src/lib/customs/fuzz/corpus.ts — the 12 authored attacks, expected verdicts
 - src/lib/customs/meter.ts — channel P&L + projection, assumptions declared
 - src/components/customs/why.tsx — the why page: architecture drawn as cards + desk ledger (shipped / simulated / the work order for next)
+- src/components/customs/agent-kit.tsx — the agent kit view: the HTTP contract, the protocol, and a live golden-path walkthrough in-page
 - src/components/customs/paper.tsx — the paper view: a clean theme-aware document page; §5–§6 numbers read live from the ledger
 - src/components/customs/demo-player.tsx — the landing demo: the golden path plays itself in code, loops (docs/demo.gif is a recording of it)
 - src/components/customs/hero-bot.tsx — the customs bot: one smooth animated volume on the hero, token-inked, reduced-motion aware

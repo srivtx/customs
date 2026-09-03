@@ -4,13 +4,13 @@
  * while the protocol varies, and `make ablation` measures what the variance
  * costs (calls, bytes, tokens, round-trips).
  *
- * Honesty note (ENGINEERING_LOG, D2): "MCP-style" and "ACP-style" are
- * protocol-SHAPED transports — JSON-RPC 2.0 tool envelopes and signed
- * agent-to-agent message envelopes respectively — implemented in-process
- * over the identical tool implementations. They are not the MCP stdio
- * server or the ACP wire spec, and the repo never claims otherwise.
- * Swapping the in-process transport for the real stdio/HTTP transports is
- * an interface change, not a logic change: tool schemas are shared.
+ * Honesty note (ENGINEERING_LOG, D2, amended D6): the ablation measures the
+ * three wire SHAPES in-process — that is its subject, unchanged. The real
+ * transports now exist alongside it: /api/mcp is a true MCP server over
+ * Streamable HTTP (spec 2025-06-18), /api/acp a core REST profile with
+ * Ed25519-signed receipts, both driving the identical tool implementations
+ * in this file. The tool schemas are shared, so the claim stays precise:
+ * one schema set, three transports, the same gate behind all of them.
  */
 import { createHash } from "node:crypto";
 

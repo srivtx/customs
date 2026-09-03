@@ -127,6 +127,7 @@ const SITE: { label: string; view: View }[] = [
   { label: "Overview", view: "home" },
   { label: "Why it exists", view: "why" },
   { label: "The paper", view: "paper" },
+  { label: "Agent kit", view: "kit" },
   { label: "Playground", view: "agent" },
   { label: "Control room", view: "merchant" },
 ];

@@ -52,8 +52,10 @@ arms; LLM arm status recorded honestly).
 ### 3 — Ease of understanding
 Claim: one command runs the product; one command tours the evidence; the
 ledger is a file you can `head` — and the whole technical story is pre-rendered
-as two reading surfaces: **Why it exists** (problem, principle, diagram, scope)
-and **the Paper** (working paper; §5–§6 numbers read live from the ledger).
+as three reading surfaces: **Why it exists** (problem, principle, diagram, desk
+ledger), **the Agent kit** (the counter's HTTP contract, with a live
+golden-path walkthrough in-page) and **the Paper** (working paper; §5–§6
+numbers read live from the ledger).
 Evidence: `make demo` · `make triage` · `data/state/ledger.jsonl` (hash-chained
 JSONL — the audit trail IS the database) · `src/components/customs/why.tsx` ·
 `src/components/customs/paper.tsx` + `PAPER.md` (twins, AGENTS invariant 11).
@@ -101,8 +103,9 @@ regenerated, never promised.
 
 ## The desk ledger
 
-- Reading surfaces: the Why view (problem, architecture diagram, desk ledger)
-  and the Paper view + `PAPER.md` (protocol, economics, evaluation) ship in-app
+- Reading surfaces: the Why view (problem, architecture diagram, desk ledger),
+  the Agent kit view (the HTTP contract + live walkthrough) and the Paper view
+  + `PAPER.md` (protocol, economics, evaluation) ship in-app
   and in-repo; the paper's §5–§6 numbers are the live ledger's, never printed.
 - Live deployment: **https://customs.srivtx.xyz** — `/api/health` answers
   `ok:true` with `rail: razorpay-test, simulated:false` (real test-mode rails),
@@ -112,7 +115,14 @@ regenerated, never promised.
   `AGENT_KIT.md` (the contract) · `GET /api/agent/kit` (machine twin,
   generated from the running constants) · `make kit` (the proof: a reference
   client with no in-repo state walks search → add → attest → checkout →
-  approve over pure HTTP and asserts every verdict).
+  approve over pure HTTP and asserts every verdict). The transports are REAL:
+  **MCP server over Streamable HTTP at `/api/mcp`** (spec 2025-06-18 —
+  initialize handshake, Mcp-Session-Id sessions, tools/list, tools/call; any
+  MCP client can connect) and **ACP core REST at `/api/acp`** (request → ack →
+  result → receipt signed with the mandate's Ed25519 key, verifiable offline
+  against the public key in `GET /api/acp/agents`). Approval is enforced at
+  the tool layer: `bind_and_pay` refuses with `MANDATE_NOT_APPROVED` until the
+  principal approves — no transport can route around the human.
 - D1-1 payment mechanism: **executed with test keys on 2026-09-01**
   (`results/d1_1_spike.json`) — Orders API verified live; server-side
   tokenization refused by test mode (path A impossible, receipt in the log);

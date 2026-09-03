@@ -100,6 +100,19 @@ and in ARCHITECTURE.md decision 9 — the repo never claims spec conformance it 
 **The test it became:** the ablation verdict parity — all three transports must produce
 identical gate verdicts (8/8 each), or the abstraction leaked.
 
+**Amendment 2026-09-04 (D6):** the shaped adapters stopped being the whole story — the
+real transports shipped alongside them. `/api/mcp` is a true MCP server over Streamable
+HTTP (spec 2025-06-18: initialize handshake, `Mcp-Session-Id` sessions, tools/list,
+tools/call; GET → 405, DELETE → teardown, batches → 400). `/api/acp` is a core REST
+profile (agents descriptor with the Ed25519 public key, sessions, messages; every result
+carries an ack + a receipt signed with the mandate key, verified offline during the
+build). The approval invariant moved INTO the tool layer — `bind_and_pay` refuses with
+`MANDATE_NOT_APPROVED` until `approve_mandate` runs — so chat, MCP and ACP all refuse
+the same way and no transport can route around the principal. The ablation's in-process
+arms are untouched (its subject is the wire shapes; measured bytes unchanged). The test
+this became: the MCP/ACP walks above, run live during the build — both refuse before
+approval and capture after, receipts verify offline.
+
 ---
 
 ## 2026-09-01 — D2-2: corpus design — forged vs legitimately-issued
