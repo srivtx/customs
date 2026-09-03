@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <!-- Customs — the gate diamond on the night tile, the felt world's running stitch around it -->
   <rect x="0" y="0" width="64" height="64" rx="12" fill="#050505"/>
-  <rect x="6.5" y="6.5" width="51" height="51" rx="8" fill="none" stroke="#a2c0a9" stroke-opacity="0.5" stroke-width="1.5" stroke-dasharray="0.5 4.5" stroke-linecap="round"/>
-  <g transform="translate(32 32) scale(0.84) translate(-32 -32)">
+  <rect x="5.5" y="5.5" width="53" height="53" rx="9" fill="none" stroke="#a2c0a9" stroke-width="2.6" stroke-dasharray="2.5 4.5" stroke-linecap="round"/>
+  <g transform="translate(32 32) scale(0.82) translate(-32 -32)">
     <path fill="#f4f4f0" fill-rule="evenodd"
       d="M29.74 9.26 Q32 7 34.26 9.26 L54.74 29.74 Q57 32 54.74 34.26 L34.26 54.74 Q32 57 29.74 54.74 L9.26 34.26 Q7 32 9.26 29.74 Z M27.5 23.5 A4.5 4.5 0 0 1 36.5 23.5 L36.5 40.5 A4.5 4.5 0 0 1 27.5 40.5 Z"/>
   </g>
