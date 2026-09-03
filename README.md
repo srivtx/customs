@@ -141,7 +141,8 @@ the **Why it exists** view and `PAPER.md` §7.
 | `VIDEO_TRANSCRIPT.md` | the 5:00 pitch script (recorded at submission) |
 | `CLEANUP.md` | operator runbook: what to delete before pushing to GitHub |
 | `DEPLOY.md` | operator runbook: run locally, keep it alive, deploy free, operate |
-| `Makefile` | verify / triage / fuzz / ablation / meter / project / audit / test |
+| `AGENT_KIT.md` | bring your own agent — the counter's HTTP contract + the `make kit` proof |
+| `Makefile` | verify / triage / fuzz / ablation / meter / project / audit / kit / test |
 | `scripts/verify.mjs` | repo-evidence checks (CI entry, zero deps) |
 | `scripts/triage.mjs` | 60-second self-guided judge tour |
 | `scripts/fuzz.ts` | attack corpus harness → `results/conformance_matrix.json` |
@@ -151,6 +152,7 @@ the **Why it exists** view and `PAPER.md` §7.
 | `scripts/audit.ts` | hash-chain walk + tamper control → `results/audit_chain.json` |
 | `scripts/ledger-fork.ts` | D5-1 regression: concurrent writers must converge, never fork |
 | `scripts/spike-d1-1.mjs` | payment-mechanism spike (needs Razorpay test keys) |
+| `scripts/agent-kit-demo.ts` | the agent kit reference client — an outside agent clears the counter over HTTP |
 | `results/` | all measured numbers — JSON only, regeneration-only |
 | `src/lib/customs/gate/types.ts` | mandate schema + trust-tier policy (the contract) |
 | `src/lib/customs/gate/canonical.ts` | canonical JSON + lenient chain stringify |
@@ -183,7 +185,7 @@ the **Why it exists** view and `PAPER.md` §7.
 | `src/components/customs/chat-events.tsx` | the transcript — tool calls, gate checklist, receipts |
 | `src/components/customs/theme.tsx` | the desk lamp — footer dark/light toggle, persisted, no-flash |
 | `src/components/customs/footer.tsx` | the footer — mark, quiet link columns, the theme toggle (x.ai pattern) |
-| `src/app/api/` | route handlers: chat, state, decision, fuzz, webhook, health |
+| `src/app/api/` | route handlers: chat, state, decision, fuzz, webhook, health, agent/kit |
 | `public/logo.svg` | the gate diamond (badge tile) |
 | `public/wordmark-light.svg` | the wordmark, light surfaces (this README) |
 | `public/wordmark-dark.svg` | the wordmark, dark surfaces (this README) |

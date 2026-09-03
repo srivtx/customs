@@ -168,6 +168,7 @@ export function WhyPage({ onEnter }: { onEnter: (v: View) => void }) {
                 "Authored attack corpus: every attack refused with its expected code (make fuzz)",
                 "Protocol ablation across naive / MCP-style / ACP-style transports, wire overhead measured",
                 "Channel P&L meter (agent GMV − AI serving cost) with the at-1M projection, assumptions declared",
+                "The agent kit — the counter's HTTP surface published for outside agents (AGENT_KIT.md, /api/agent/kit); a reference client with no in-repo state walks the golden path over pure HTTP (make kit)",
                 "A 60-second machine-legible judge tour (make triage) and zero-dep evidence checks in CI (make verify)",
               ]}
               dot="bg-cleared"
@@ -194,9 +195,8 @@ export function WhyPage({ onEnter }: { onEnter: (v: View) => void }) {
             <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
               {[
                 ["01", "the persistent desk", "Move the JSONL ledger to a volume-backed host so state survives restarts — DEPLOY.md is the runbook."],
-                ["02", "the agent kit", "Publish the gate's tool schemas so an outside agent can clear the same counter — the wire formats already exist (the ablation ran three)."],
-                ["03", "a second counter", "Merchant tenancy and desk auth beyond the one demo catalog (Fieldnote Supply)."],
-                ["04", "refunds as ledger spans", "A signed reverse capture — same chain, same replay, same receipt."],
+                ["02", "a second counter", "Merchant tenancy and desk auth beyond the one demo catalog (Fieldnote Supply)."],
+                ["03", "refunds as ledger spans", "A signed reverse capture — same chain, same replay, same receipt."],
               ].map(([n, t, d]) => (
                 <div key={n} className="flex items-start gap-3 rounded-[3px] bg-ink/[0.03] px-3 py-2.5">
                   <span className="mt-px shrink-0 rounded-[3px] border border-line bg-card px-1.5 py-0.5 font-mono text-[9.5px] text-inksoft">

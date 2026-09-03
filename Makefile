@@ -1,4 +1,4 @@
-.PHONY: help verify triage demo meter ablation fuzz project audit spike-d1-1 test all install
+.PHONY: help verify triage demo meter ablation fuzz project audit spike-d1-1 kit test all install
 
 BUN := $(shell command -v bun 2>/dev/null)
 RUNNER := $(if $(BUN),bun,npx tsx)
@@ -16,6 +16,7 @@ help:
 	@echo "  all          every harness, then verify"
 	@echo "  demo         how to run the product locally"
 	@echo "  spike-d1-1   payment-mechanism spike (needs Razorpay test keys)"
+	@echo "  kit          an external agent walks the golden path over pure HTTP"
 
 verify: ## evidence checks — the same ones CI runs on every push
 	node scripts/verify.mjs
@@ -25,6 +26,9 @@ triage: ## 60-second self-guided judge tour (prints claims, runs checks, exits 0
 
 spike-d1-1: ## payment-mechanism spike (needs RAZORPAY_KEY_ID + RAZORPAY_KEY_SECRET, test keys only)
 	node scripts/spike-d1-1.mjs
+
+kit: ## the agent kit walkthrough — a client with no in-repo state clears the counter
+	bun scripts/agent-kit-demo.ts $${BASE_URL:-http://localhost:3000}
 
 fuzz: ## regenerate results/conformance_matrix.json
 	$(RUNNER) scripts/fuzz.ts
