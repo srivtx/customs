@@ -23,11 +23,12 @@ on the site are live at all times, and one thing deliberately is not:
 - **The control room** polls the same state every few seconds: the ledger
   table, the filter tabs, the P&L meter, the chain verdict.
 
-What is not live by default: the payment rail (a loudly-labeled simulation
-until Razorpay **test** keys are set — the real Orders+Checkout+webhook path
-is implemented and `make spike-d1-1` proves it the moment keys exist) and
-the LLM brain (optional by design; the deterministic rules brain runs
-everything by default so demos replay bit-for-bit).
+Environment-sensitive: the payment rail runs Razorpay **test** mode when test
+keys are set (the real Orders+Checkout+webhook path — `make spike-d1-1` proves
+the mechanism); with no keys it degrades to a loudly-labeled in-process
+simulation, so a fresh deploy never pretends to move money. The LLM brain is
+optional by design; the deterministic rules brain runs everything by default
+so demos replay bit-for-bit.
 
 ## 1. Run it locally (60 seconds)
 

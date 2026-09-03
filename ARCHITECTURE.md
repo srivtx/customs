@@ -58,7 +58,7 @@ surfaces halves both, and the ledger keeps them coherent.
 
 | # | Decision | Rationale | Status |
 |---|---|---|---|
-| 1 | Payment mechanism: (A) tokenized charge → (B) hosted-checkout completion → (C) labeled simulation | A is the true agent payment; B is real rails; C never silent. Shipped default is C until test keys arrive; A/B code is present and keyed off env | **blocked-no-keys, code ready** (`results/d1_1_spike.json`) |
+| 1 | Payment mechanism: (A) tokenized charge → (B) hosted-checkout completion → (C) labeled simulation | A is the true agent payment; B is real rails; C never silent. B is live on test keys; C is the no-keys fallback; A/B/C keyed off env | **B live · C fallback** (`results/d1_1_spike.json`) |
 | 2 | Ed25519 for mandate signatures | small keys, async verification, no shared secret between buyer↔merchant (HMAC implies a trust model we don't have) | locked |
 | 3 | JSONL ledger instead of SQLite/ORM | the brief's bar is "show the audit trail" — here the audit trail IS the database; `head data/state/ledger.jsonl` is a debugging command; zero native deps; the chain gives tamper evidence an ORM doesn't. Writers re-read the file before every append/read — concurrent instances converge, never fork (incident D5-1, pinned by `make test`) | locked (logged D1-2, amended D5-1) |
 | 4 | Integer paise end-to-end; canonical JSON refuses floats | floats never touch money; the refusal itself is a fuzz case | locked |

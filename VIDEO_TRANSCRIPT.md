@@ -93,16 +93,18 @@ Approve → gate checklist → capture.
 > was typed by a human. No link ships unless it works. And every bug we
 > ever hit became a test — forever."
 
-## 4:05–4:45 — what we have NOT done (honesty slide)
+## 4:05–4:45 — labeled, and what's next (honesty slide)
 
-**On screen:** the honest scope ledger, one card at a time.
+**On screen:** the desk ledger, one patch at a time.
 
-> "Now, what we have not done — said plainly. The payment rail runs in
-> clearly labeled simulation mode until Razorpay test keys are attached.
-> The code to flip it on is ready, and we already tested it against the
-> real API. The demo history comes from a fixed seed through the real
-> engine — no fake rows anywhere. Voice is for later. Every limit is
-> written on the screen, not hidden in a footnote."
+> "Now, how we label things — said plainly. The desk runs on real
+> Razorpay test-mode rails — test keys only, and the health endpoint
+> proves it on every boot. On a fresh clone with no keys, the rail
+> degrades to a clearly labeled simulation — nothing ever pretends to
+> move money. The demo history comes from a fixed seed through the real
+> engine — no fake rows anywhere. And the desk keeps its work order in
+> the open — the next four things we're building, on the same screen.
+> Every limit is written on the screen, not hidden in a footnote."
 
 ## 4:45–5:00 — close
 

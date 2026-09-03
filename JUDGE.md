@@ -37,7 +37,7 @@ Evidence: `ARCHITECTURE.md` (the one diagram + decisions) · the two surfaces in
 one app: Playground (`src/components/customs/playground.tsx`) and Control Room
 (`src/components/customs/control-room.tsx`) · the **Why it exists** view
 (`src/components/customs/why.tsx`) states the problem and the unbuilt merchant
-half in plain words, with the architecture diagram and the honest scope ledger.
+half in plain words, with the architecture diagram and the desk ledger.
 
 ### 2 — Judgment on where AI genuinely helps
 Claim: mandate validation, bounds and price re-verification are deterministic
@@ -99,9 +99,9 @@ Deterministic values (fixed seed, fixed catalog, fixed clock) regenerate
 identically on any machine. Latency is machine-dependent and is therefore
 regenerated, never promised.
 
-## The honest scope ledger
+## The desk ledger
 
-- Reading surfaces: the Why view (problem, architecture diagram, scope ledger)
+- Reading surfaces: the Why view (problem, architecture diagram, desk ledger)
   and the Paper view + `PAPER.md` (protocol, economics, evaluation) ship in-app
   and in-repo; the paper's §5–§6 numbers are the live ledger's, never printed.
 - Live deployment: **https://customs.srivtx.xyz** — `/api/health` answers
