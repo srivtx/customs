@@ -34,14 +34,14 @@ export const metadata: Metadata = {
       "Signed mandates, trust tiers, a channel P&L meter, and a hash-chained audit trail. Provable to a machine in 60 seconds.",
     siteName: "Customs",
     type: "website",
-    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Customs — the checkpoint for agentic commerce" }],
+    images: [{ url: "/og-card.png", width: 1200, height: 630, alt: "Customs — the checkpoint for agentic commerce" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Customs — both sides of the agentic counter",
     description:
       "Signed mandates, trust tiers, a channel P&L meter, and a hash-chained audit trail. Test mode only.",
-    images: ["/og.png"],
+    images: ["/og-card.png"],
   },
 };
 

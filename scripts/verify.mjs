@@ -50,6 +50,7 @@ const REQUIRED = [
   "src/components/customs/footer.tsx", "docs/FORM_ANSWERS.md", "docs/demo.gif",
   "public/logo.svg", "public/wordmark-light.svg", "public/wordmark-dark.svg",
   "public/og.png",
+  "public/og-card.png",
 ];
 for (const f of REQUIRED) ok(`file: ${f}`, existsSync(join(ROOT, f)));
 
