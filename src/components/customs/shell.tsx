@@ -1,11 +1,11 @@
 "use client";
 
 /**
- * shell.tsx — the app shell: one route, five surfaces (overview, why it
- * exists, the paper, agent playground, merchant control room), the gate
- * diamond in the masthead, honest status chips, and a footer that says
- * the true things. Views swap instantly and settle in 300ms — no exit
- * lag, one motion system everywhere.
+ * shell.tsx — the app shell: one route, six surfaces (overview, why it
+ * exists, the paper, the agent kit, agent playground, merchant control
+ * room), the gate diamond in the masthead, honest status chips, and a
+ * footer that says the true things. Views swap instantly and settle in
+ * 300ms — no exit lag, one motion system everywhere.
  */
 import { useCallback, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -13,18 +13,20 @@ import { LogoMark } from "./bits";
 import { Landing } from "./landing";
 import { WhyPage } from "./why";
 import { PaperPage } from "./paper";
+import { AgentKitPage } from "./agent-kit";
 import { Playground } from "./playground";
 import { ControlRoom } from "./control-room";
 import { FloatingAgent } from "./floating-agent";
 import { SiteFooter } from "./footer";
 import { SystemThemeAsk } from "./theme";
 
-export type View = "home" | "why" | "paper" | "agent" | "merchant";
+export type View = "home" | "why" | "paper" | "kit" | "agent" | "merchant";
 
 const NAV: { id: View; label: string }[] = [
   { id: "home", label: "Overview" },
   { id: "why", label: "Why" },
   { id: "paper", label: "Paper" },
+  { id: "kit", label: "Agent kit" },
   { id: "agent", label: "Playground" },
   { id: "merchant", label: "Control Room" },
 ];
@@ -69,7 +71,7 @@ export function CustomsApp() {
             </span>
           </button>
 
-          {/* the desk nav — five views, one underline indicator. On a
+          {/* the desk nav — six views, one underline indicator. On a
               phone this hands off to the menu button below */}
           <nav className="hidden min-w-0 flex-1 items-center gap-1 md:flex" aria-label="views">
             {NAV.map((n) => (
@@ -113,7 +115,7 @@ export function CustomsApp() {
           </button>
         </div>
 
-        {/* the phone's nav — the same five views, full-width rows that
+        {/* the phone's nav — the same six views, full-width rows that
             settle in under the bar. Nothing crunched, nothing clipped */}
         {menuOpen && (
           <nav className="border-t border-line bg-paper/95 backdrop-blur-xl md:hidden" aria-label="views">
@@ -147,6 +149,7 @@ export function CustomsApp() {
           {view === "home" && <Landing onEnter={go} />}
           {view === "why" && <WhyPage onEnter={go} />}
           {view === "paper" && <PaperPage onEnter={go} />}
+          {view === "kit" && <AgentKitPage onEnter={go} />}
           {view === "agent" && <Playground />}
           {view === "merchant" && <ControlRoom />}
         </div>

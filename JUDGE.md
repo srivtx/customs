@@ -52,8 +52,10 @@ arms; LLM arm status recorded honestly).
 ### 3 — Ease of understanding
 Claim: one command runs the product; one command tours the evidence; the
 ledger is a file you can `head` — and the whole technical story is pre-rendered
-as two reading surfaces: **Why it exists** (problem, principle, diagram, scope)
-and **the Paper** (working paper; §5–§6 numbers read live from the ledger).
+as three reading surfaces: **Why it exists** (problem, principle, diagram, desk
+ledger), **the Agent kit** (the counter's HTTP contract, with a live
+golden-path walkthrough in-page) and **the Paper** (working paper; §5–§6
+numbers read live from the ledger).
 Evidence: `make demo` · `make triage` · `data/state/ledger.jsonl` (hash-chained
 JSONL — the audit trail IS the database) · `src/components/customs/why.tsx` ·
 `src/components/customs/paper.tsx` + `PAPER.md` (twins, AGENTS invariant 11).
@@ -101,8 +103,9 @@ regenerated, never promised.
 
 ## The desk ledger
 
-- Reading surfaces: the Why view (problem, architecture diagram, desk ledger)
-  and the Paper view + `PAPER.md` (protocol, economics, evaluation) ship in-app
+- Reading surfaces: the Why view (problem, architecture diagram, desk ledger),
+  the Agent kit view (the HTTP contract + live walkthrough) and the Paper view
+  + `PAPER.md` (protocol, economics, evaluation) ship in-app
   and in-repo; the paper's §5–§6 numbers are the live ledger's, never printed.
 - Live deployment: **https://customs.srivtx.xyz** — `/api/health` answers
   `ok:true` with `rail: razorpay-test, simulated:false` (real test-mode rails),

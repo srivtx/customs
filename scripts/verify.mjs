@@ -40,6 +40,7 @@ const REQUIRED = [
   "src/components/customs/shell.tsx", "src/components/customs/playground.tsx",
   "src/components/customs/control-room.tsx", "src/components/customs/landing.tsx",
   "src/components/customs/why.tsx", "src/components/customs/paper.tsx",
+  "src/components/customs/agent-kit.tsx",
   "src/components/customs/bits.tsx", "src/components/customs/chat-events.tsx",
   "src/components/customs/demo-player.tsx",
   "src/components/customs/theme.tsx",

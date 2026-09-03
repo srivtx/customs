@@ -169,7 +169,7 @@ the **Why it exists** view and `PAPER.md` §7.
 | `src/lib/customs/meter.ts` | channel P&L + projection (assumptions declared) |
 | `src/lib/customs/store/catalog.ts` | Fieldnote Supply — 21 products, integer paise |
 | `src/lib/customs/runtime.ts` | wiring + deterministic 48h seed history |
-| `src/app/page.tsx` | one route, five surfaces |
+| `src/app/page.tsx` | one route, six surfaces |
 | `src/app/icon.svg` | the gate diamond — favicon (night tile) |
 | `src/app/globals.css` | the design system — night + day ledger themes |
 | `src/components/customs/` | the design system + all screens |
@@ -178,6 +178,7 @@ the **Why it exists** view and `PAPER.md` §7.
 | `src/components/customs/demo-player.tsx` | the golden path, played live in code (what the README GIF records) |
 | `src/components/customs/hero-bot.tsx` | the customs bot — one smooth volume, token-inked, reduced-motion aware |
 | `src/components/customs/why.tsx` | why it exists + the architecture (drawn as cards) + desk ledger |
+| `src/components/customs/agent-kit.tsx` | the agent kit view — the counter's HTTP contract + the live walkthrough |
 | `src/components/customs/paper.tsx` | the working paper view — a clean document page, numbers live |
 | `src/components/customs/playground.tsx` | buyer side: chat, mandate approval, red team |
 | `src/components/customs/control-room.tsx` | merchant side: P&L, approvals, the order ledger |
