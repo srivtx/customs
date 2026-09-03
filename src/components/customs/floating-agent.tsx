@@ -373,7 +373,22 @@ export function FloatingAgent({ view }: { view: View }) {
                 </p>
               )
             )}
-            {busy && <p className="animate-rise text-[11px] text-inksoft">the desk is working…</p>}
+            {busy && (
+              <p className="animate-rise flex items-center gap-1.5 text-[11px] text-inksoft">
+                {/* the thinking tell: a small yarn ball unwinding while
+                    the desk works — butter yarn, the held state's warmth */}
+                <svg viewBox="0 0 16 16" className="agent-yarn h-3.5 w-3.5 shrink-0" aria-hidden="true">
+                  <circle cx="8" cy="8" r="6.2" fill="#e7cf9e" />
+                  <g fill="none" strokeLinecap="round" strokeWidth="1.1">
+                    <path d="M 2.6 5.8 Q 8 2.8 13.4 5.8" stroke="#b99a5e" />
+                    <path d="M 1.9 8.6 Q 8 5.9 14.1 8.6" stroke="#f4e6c2" />
+                    <path d="M 2.8 11.3 Q 8 9 13.2 11.3" stroke="#b99a5e" />
+                    <path d="M 12.6 11.5 q 1.6 1.4 0.8 3" stroke="#b99a5e" />
+                  </g>
+                </svg>
+                the desk is working…
+              </p>
+            )}
           </div>
 
           {/* the composer: a sunken well, one arrow — nothing else */}

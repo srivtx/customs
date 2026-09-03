@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from "react";
 import { GhostButton, InkButton, inr, CountUp, LiveDot, LiveLedger, Reveal, TickerItem } from "./bits";
 import { DemoPlayer } from "./demo-player";
 import { HeroBot } from "./hero-bot";
+import { HeroFabric } from "./hero-fabric";
 import { TRUST_TIERS } from "@/lib/customs/gate/types";
 import { ADAPTERS, AdapterId } from "@/lib/customs/adapters";
 import type { View } from "./shell";
@@ -107,8 +108,13 @@ export function Landing({ onEnter }: { onEnter: (view: View) => void }) {
               </GhostButton>
             </div>
           </div>
-          {/* the customs bot — the desk's little officer, stamping as it orbits */}
-          <HeroBot className="mx-auto w-[min(80vw,340px)] lg:w-full" />
+          {/* the customs bot — the desk's little officer, stamping as it
+              orbits. The wool mat is a separate backdrop layer: same
+              viewBox, stacked behind, never drawn into the bot itself. */}
+          <div className="relative mx-auto w-[min(80vw,340px)] lg:w-full">
+            <HeroFabric className="absolute inset-0 h-full w-full" />
+            <HeroBot className="relative w-full" />
+          </div>
         </div>
 
         {/* live stats — one hairline row, mono numbers */}

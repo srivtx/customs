@@ -393,7 +393,7 @@ function ReceiptCard({ event }: { event: Extract<ChatEventT, { kind: "receipt" }
           <br />
           replay span-by-span from the control room
         </span>
-        <Stamp kind="cleared">CLEARED</Stamp>
+        <Stamp kind="cleared" thump thumpRotate={-2}>CLEARED</Stamp>
       </div>
     </div>
   );

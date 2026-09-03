@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -48,9 +48,14 @@ import { cn } from "@/lib/utils";
  */
 export function HeroBot({ className }: { className?: string }) {
   const svgRef = useRef<SVGSVGElement>(null);
+  /* the idle yawn — thirty quiet seconds and the desk yawns: eyes
+     close to happy slits, the smile stretches wide, then it shakes
+     back to duty. Any input wakes the clock. Skipped entirely for
+     reduced motion. */
+  const [yawning, setYawning] = useState(false);
 
   /* SMIL has no CSS media query — pause the clock directly when the
-     visitor asks for stillness, resume if they change their mind. */
+      visitor asks for stillness, resume if they change their mind. */
   useEffect(() => {
     const svg = svgRef.current;
     if (!svg || typeof window.matchMedia !== "function") return;
@@ -64,20 +69,52 @@ export function HeroBot({ className }: { className?: string }) {
     return () => mq.removeEventListener("change", apply);
   }, []);
 
+  useEffect(() => {
+    if (typeof window.matchMedia !== "function") return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let idle: ReturnType<typeof setTimeout> | null = null;
+    let yawn: ReturnType<typeof setTimeout> | null = null;
+    const arm = () => {
+      if (idle) clearTimeout(idle);
+      if (yawn) clearTimeout(yawn);
+      setYawning(false);
+      idle = setTimeout(() => {
+        setYawning(true);
+        yawn = setTimeout(() => setYawning(false), 2400);
+      }, 30_000);
+    };
+    arm();
+    const evs: (keyof WindowEventMap)[] = ["pointermove", "pointerdown", "keydown", "wheel", "touchstart"];
+    evs.forEach((e) => window.addEventListener(e, arm, { passive: true }));
+    return () => {
+      if (idle) clearTimeout(idle);
+      if (yawn) clearTimeout(yawn);
+      evs.forEach((e) => window.removeEventListener(e, arm));
+    };
+  }, []);
+
   return (
     <svg
       ref={svgRef}
       viewBox="0 0 480 400"
       aria-hidden="true"
-      className={cn("hero-bot select-none", className)}
+      className={cn("hero-bot select-none", yawning && "yawning", className)}
       role="img"
     >
       <defs>
-        {/* the body's light — lit from above, falling away below */}
+        {/* the body's light — lit from above, falling away below. The
+            dark variant lifts the same gradient so the egg reads in
+            front of the dark felt mat instead of dissolving into it
+            (see .hb-body-path in globals.css). */}
         <linearGradient id="hb-body" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="var(--ink)" stopOpacity="0.13" />
           <stop offset="0.62" stopColor="var(--ink)" stopOpacity="0.05" />
           <stop offset="1" stopColor="var(--ink)" stopOpacity="0.02" />
+        </linearGradient>
+        <linearGradient id="hb-body-dark" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="var(--ink)" stopOpacity="0.2" />
+          <stop offset="0.62" stopColor="var(--ink)" stopOpacity="0.11" />
+          <stop offset="1" stopColor="var(--ink)" stopOpacity="0.05" />
         </linearGradient>
         {/* the gloss — the specular catch that sells the curve */}
         <linearGradient id="hb-gloss" x1="0" y1="0" x2="0" y2="1">
@@ -148,6 +185,7 @@ export function HeroBot({ className }: { className?: string }) {
       <g className="hb-bot">
         {/* the body — one smooth egg, lit from above */}
         <path
+          className="hb-body-path"
           d="M240 106 C304 106 344 150 344 214 C344 278 300 320 240 320 C180 320 136 278 136 214 C136 150 176 106 240 106 Z"
           fill="url(#hb-body)"
           stroke="var(--ink)"
@@ -197,8 +235,8 @@ export function HeroBot({ className }: { className?: string }) {
         {/* the blush — one soft breath of warmth under each eye */}
         <ellipse className="hb-blush" cx="204" cy="216" rx="10" ry="5.5" fill="#d9a8a8" opacity="0.4" filter="url(#hb-blush-blur)" />
         <ellipse className="hb-blush" cx="276" cy="216" rx="10" ry="5.5" fill="#d9a8a8" opacity="0.4" filter="url(#hb-blush-blur)" />
-        {/* the smile — one small, pleased arc */}
-        <path d="M228 222 Q240 231 252 222" fill="none" stroke="var(--ink)" strokeWidth="2.6" strokeOpacity="0.5" strokeLinecap="round" />
+        {/* the smile — one small, pleased arc (the yawn stretches it) */}
+        <path className="hb-smile" d="M228 222 Q240 231 252 222" fill="none" stroke="var(--ink)" strokeWidth="2.6" strokeOpacity="0.5" strokeLinecap="round" />
       </g>
     </svg>
   );
