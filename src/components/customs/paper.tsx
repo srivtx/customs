@@ -320,10 +320,13 @@ export function PaperPage({ onEnter }: { onEnter: (v: View) => void }) {
         {/* §7 limitations */}
         <PaperSection n="7" title="Limitations and future work">
           <p>
-            The rail is a loudly-labeled simulation until Razorpay test-mode keys are
-            configured; the Orders-plus-Checkout-plus-webhook path is implemented and
-            the D1-1 spike script verifies it the moment keys exist, but live-key
-            operation is out of scope by rule (live keys are refused at construction).
+            The rail runs on Razorpay test-mode rails — the Orders-plus-Checkout-
+            plus-webhook path, verified end to end by the D1-1 spike
+            (`results/d1_1_spike.json`). With no keys configured — a fresh clone,
+            a sandboxed runner — it degrades to a loudly-labeled in-process
+            simulation, so nothing ever pretends to move money; live-key
+            operation remains out of scope by rule (live keys are refused at
+            construction).
             The buyer agent is in-house — no third-party agent has yet paid through the
             gate — and the MCP/ACP arms are protocol-shaped transports, honestly
             labeled, rather than certified implementations. The store is a single

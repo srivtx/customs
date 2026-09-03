@@ -175,10 +175,12 @@ failures, not just authored ones.
 
 ## §7 Limitations and future work
 
-The rail is a loudly-labeled simulation until Razorpay test-mode keys are
-configured; the Orders-plus-Checkout-plus-webhook path is implemented and the
-D1-1 spike script verifies it the moment keys exist, but live-key operation is
-out of scope by rule (live keys are refused at construction). The buyer agent
+The rail runs on Razorpay test-mode rails — the Orders-plus-Checkout-plus-
+webhook path, verified end to end by the D1-1 spike (`results/d1_1_spike.json`).
+With no keys configured — a fresh clone, a sandboxed runner — it degrades to a
+loudly-labeled in-process simulation, so nothing ever pretends to move money;
+live-key operation remains out of scope by rule (live keys are refused at
+construction). The buyer agent
 is in-house — no third-party agent has yet paid through the gate — and the
 MCP/ACP arms are protocol-shaped transports, honestly labeled, rather than
 certified implementations. The store is a single merchant with no tenancy or

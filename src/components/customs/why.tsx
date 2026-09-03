@@ -4,9 +4,11 @@
  * why.tsx — "why it exists": the problem in plain words, the principle
  * (machines get mandates, not cards), the architecture drawn as the
  * site's own cards (not a fixed-width picture — it reflows, it never
- * scrolls sideways), and the honest scope ledger. Written to be read:
- * a centered opening claim, one narrow measure, one accent, hairlines
- * between thoughts.
+ * scrolls sideways), and the desk ledger — what cleared, what is
+ * labeled, and the work order for what comes next (the site's honesty,
+ * spoken in momentum, not deficits). Written to be read: a centered
+ * opening claim, one narrow measure, one accent, hairlines between
+ * thoughts.
  */
 import { cn } from "@/lib/utils";
 import { GhostButton, InkButton, Reveal, TierChip, SectionLabel, Stamp, LogoMark } from "./bits";
@@ -138,72 +140,74 @@ export function WhyPage({ onEnter }: { onEnter: (v: View) => void }) {
         </section>
       </Reveal>
 
-      {/* ------------------------------ the honest scope ledger ------------------------------ */}
+      {/* ------------------------------ the desk ledger ------------------------------ */}
       <Reveal>
-        <section aria-label="what exists and what does not" className="pb-20">
+        <section aria-label="the desk ledger" className="pb-20">
           <h2 className="font-display text-[clamp(24px,3vw,34px)] font-semibold tracking-[-0.025em] text-ink">
-            What exists — the whole truth.
+            The desk ledger.
           </h2>
           <p className="mt-4 max-w-[62ch] text-[15px] leading-[1.8] text-inksoft">
             We hold ourselves to the brief's own bar — every money action
-            explainable, bounded and gated — and to a rule set in AGENTS.md:
-            nothing ships unlabeled. If a number is in this product, it
-            regenerates from a command. If a path is simulated, it says so on
-            the screen. Here is the whole truth of what exists.
+            explainable, bounded and gated — and to one rule: nothing ships
+            unlabeled. If a number is in this product, it regenerates from a
+            command. If a path is simulated, it says so on the screen. Here is
+            what cleared, what is labeled — and the work order for what comes
+            next.
           </p>
-          <div className="mt-6 grid gap-px bg-line lg:grid-cols-3">
-            <div className="bg-card px-5 py-5">
-              <Stamp kind="cleared" animate={false}>shipped · testable</Stamp>
-              <ul className="mt-4 space-y-2.5 text-[12.5px] leading-relaxed text-inksoft">
-                {[
-                  "Both sides of the counter: agent storefront + merchant control room, one shared gate",
-                  "Ed25519-signed mandates over canonical JSON; 10-check bind-time decision pipeline with reason codes",
-                  "Trust tiers (₹500 / ₹5,000 / ₹50,000) and a human desk for every order ≥ ₹10,000",
-                  "Hash-chained JSONL ledger — the audit trail is the database; tamper probe detects mutation",
-                  "Authored attack corpus: every attack refused with its expected code (make fuzz)",
-                  "Protocol ablation across naive / MCP-style / ACP-style transports, wire overhead measured",
-                  "Channel P&L meter (agent GMV − AI serving cost) with the at-1M projection, assumptions declared",
-                  "A 60-second machine-legible judge tour (make triage) and zero-dep evidence checks in CI (make verify)",
-                ].map((s) => (
-                  <li key={s} className="flex gap-2.5">
-                    <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-cleared" aria-hidden />
-                    <span>{s}</span>
-                  </li>
-                ))}
-              </ul>
+
+          {/* two stitched patch cards — the desk's felt patches */}
+          <div className="mt-8 grid gap-4 lg:grid-cols-2">
+            <PatchCard
+              stamp={<Stamp kind="cleared" animate={false}>shipped · testable</Stamp>}
+              items={[
+                "Live at customs.srivtx.xyz — real Razorpay test-mode rails (rail: razorpay-test, simulated:false in /api/health); the D1-1 spike is executed (results/d1_1_spike.json)",
+                "Both sides of the counter: agent storefront + merchant control room, one shared gate",
+                "Ed25519-signed mandates over canonical JSON; 10-check bind-time decision pipeline with reason codes",
+                "Trust tiers (₹500 / ₹5,000 / ₹50,000) and a human desk for every order ≥ ₹10,000",
+                "Hash-chained JSONL ledger — the audit trail is the database; tamper probe detects mutation",
+                "Authored attack corpus: every attack refused with its expected code (make fuzz)",
+                "Protocol ablation across naive / MCP-style / ACP-style transports, wire overhead measured",
+                "Channel P&L meter (agent GMV − AI serving cost) with the at-1M projection, assumptions declared",
+                "A 60-second machine-legible judge tour (make triage) and zero-dep evidence checks in CI (make verify)",
+              ]}
+              dot="bg-cleared"
+            />
+            <PatchCard
+              stamp={<Stamp kind="held" animate={false}>simulated · labeled · code-ready</Stamp>}
+              items={[
+                "The simulation fallback — on a fresh clone or a sandboxed runner with no keys set, the rail degrades to a loudly-labeled in-process simulation, so nothing ever pretends to move money. Live keys are refused at construction.",
+                "The LLM brain — optional by design. The deterministic rules brain runs everything by default so every demo replays bit-for-bit; any OpenAI-compatible key (Groq and Gemini have free tiers) turns the LLM arm on and the ablation measures it.",
+                "MCP / ACP transports — protocol-shaped adapters, honestly labeled. They demonstrate the gate's protocol-agnostic core, not certified spec implementations.",
+              ]}
+              dot="bg-held"
+            />
+          </div>
+
+          {/* the work order — what comes next, in the open */}
+          <div className="mt-6 rounded-[4px] border border-dashed border-ink/15 bg-paper2/40 px-5 py-5 sm:px-6">
+            <div className="flex flex-wrap items-center gap-3">
+              <Stamp kind="held" animate={false}>on the desk · next</Stamp>
+              <span className="text-[12.5px] text-inksoft">
+                the build order, in the open — each clears into the same ledger
+              </span>
             </div>
-            <div className="bg-card px-5 py-5">
-              <Stamp kind="held" animate={false}>simulated · labeled · code-ready</Stamp>
-              <ul className="mt-4 space-y-2.5 text-[12.5px] leading-relaxed text-inksoft">
-                {[
-                  "The payment rail — a loudly-labeled simulation until Razorpay TEST keys are set. The real path (Orders + Checkout + HMAC-verified webhook, replay-deduped) is implemented; the spike script proves it the moment keys exist (make spike-d1-1). Live keys are refused at construction.",
-                  "The LLM brain — optional by design. The deterministic rules brain runs everything by default so every demo replays bit-for-bit; any OpenAI-compatible key (Groq and Gemini have free tiers) turns the LLM arm on and the ablation measures it.",
-                  "MCP / ACP transports — protocol-shaped adapters, honestly labeled. They demonstrate the gate's protocol-agnostic core, not certified spec implementations.",
-                ].map((s) => (
-                  <li key={s} className="flex gap-2.5">
-                    <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-held" aria-hidden />
-                    <span>{s}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="bg-card px-5 py-5">
-              <Stamp kind="refused" animate={false}>not yet · honest gaps</Stamp>
-              <ul className="mt-4 space-y-2.5 text-[12.5px] leading-relaxed text-inksoft">
-                {[
-                  "Live at customs.srivtx.xyz — real Razorpay test-mode rails (D1-1 spike executed; see results/d1_1_spike.json). Simulation stays the volume/no-keys fallback",
-                  "Real third-party agent interop — the buyer agent is in-house; no external agent has paid through the gate yet",
-                  "Multi-merchant tenancy and merchant auth — one demo desk, one catalog (Fieldnote Supply)",
-                  "Refunds and cancellations — deliberately cut; mandate expiry and refusal handling carry the failure story, and the cut is logged in ENGINEERING_LOG.md",
-                  "A persistent production ledger — serverless hosts reset state; the runbook prescribes a volume-backed host for the JSONL ledger",
-                  "The 5:00 pitch video and the submission form — scripts are written (VIDEO_TRANSCRIPT.md, docs/FORM_ANSWERS.md), recording and pasting remain",
-                ].map((s) => (
-                  <li key={s} className="flex gap-2.5">
-                    <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-refused" aria-hidden />
-                    <span>{s}</span>
-                  </li>
-                ))}
-              </ul>
+            <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
+              {[
+                ["01", "the persistent desk", "Move the JSONL ledger to a volume-backed host so state survives restarts — DEPLOY.md is the runbook."],
+                ["02", "the agent kit", "Publish the gate's tool schemas so an outside agent can clear the same counter — the wire formats already exist (the ablation ran three)."],
+                ["03", "a second counter", "Merchant tenancy and desk auth beyond the one demo catalog (Fieldnote Supply)."],
+                ["04", "refunds as ledger spans", "A signed reverse capture — same chain, same replay, same receipt."],
+              ].map(([n, t, d]) => (
+                <div key={n} className="flex items-start gap-3 rounded-[3px] bg-ink/[0.03] px-3 py-2.5">
+                  <span className="mt-px shrink-0 rounded-[3px] border border-line bg-card px-1.5 py-0.5 font-mono text-[9.5px] text-inksoft">
+                    {n}
+                  </span>
+                  <div>
+                    <span className="text-[13px] font-medium text-ink">{t}</span>
+                    <p className="mt-0.5 text-[12px] leading-relaxed text-inksoft">{d}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </section>
@@ -340,6 +344,37 @@ function FlowRow({ left, right }: { left: string; right: string }) {
     <div className="flex items-baseline justify-between gap-3 rounded-[3px] bg-ink/[0.04] px-2.5 py-1.5">
       <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink">{left}</span>
       <span className="text-right text-[11.5px] text-inksoft">{right}</span>
+    </div>
+  );
+}
+
+/**
+ * one felt patch on the desk ledger — a solid hairline frame outside,
+ * a dashed stitch line inside (the sewn-patch look), tinted paper
+ * between. Token-colored only; the stitch is static paint.
+ */
+function PatchCard({
+  stamp,
+  items,
+  dot,
+}: {
+  stamp: React.ReactNode;
+  items: string[];
+  dot: string;
+}) {
+  return (
+    <div className="rounded-[4px] border border-line bg-paper2/50 p-[7px]">
+      <div className="h-full rounded-[3px] border border-dashed border-ink/15 px-5 py-5">
+        {stamp}
+        <ul className="mt-4 space-y-2.5 text-[12.5px] leading-relaxed text-inksoft">
+          {items.map((s) => (
+            <li key={s} className="flex gap-2.5">
+              <span className={cn("mt-[7px] h-1 w-1 shrink-0 rounded-full", dot)} aria-hidden />
+              <span>{s}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }

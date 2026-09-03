@@ -35,7 +35,7 @@ Test mode only; without Razorpay keys the rail is a labeled simulation.
 - src/lib/customs/ledger/ — hash-chained JSONL audit trail (the database)
 - src/lib/customs/fuzz/corpus.ts — the 12 authored attacks, expected verdicts
 - src/lib/customs/meter.ts — channel P&L + projection, assumptions declared
-- src/components/customs/why.tsx — the why page: architecture drawn as cards + honest scope ledger (shipped / simulated / not yet)
+- src/components/customs/why.tsx — the why page: architecture drawn as cards + desk ledger (shipped / simulated / the work order for next)
 - src/components/customs/paper.tsx — the paper view: a clean theme-aware document page; §5–§6 numbers read live from the ledger
 - src/components/customs/demo-player.tsx — the landing demo: the golden path plays itself in code, loops (docs/demo.gif is a recording of it)
 - src/components/customs/hero-bot.tsx — the customs bot: one smooth animated volume on the hero, token-inked, reduced-motion aware
@@ -50,6 +50,7 @@ Latency is machine-dependent and never cited as a promise. Competitor numbers ne
 
 ## status
 
-Live deployment: pending (DEPLOY.md is the runbook). Payment rail: labeled
-simulation until Razorpay test keys are set (D1-1 spike ready). x402: declared
+Live deployment: https://customs.srivtx.xyz — /api/health answers ok:true on
+real Razorpay test rails (simulated:false). Payment rail: test mode when keys
+are set; labeled in-process simulation as the no-keys fallback. x402: declared
 stretch goal, not core scope.

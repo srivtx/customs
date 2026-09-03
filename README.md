@@ -90,9 +90,10 @@ make verify       # the exact evidence checks CI runs (zero deps)
 make test         # fuzz + ablation + audit + ledger-fork — exit codes propagate
 ```
 
-No keys required: the rail is an honestly-labeled simulation until Razorpay
-test keys are set in `.env` (see `.env.example`). Live keys are refused at
-construction. The LLM brain is optional too — set any one of
+Keys are optional: the rail runs Razorpay test mode when test keys are set in
+`.env` (see `.env.example`) — the live desk does; without keys it degrades to
+an honestly-labeled in-process simulation, so a fresh clone runs with zero
+setup. Live keys are refused at construction. The LLM brain is optional too — set any one of
 `OPENAI_API_KEY` / `GROQ_API_KEY` / `GEMINI_API_KEY` / `XAI_API_KEY` (Groq and
 Gemini have free tiers) plus `AGENT_BRAIN=llm`; without a key the
 deterministic rules brain runs everything, replayable.
@@ -174,7 +175,7 @@ the **Why it exists** view and `PAPER.md` §7.
 | `src/components/customs/landing.tsx` | overview: hero + bot, the live demo, ladder, proof layer |
 | `src/components/customs/demo-player.tsx` | the golden path, played live in code (what the README GIF records) |
 | `src/components/customs/hero-bot.tsx` | the customs bot — one smooth volume, token-inked, reduced-motion aware |
-| `src/components/customs/why.tsx` | why it exists + the architecture (drawn as cards) + scope ledger |
+| `src/components/customs/why.tsx` | why it exists + the architecture (drawn as cards) + desk ledger |
 | `src/components/customs/paper.tsx` | the working paper view — a clean document page, numbers live |
 | `src/components/customs/playground.tsx` | buyer side: chat, mandate approval, red team |
 | `src/components/customs/control-room.tsx` | merchant side: P&L, approvals, the order ledger |
