@@ -32,7 +32,7 @@ Test mode only; without Razorpay keys the rail is a labeled simulation.
 - ENGINEERING_LOG.md — dated incidents; every incident became a test
 - CLEANUP.md — what to delete before pushing to GitHub
 - DEPLOY.md — the operating runbook: run locally, keep alive, deploy free, operate
-- AGENT_KIT.md — bring your own agent: the counter's HTTP contract; /api/agent/kit is its machine twin; `make kit` proves an outside client clears the counter
+- AGENT_KIT.md — bring your own agent: the counter's HTTP contract; /api/mcp is a REAL MCP server (Streamable HTTP, 2025-06-18), /api/acp a core REST profile with Ed25519-signed receipts; `make kit` proves an outside client clears the counter
 - src/lib/customs/gate/ — mandate contract, canonical JSON, decision checklist
 - src/lib/customs/ledger/ — hash-chained JSONL audit trail (the database)
 - src/lib/customs/fuzz/corpus.ts — the 12 authored attacks, expected verdicts

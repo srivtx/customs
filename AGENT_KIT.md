@@ -37,6 +37,78 @@ Machine-readable kit: **`GET /api/agent/kit`** — generated from the same
 constants the product runs on (`TOOL_SCHEMAS`, `TRUST_TIERS`, rail, brain),
 so it cannot drift from the code. This file is its human twin.
 
+## The three doors
+
+| door | where | what |
+|---|---|---|
+| **MCP — real** | `POST /api/mcp` | a true Model Context Protocol server over Streamable HTTP (spec 2025-06-18). Point Claude, Cursor, or the MCP Inspector at it. |
+| **plain JSON** | `POST /api/chat` | the playground's own surface — one message in, the whole turn back as events |
+| **ACP — core REST** | `POST /api/acp/sessions/{id}` | request → ack → result → receipt signed with the mandate's Ed25519 key |
+
+## Connect an MCP client (the real one)
+
+The server implements the spec, not a sketch: `initialize` (negotiates
+`2025-06-18` / `2025-03-26`, assigns an `Mcp-Session-Id`), `tools/list`
+(seven tools), `tools/call` (JSON-RPC 2.0; tool results as `content`;
+real failures as `isError`), `ping`, session teardown via `DELETE`,
+`GET` → 405 (no server-initiated stream). A refusal is an ordinary
+result — a refused mandate is the gate working.
+
+```bash
+BASE=https://customs.srivtx.xyz   # or localhost:3000
+
+# 1 — initialize (the response carries Mcp-Session-Id)
+curl -s $BASE/api/mcp -H 'content-type: application/json' \
+  -H 'accept: application/json, text/event-stream' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize",
+       "params":{"protocolVersion":"2025-06-18","capabilities":{},
+                 "clientInfo":{"name":"my-agent","version":"1"}}}'
+
+# 2 — everything else rides the session header
+SID=<Mcp-Session-Id from the response header>
+
+curl -s $BASE/api/mcp -H 'content-type: application/json' \
+  -H 'accept: application/json' -H "Mcp-Session-Id: $SID" \
+  -d '{"jsonrpc":"2.0","id":2,"method":"tools/list"}'
+
+curl -s $BASE/api/mcp -H 'content-type: application/json' \
+  -H 'accept: application/json' -H "Mcp-Session-Id: $SID" \
+  -d '{"jsonrpc":"2.0","id":3,"method":"tools/call",
+       "params":{"name":"search_catalog","arguments":{"query":"earbuds"}}}'
+```
+
+Two protocol tools ride alongside the five shopping tools, because
+consent must cross every transport: `attest_tier` (raise the session's
+trust tier) and `approve_mandate` (**ask your human first**). The
+invariant is enforced in the tool layer, not the client:
+`bind_and_pay` refuses with `MANDATE_NOT_APPROVED` until
+`approve_mandate` runs — no transport can route around the principal.
+
+In an MCP host (Claude Desktop, Cursor) add:
+
+```json
+{ "mcpServers": { "customs": { "url": "https://customs.srivtx.xyz/api/mcp" } } }
+```
+
+## ACP core REST — signed receipts
+
+```bash
+# who is out there (includes the Ed25519 public key)
+curl -s $BASE/api/acp/agents
+
+# open a session, then speak in envelopes
+curl -s -X POST $BASE/api/acp/sessions -H 'content-type: application/json' -d '{}'
+
+curl -s -X POST $BASE/api/acp/sessions/$SID -H 'content-type: application/json' \
+  -d '{"tool":"request_mandate","args":{}}'
+# → { ack: {ref}, run: {state:"completed"}, body: {value}, receipt: {algorithm:"ed25519", signature, fingerprint} }
+```
+
+The receipt signs `sha256(result envelope)` with the same key that signs
+mandates — any client can verify it offline against the public key in the
+agents descriptor. The build verified this live: digest match +
+ed25519 verify = true.
+
 ## The protocol (messages)
 
 | message | effect |
@@ -58,15 +130,24 @@ no money** — the fuzz corpus pins that.
 
 ## Tools (the schemas the buyer agent runs)
 
-The same five schemas serve all three transports (`naive` / `mcp` / `acp`
-— protocol-shaped; see `src/lib/customs/adapters/index.ts` and the
-ablation for the measured overheads):
+The same five schemas serve all three transports — one definition, shared
+with the ablation's wire measurement (`src/lib/customs/adapters/index.ts`):
 
 - `search_catalog` — `{ query }`
 - `get_product` — `{ productId }`
 - `add_to_cart` — `{ productId, quantity }`
 - `request_mandate` — `{}` (drafts + signs, waits for the principal)
 - `bind_and_pay` — `{}` (binds against the mandate and pays)
+
+MCP and ACP add the two **protocol tools** that carry consent:
+`attest_tier` and `approve_mandate` (described above).
+
+## Give your agent its context
+
+The kit page's **copy agent context** button puts one block on your
+clipboard — what Customs is, the three doors, the golden path, the rules
+that will not bend — ready to paste into any LLM harness. The same block
+ships in the machine kit: `GET /api/agent/kit` → `context`.
 
 ## The golden path, in curl
 
@@ -112,8 +193,9 @@ shortest demonstration that the counter is not ours alone.
 ## Honesty notes
 
 - The buyer agent is still in-house; this kit publishes its surface so
-  *yours* can drive it. Real MCP-stdio / ACP wire transports are an
-  interface change, pre-logged in `ARCHITECTURE.md` and `ENGINEERING_LOG.md`.
+  *yours* can drive it. The transports are real (MCP Streamable HTTP,
+  ACP core REST with offline-verifiable receipts); the ablation's
+  in-process arms measure the wire shapes separately and remain unchanged.
 - The gate is deterministic code — your agent's words become tool calls;
   bounds are re-verified server-side at bind time regardless of what the
   agent believes it was promised.

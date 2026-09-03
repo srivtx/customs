@@ -168,7 +168,7 @@ export function WhyPage({ onEnter }: { onEnter: (v: View) => void }) {
                 "Authored attack corpus: every attack refused with its expected code (make fuzz)",
                 "Protocol ablation across naive / MCP-style / ACP-style transports, wire overhead measured",
                 "Channel P&L meter (agent GMV − AI serving cost) with the at-1M projection, assumptions declared",
-                "The agent kit — the counter's HTTP surface published for outside agents (AGENT_KIT.md, /api/agent/kit); a reference client with no in-repo state walks the golden path over pure HTTP (make kit)",
+                "The agent kit — the counter's HTTP surface published for outside agents: a REAL MCP server (Streamable HTTP, spec 2025-06-18) at /api/mcp, ACP core REST with Ed25519-signed receipts at /api/acp, and a reference client with no in-repo state walking the golden path over pure HTTP (make kit)",
                 "A 60-second machine-legible judge tour (make triage) and zero-dep evidence checks in CI (make verify)",
               ]}
               dot="bg-cleared"

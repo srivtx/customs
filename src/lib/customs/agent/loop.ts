@@ -296,7 +296,7 @@ export async function agentTurn(
 
 /* ------------------------- tool implementations ------------------------- */
 
-async function executeTool(
+export async function executeTool(
   rt: CustomsRuntime,
   session: BuyerSession,
   name: string,
@@ -381,6 +381,12 @@ async function executeTool(
     case "bind_and_pay": {
       const lines = cartLines(rt, session);
       if (!lines.length || !session.mandate) return { bound: false, reason: "no pending mandate" };
+      // the approval gate lives HERE, at the tool layer — not in any one
+      // client — so chat, the MCP server and ACP all refuse the same way:
+      // no principal approval, no money moves.
+      if (session.awaitingMandateApproval) {
+        return { bound: false, reason: "MANDATE_NOT_APPROVED", note: "the principal must approve the signed mandate before it can move money" };
+      }
       const tx = runTransaction(rt.deps, {
         buyerId: session.buyerId,
         tier: session.tier,

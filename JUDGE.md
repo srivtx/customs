@@ -115,7 +115,14 @@ regenerated, never promised.
   `AGENT_KIT.md` (the contract) · `GET /api/agent/kit` (machine twin,
   generated from the running constants) · `make kit` (the proof: a reference
   client with no in-repo state walks search → add → attest → checkout →
-  approve over pure HTTP and asserts every verdict).
+  approve over pure HTTP and asserts every verdict). The transports are REAL:
+  **MCP server over Streamable HTTP at `/api/mcp`** (spec 2025-06-18 —
+  initialize handshake, Mcp-Session-Id sessions, tools/list, tools/call; any
+  MCP client can connect) and **ACP core REST at `/api/acp`** (request → ack →
+  result → receipt signed with the mandate's Ed25519 key, verifiable offline
+  against the public key in `GET /api/acp/agents`). Approval is enforced at
+  the tool layer: `bind_and_pay` refuses with `MANDATE_NOT_APPROVED` until the
+  principal approves — no transport can route around the human.
 - D1-1 payment mechanism: **executed with test keys on 2026-09-01**
   (`results/d1_1_spike.json`) — Orders API verified live; server-side
   tokenization refused by test mode (path A impossible, receipt in the log);

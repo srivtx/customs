@@ -178,7 +178,7 @@ the **Why it exists** view and `PAPER.md` §7.
 | `src/components/customs/demo-player.tsx` | the golden path, played live in code (what the README GIF records) |
 | `src/components/customs/hero-bot.tsx` | the customs bot — one smooth volume, token-inked, reduced-motion aware |
 | `src/components/customs/why.tsx` | why it exists + the architecture (drawn as cards) + desk ledger |
-| `src/components/customs/agent-kit.tsx` | the agent kit view — the counter's HTTP contract + the live walkthrough |
+| `src/components/customs/agent-kit.tsx` | the agent kit view — three doors (chat / real MCP / ACP), the kit board, copy-context, live walkthrough |
 | `src/components/customs/paper.tsx` | the working paper view — a clean document page, numbers live |
 | `src/components/customs/playground.tsx` | buyer side: chat, mandate approval, red team |
 | `src/components/customs/control-room.tsx` | merchant side: P&L, approvals, the order ledger |
@@ -186,7 +186,7 @@ the **Why it exists** view and `PAPER.md` §7.
 | `src/components/customs/chat-events.tsx` | the transcript — tool calls, gate checklist, receipts |
 | `src/components/customs/theme.tsx` | the desk lamp — footer dark/light toggle, persisted, no-flash |
 | `src/components/customs/footer.tsx` | the footer — mark, quiet link columns, the theme toggle (x.ai pattern) |
-| `src/app/api/` | route handlers: chat, state, decision, fuzz, webhook, health, agent/kit |
+| `src/app/api/` | route handlers: chat, state, decision, fuzz, webhook, health, agent/kit, **mcp (real MCP server)**, acp (core REST) |
 | `public/logo.svg` | the gate diamond (badge tile) |
 | `public/wordmark-light.svg` | the wordmark, light surfaces (this README) |
 | `public/wordmark-dark.svg` | the wordmark, dark surfaces (this README) |
