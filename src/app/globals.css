@@ -207,6 +207,21 @@ html.light {
   html:not(.light) ::-webkit-calendar-picker-indicator {
     filter: invert(1);
   }
+  /* the paper grain — the felt world's fiber at a whisper over every
+     surface. One fixed layer, one raster (a 180px fractal-noise tile,
+     desaturated), soft-light blend so it reads on both desks without
+     tinting either. pointer-events: none — it is texture, never a
+     surface, and it never animates. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode: soft-light;
+    opacity: 0.28;
+  }
 }
 
 @layer utilities {
@@ -657,7 +672,10 @@ html.light {
   .hb-glint {
     animation: hb-glint 9.5s ease-in-out infinite;
   }
-  .hero-bot:hover .hb-eye {
+  /* the hover eye-fill is a day-desk tell — on the night desk the
+     cleared sage reads as the green the desk avoids; dark hover lifts
+     the aurora instead (below) and leaves the eyes alone */
+  html.light .hero-bot:hover .hb-eye {
     fill: var(--cleared);
   }
 
@@ -667,17 +685,60 @@ html.light {
      and a small warm-up on hover. No CSS transform ever touches this
      element — that is the containment contract. */
   .hb-aurora {
-    opacity: 0.55;
+    /* the night ledger keeps the bot from going green-dominant — but
+       not colorless: the aurora sits at a third strength, a balanced
+       pastel sweep instead of the day desk's saturated wash */
+    opacity: 0.26;
     transition: opacity 0.6s ease;
   }
   html.light .hb-aurora {
     opacity: 0.38;
   }
   .hero-bot:hover .hb-aurora {
-    opacity: 0.65;
+    opacity: 0.34;
   }
   html.light .hero-bot:hover .hb-aurora {
     opacity: 0.46;
+  }
+  /* the felt mat's dye washes follow the same law: all four colors
+     stay present on the night desk — SCREEN-blended so the pastels
+     glow on the dark felt instead of drowning in it, the same trick
+     light does with opacity alone. Colorful, never the green field
+     the day desk wears. The pompoms stay loud. */
+  .hfx-wash {
+    transition: opacity 0.6s ease;
+  }
+  html:not(.light) .hfx-wash {
+    opacity: 0.5;
+    mix-blend-mode: screen;
+  }
+
+  /* the egg vs the mat, night desk: the day body gradient is dark ink
+     on a light field — over the near-black felt it has no contrast, so
+     the mascot dissolves into the fabric. The dark variant lifts the
+     fill and firms the outline, so the orb reads IN FRONT of the mat. */
+  html:not(.light) .hb-body-path {
+    fill: url(#hb-body-dark);
+    stroke-opacity: 0.45;
+  }
+
+  /* the idle yawn — after thirty quiet seconds the desk yawns: the
+     eyes close to happy slits (the whole eye unit squishes, so the
+     glints can never float free), and the smile stretches wide on a
+     slower ease — eyes snap, mouth spreads. Blink is suspended for
+     the yawn; on wake it resumes and the eyes pop open. Transitions
+     and one transform: nothing structural moves. */
+  .hb-smile {
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: transform 0.55s cubic-bezier(0.45, 0, 0.25, 1);
+  }
+  .hero-bot.yawning .hb-smile {
+    transform: scaleX(1.55) translateY(1.6px);
+  }
+  .hero-bot.yawning .hb-eye-unit {
+    animation: none;
+    transform: scaleY(0.3);
   }
   /* the blush warms a touch when visited — the smallest tell of a
      happy bot; a paint-only transition, nothing structural moves */
@@ -764,6 +825,49 @@ html.light {
     transform: scale(1.6);
     opacity: 0;
   }
+}
+
+/* ---------------- the wool mat's pompoms ---------------- */
+/* transform/opacity only — the felt's filters are static paint and
+   rasterize once; the yarn just bobs, each ball on its own clock */
+@keyframes hb-pom-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--tilt, 0deg));
+  }
+  50% {
+    transform: translateY(-6px) rotate(calc(var(--tilt, 0deg) + 2.5deg));
+  }
+}
+.hb-pom {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hb-pom-bob 5.2s ease-in-out infinite;
+}
+.hb-pom2 {
+  animation-duration: 6.1s;
+  animation-delay: -1.8s;
+}
+.hb-pom3 {
+  animation-duration: 5.7s;
+  animation-delay: -3.1s;
+}
+
+/* the desk agent's thinking yarn — a small ball tilting side to side
+   while it works; transform-only, killed for reduced motion */
+@keyframes agent-yarn-wobble {
+  0%,
+  100% {
+    transform: rotate(-9deg) translateY(0);
+  }
+  50% {
+    transform: rotate(9deg) translateY(-1.5px);
+  }
+}
+.agent-yarn {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: agent-yarn-wobble 0.85s ease-in-out infinite;
 }
 
 /* ---------------- the customs bot's moves ---------------- */
@@ -863,7 +967,9 @@ html.light {
   .hb-eye-unit,
   .hb-eyes,
   .hb-glint,
-  .hb-shadow {
+  .hb-shadow,
+  .hb-pom,
+  .agent-yarn {
     animation: none !important;
   }
   .pulse-dot::after {

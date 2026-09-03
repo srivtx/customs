@@ -114,7 +114,7 @@ export function LogoMark({ size = 28, className }: { size?: number; className?: 
 
 export type StampKind = "cleared" | "refused" | "held" | "ink" | "sim";
 
-const STAMP_STYLES: Record<StampKind, string> = {
+export const STAMP_STYLES: Record<StampKind, string> = {
   cleared: "border-cleared/50 text-cleared bg-cleared/15",
   refused: "border-refused/50 text-refused bg-refused/15",
   held: "border-held/50 text-held bg-held/15",
@@ -127,14 +127,32 @@ export function Stamp({
   children,
   className,
   animate = true,
+  thump = false,
+  thumpRotate = 0,
 }: {
   kind: StampKind;
   children: ReactNode;
   className?: string;
   animate?: boolean;
+  /* the thump: the stamp slams in from above — scale 1.55 → 1 with a
+     small rotate-settle, the rubber-stamp tell. Fires once, in view. */
+  thump?: boolean;
+  thumpRotate?: number;
 }) {
   const reduce = useReducedMotion();
   if (animate && !reduce) {
+    if (thump) {
+      return (
+        <motion.span
+          initial={{ opacity: 0, scale: 1.55, rotate: thumpRotate - 7 }}
+          animate={{ opacity: 1, scale: 1, rotate: thumpRotate }}
+          transition={{ duration: 0.34, ease: [0.16, 1, 0.3, 1], delay: 0.12 }}
+          className={cn("stamp", STAMP_STYLES[kind], className)}
+        >
+          {children}
+        </motion.span>
+      );
+    }
     return (
       <motion.span
         initial={{ opacity: 0, y: 3 }}
@@ -146,7 +164,14 @@ export function Stamp({
       </motion.span>
     );
   }
-  return <span className={cn("stamp", STAMP_STYLES[kind], className)}>{children}</span>;
+  return (
+    <span
+      className={cn("stamp", STAMP_STYLES[kind], className)}
+      style={thump ? { rotate: `${thumpRotate}deg` } : undefined}
+    >
+      {children}
+    </span>
+  );
 }
 
 /* ---------------- chips & labels ---------------- */
