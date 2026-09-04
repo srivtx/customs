@@ -417,6 +417,12 @@ export function MusicGhost() {
     return () => clearInterval(iv);
   }, [playing, track, ensurePlayer]);
 
+  /* the ghost's state, published for moco: "what is coco playing" is
+     answered from this snapshot — zero tokens, zero server */
+  useEffect(() => {
+    musicBus.report(track ? { title: track.title, channel: track.channel, playing } : null);
+  }, [track, playing]);
+
   /* drag vs click — the desk head's own law; a click opens coco's ear */
   const onDown = (e: React.PointerEvent<HTMLButtonElement>) => {
     if (!pos) return;
@@ -520,7 +526,42 @@ export function MusicGhost() {
       }
       return;
     }
-    cocoSay("I hum — tell me skip, pause, louder, hide, or give me controls.");
+    if (/\b(?:search|add|buy|cart|checkout|order|price|refund)\b/i.test(text)) {
+      cocoSay("that's moco's desk — tell the black head.");
+      return;
+    }
+    /* general chatter: coco's own voice via the cheap model — the same
+       metered leash, a persona, never the money path */
+    if (fetchingRef.current) {
+      cocoSay("one beat — I'm thinking.");
+      return;
+    }
+    fetchingRef.current = true;
+    setFetching(true);
+    try {
+      const ctrl = new AbortController();
+      const kill = setTimeout(() => ctrl.abort(), 12_000);
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ message: text, adapter: "naive", persona: "coco" }),
+        signal: ctrl.signal,
+      });
+      clearTimeout(kill);
+      const data = (await res.json()) as { ok: boolean; events?: ChatEvent[] };
+      const spoken =
+        data.events?.filter(
+          (e): e is Extract<ChatEvent, { role: "agent" | "user" }> =>
+            "role" in e && e.role === "agent" && e.text.length > 0
+        ) ?? [];
+      const reply = spoken.length ? spoken[spoken.length - 1].text : "hmm — that one's beyond me.";
+      cocoSay(reply);
+    } catch {
+      cocoSay("the desk is slow — ask me again.");
+    } finally {
+      fetchingRef.current = false;
+      setFetching(false);
+    }
   };
 
   /* the fresh page — the desk panel's ↻, inherited whole. The music is

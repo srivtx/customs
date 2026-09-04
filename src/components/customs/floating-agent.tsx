@@ -63,6 +63,11 @@ function summarize(events: ChatEvent[], startId: number): Line[] {
   return out;
 }
 
+/* "what is coco playing" never reaches the server — the ghost reports
+   its state on the bus, so moco answers at zero tokens */
+const COCO_STATUS_RE =
+  /what(?:'s| is)\s+(?:(?:coco|moco|the ghost)\s+)?(?:playing|humming)|what song|now playing|what(?:'s| is)\s+(?:coco|the ghost)\s+up to/i;
+
 type Toast = "idle" | "blue" | "green" | "done";
 
 /**
@@ -299,6 +304,18 @@ export function FloatingAgent({ view }: { view: View }) {
        its range synchronously, done. */
     const userLine: Line = { id: idRef.current++, who: "user", text: message };
     setLines((p) => [...p, userLine]);
+    /* moco knows what coco hums without a server turn: the ghost
+       publishes its state on the bus — one local line, zero tokens */
+    if (COCO_STATUS_RE.test(message)) {
+      const snap = musicBus.snapshot();
+      const answer: Line = snap
+        ? { id: idRef.current++, who: "note", text: `coco · ▶ ${snap.title} — ${snap.channel}${snap.playing ? "" : " (paused)"}` }
+        : { id: idRef.current++, who: "note", text: "coco is quiet — nothing hums right now." };
+      setLines((p) => [...p, answer]);
+      busyRef.current = false;
+      setBusy(false);
+      return;
+    }
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
@@ -329,11 +346,11 @@ export function FloatingAgent({ view }: { view: View }) {
           }
         }
       } else {
-        const snag: Line = { id: idRef.current++, who: "agent", text: "The desk hit a snag — try again." };
+        const snag: Line = { id: idRef.current++, who: "agent", text: "moco hit a snag — try again." };
         setLines((p) => [...p, snag]);
       }
     } catch {
-      const net: Line = { id: idRef.current++, who: "agent", text: "Network error reaching the desk." };
+      const net: Line = { id: idRef.current++, who: "agent", text: "Network error reaching moco." };
       setLines((p) => [...p, net]);
     } finally {
       busyRef.current = false;
@@ -356,7 +373,7 @@ export function FloatingAgent({ view }: { view: View }) {
           <div className="flex items-center gap-2.5 border-b border-line px-3.5 py-2.5">
             <DeskHead size={24} thinking={busy} className="text-ink" />
             <div className="flex-1">
-              <div className="label-caps">desk agent</div>
+              <div className="label-caps">moco</div>
               <div className="mt-0.5 flex items-center gap-1.5 text-[10.5px] text-inksoft">
                 <span aria-hidden className={cn("h-1 w-1 rounded-full", busy ? "bg-held" : "bg-cleared/80")} />
                 {busy ? "thinking" : "on the desk"}
@@ -394,8 +411,8 @@ export function FloatingAgent({ view }: { view: View }) {
           >
             {lines.length === 0 && !clearing && (
               <p className="animate-rise py-4 text-center text-[12px] leading-relaxed text-inksoft">
-                The desk is open. Shopping runs on the house brain — ask it
-                for something, or just say hi.
+                The desk is open — moco here. Shopping runs on the house
+                brain — ask for something, or just say hi.
               </p>
             )}
             {lines.map((l) =>
@@ -441,8 +458,8 @@ export function FloatingAgent({ view }: { view: View }) {
                 setInput(e.target.value);
                 armAutoClose();
               }}
-                placeholder="ask the desk…"
-                aria-label="message the desk agent"
+                placeholder="ask moco…"
+                aria-label="message moco, the desk agent"
                 className="h-6 flex-1 bg-transparent text-[12.5px] text-ink placeholder:text-inksoft/60 focus:outline-none"
               />
               <button
@@ -465,8 +482,8 @@ export function FloatingAgent({ view }: { view: View }) {
         onPointerDown={onDown}
         onPointerMove={onMove}
         onPointerUp={onUp}
-        aria-label="the desk agent — drag to move, click to chat"
-        title="the desk agent — drag me, click to chat"
+        aria-label="moco, the desk agent — drag to move, click to chat"
+        title="moco — drag me, click to chat"
         className="relative z-10 block cursor-grab touch-none active:cursor-grabbing"
       >
         <DeskHead

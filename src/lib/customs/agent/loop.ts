@@ -10,7 +10,7 @@ import { randomUUID, createHmac } from "node:crypto";
 import { CustomsRuntime, BuyerSession } from "../runtime";
 import { parseIntent, Intent } from "./nlu";
 import { adapterCall, AdapterId, ADAPTERS } from "../adapters";
-import { getLlmBrain, brainMode, getChatVoice } from "./llm";
+import { getLlmBrain, brainMode, getChatVoice, COCO_SYSTEM_PROMPT } from "./llm";
 import { Product, searchCatalog, parsePriceCeiling } from "../store/catalog";
 import { GateDecision, TrustTier, TRUST_TIERS, Mandate } from "../gate/types";
 import { signMandate, buildMandateBody } from "../gate/mandate";
@@ -105,7 +105,7 @@ export async function agentTurn(
   sessionId: string,
   message: string,
   adapter: AdapterId,
-  opts?: { sessionless?: boolean }
+  opts?: { sessionless?: boolean; persona?: "desk" | "coco" }
 ): Promise<TurnResult> {
   const events: ChatEvent[] = [];
   const say = (text: string) => events.push({ id: eid(), ts: Date.now(), role: "agent", text });
@@ -127,13 +127,17 @@ export async function agentTurn(
   /* the companion voice — independent of AGENT_BRAIN: any provider key
      unlocks it, because casual chat is not the demo-critical intent path */
   const voice = getChatVoice();
+  /* the voice: two personas on the same cheap model — moco talks desk,
+     coco talks ghost. Commands never reach here; this is chatter only,
+     metered like everything else. */
+  const cocoPersona = opts?.persona === "coco";
   const speakThroughVoice = async (message: string, fallback: string) => {
     if (!voice) {
       say(fallback);
       return;
     }
     const t0 = performance.now();
-    const { reply, usage, model } = await voice.chat(message);
+    const { reply, usage, model } = await voice.chat(message, cocoPersona ? COCO_SYSTEM_PROMPT : undefined);
     newSpan(rt.deps, `tr_ses_${session.sessionId}`, session.lastOrderId ?? "none", "llm.chat", Math.round(performance.now() - t0), adapter, {
       tokensIn: usage.tokensIn,
       tokensOut: usage.tokensOut,
@@ -165,13 +169,28 @@ export async function agentTurn(
   };
   const signCtx = (payload: string) => createHmac("sha256", rt.keys.fingerprint).update(payload).digest("hex").slice(0, 32);
 
+  /* coco is not a shopping agent: shopping intents typed to coco are
+     honestly deflected to moco — one line, zero tokens */
+  const cocoShopping =
+    cocoPersona &&
+    intent.kind !== "music" &&
+    intent.kind !== "greeting" &&
+    intent.kind !== "unknown" &&
+    intent.kind !== "help" &&
+    intent.kind !== "status";
+
+  if (cocoShopping) {
+    say(`that's moco's desk — tell the black head.`);
+  } else
   switch (intent.kind) {
     case "greeting": {
       /* a greeting is casual speech — when the cheap voice is available it
          answers like a person; without a key, the canned desk-open line */
       await speakThroughVoice(
         message,
-        `Customs desk, open. I'm your buying agent for Fieldnote Supply — ${rt.catalog.byId.size} items in the catalog. ` +
+        cocoPersona
+          ? "hey — coco here. say \u201cplay\u201d with a song, or ask me anything."
+          : `Customs desk, open. I'm **moco**, your buying agent for Fieldnote Supply — ${rt.catalog.byId.size} items in the catalog. ` +
           `Tell me what you need ("noise cancelling headphones under ₹5,000") and I'll search, build a cart, and ask the desk for a bounded mandate. ` +
           `Your trust tier is **${TRUST_TIERS[session.tier].label}** (${TRUST_TIERS[session.tier].blurb}).`
       );
@@ -297,7 +316,10 @@ export async function agentTurn(
          answers casual questions briefly. Shopping commands never reach
          here (regex caught them above), so this path costs a few tokens
          only when a human actually chats. */
-      await speakThroughVoice(message, `I didn't catch that.`);
+      await speakThroughVoice(
+        message,
+        cocoPersona ? "hmm — I hum and I hold the playback. that one's beyond me." : `I didn't catch that.`
+      );
       break;
     }
   }

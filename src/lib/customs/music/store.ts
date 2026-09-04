@@ -14,7 +14,16 @@ export type MusicCommand =
 
 type Listener = (command: MusicCommand) => void;
 
+/** what the ghost is holding right now — published for moco */
+export interface MusicSnapshot {
+  title: string;
+  channel: string;
+  playing: boolean;
+}
+
 const listeners = new Set<Listener>();
+
+let snapshot: MusicSnapshot | null = null;
 
 export const musicBus = {
   emit(command: MusicCommand): void {
@@ -23,6 +32,14 @@ export const musicBus = {
   subscribe(fn: Listener): () => void {
     listeners.add(fn);
     return () => listeners.delete(fn);
+  },
+  /* the ghost reports what it holds — moco reads this to answer
+     "what is coco playing" without a server turn */
+  report(next: MusicSnapshot | null): void {
+    snapshot = next;
+  },
+  snapshot(): MusicSnapshot | null {
+    return snapshot;
   },
 };
 

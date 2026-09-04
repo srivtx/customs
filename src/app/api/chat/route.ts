@@ -17,6 +17,7 @@ export async function POST(req: NextRequest) {
       message: string;
       adapter?: string;
       tier?: string;
+      persona?: string;
     };
     const rt = getRuntime();
     const adapter = (ADAPTERS.includes(body.adapter as AdapterId) ? body.adapter : "naive") as AdapterId;
@@ -24,7 +25,8 @@ export async function POST(req: NextRequest) {
     let session: BuyerSession | undefined = body.sessionId ? rt.sessions.get(body.sessionId) : undefined;
     if (!session) session = newSession(rt, (body.tier === "ATTESTED" || body.tier === "MANDATED" ? body.tier : "UNVERIFIED") as BuyerSession["tier"]);
 
-    const result = await agentTurn(rt, session.sessionId, body.message ?? "", adapter);
+    const persona = body.persona === "coco" ? ("coco" as const) : ("desk" as const);
+    const result = await agentTurn(rt, session.sessionId, body.message ?? "", adapter, { persona });
     return NextResponse.json({
       ok: true,
       sessionId: session.sessionId,

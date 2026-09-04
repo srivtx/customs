@@ -238,7 +238,13 @@ summoned by the desk agent's chat and plays what was asked.
 6. The summon is logged in both transcripts as a compact `coco ·` chip
    with the chosen track — a receipt of the handoff, not decoration.
 7. **The agents view** presents both characters in ONE shared frame
-   split by the bus rail (duality as structure). The pointer spotlight
+   split by the bus rail (duality as structure), and the frame is
+   SEWN — running-stitch seams, corner tacks, woven-label nameplates,
+   a basting underlay on the rail, a care-label strip. Craft law:
+   functional ornamentation only (stitches mark construction), static
+   SVG dash geometry (`0.5 11` round caps), thread = hairline gray
+   except on the ghost's own patch (band). No gradient thread, no
+   stitch shadows, no animated displacement. The pointer spotlight
    is a hover state, token-tinted per character, killed under reduced
    motion; the wire ping runs once per real summon — motion confirms
    causality, never decorates.
