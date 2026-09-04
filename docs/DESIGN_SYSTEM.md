@@ -213,7 +213,10 @@ summoned by the desk agent's chat and plays what was asked.
    transform-only progress ride, exactly three buttons (play/pause,
    skip, stop). Mono for the metadata, sans for the title. No close box
    on the card — the card is dismissed by stop, or hidden with the
-   music still humming.
+   music still humming. The card stays mounted while a track lives —
+   the background sink is visual only, so the music never dies
+   mid-track; stop alone ends the player, and the next summon starts
+   a fresh one.
 5. **Coco's chat** is the desk agent's panel in miniature, and it opens
    on a click of coco: the same hairline header (the face at 24px, one
    status dot — band while humming), the same quiet text close, the
@@ -226,7 +229,8 @@ summoned by the desk agent's chat and plays what was asked.
    tucks coco away while the music keeps humming; "give me controls"
    recalls it. A **double-click** on coco toggles the video: it sinks
    to the background — the music hums on, coco stays to talk to — and a
-   second double-click brings the screen back. "give me controls"
+   second double-click brings the screen back (a video the browser
+   still holds back can't sink — tap play first). "give me controls"
    always works too. A ↻ fresh page fades the conversation before it
    clears — turning a sheet over, not a wipe; the music is untouched.
 6. The summon is logged in both transcripts as a compact `coco ·` chip

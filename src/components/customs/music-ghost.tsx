@@ -366,6 +366,9 @@ export function MusicGhost() {
             case "stop":
               p.stopVideo();
               queueRef.current = { tracks: [], index: 0 };
+              /* the card unmounts with the track — the iframe dies, so
+                 the ready promise must too (the next summon starts fresh) */
+              readyRef.current = null;
               setTrack(null);
               setPlaying(false);
               setState("leaving");
@@ -414,11 +417,14 @@ export function MusicGhost() {
       if (clickTimer.current) {
         /* the second click of a double: the video toggles — it sinks to
            the background with the music humming on, and comes back the
-           same way. coco stays to talk to either way. */
+           same way. A video the browser still holds back can't sink;
+           it hasn't begun. */
         clearTimeout(clickTimer.current);
         clickTimer.current = null;
         if (track) {
-          if (card || needsTap) {
+          if (needsTap) {
+            cocoSay("tap play first — then I can take it to the background.");
+          } else if (card) {
             setCard(false);
             cocoSay("video in the background — the music hums on.");
           } else {
@@ -500,14 +506,18 @@ export function MusicGhost() {
       style={{ left: pos.x, top: pos.y }}
       data-ghost=""
     >
-      {cardShown && track && (
+      {track && (
         <div
-          className="animate-rise absolute bottom-[64px] right-0 w-[236px] overflow-hidden rounded-[6px] border border-line-strong bg-card"
+          className={cn(
+            "animate-rise absolute bottom-[64px] right-0 w-[236px] overflow-hidden rounded-[6px] border border-line-strong bg-card transition-all duration-300 ease-out",
+            !(card || needsTap) && "pointer-events-none translate-y-2 scale-95 opacity-0"
+          )}
           role="region"
           aria-label="coco is playing"
         >
-          {/* the stage — the React-owned wrapper persists, so the player
-              is created once and the music never dies on a re-render */}
+          {/* the stage — the card stays mounted while a track lives, so
+              the player (and the music) survive the background sink; the
+              iframe dies only when the track does */}
           <div className="overflow-hidden border-b border-line">
             <div ref={mountRef} className="block h-[112px] w-[200px]" />
           </div>
@@ -620,7 +630,7 @@ export function MusicGhost() {
             role="log"
             aria-live="polite"
             className={cn(
-              "flex-1 space-y-2.5 overflow-y-auto px-3.5 py-3 transition-opacity duration-300",
+              "min-h-0 flex-1 space-y-2.5 overflow-y-auto px-3.5 py-3 transition-opacity duration-300",
               chatClearing && "opacity-0"
             )}
           >
