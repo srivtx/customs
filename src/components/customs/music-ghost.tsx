@@ -40,6 +40,7 @@ interface YTPlayer {
   stopVideo: () => void;
   loadVideoById: (id: string) => void;
   setVolume: (v: number) => void;
+  seekTo: (seconds: number, allowSeekAhead: boolean) => void;
   getCurrentTime: () => number;
 }
 
@@ -54,7 +55,7 @@ declare global {
           playerVars?: Record<string, unknown>;
           events?: {
             onReady?: (e: { target: YTPlayer }) => void;
-            onStateChange?: (e: { data: number }) => void;
+            onStateChange?: (e: { data: number; target: YTPlayer }) => void;
           };
         }
       ) => unknown;
@@ -158,6 +159,7 @@ export function MusicGhost() {
   const [progress, setProgress] = useState(0);
   const [needsTap, setNeedsTap] = useState(false);
   const [warming, setWarming] = useState(false);
+  const [loop, setLoop] = useState(false);
   const [tucked, setTucked] = useState(false);
   const [card, setCard] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
@@ -184,6 +186,11 @@ export function MusicGhost() {
   const chatIdRef = useRef(1);
   /* one crate search at a time — the ref is law, the state is the dot */
   const fetchingRef = useRef(false);
+  /* single vs double click: the ear waits one short beat for the
+     browser to say "double"; the loop toggle's ref rides its state */
+  const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const chatAuto = useRef(false);
+  const loopRef = useRef(false);
 
   const eyeMood = useEyeMood(playing);
 
@@ -248,6 +255,7 @@ export function MusicGhost() {
   useEffect(() => () => {
     readyRef.current = null;
     stateTimers.current.forEach(clearTimeout);
+    if (clickTimer.current) clearTimeout(clickTimer.current);
   }, []);
 
   const schedule = (ms: number, fn: () => void) => {
@@ -274,8 +282,8 @@ export function MusicGhost() {
             return;
           }
           new window.YT.Player(mountRef.current, {
-            width: 200,
-            height: 112,
+            width: 236,
+            height: 133,
             playerVars: { rel: 0, modestbranding: 1 },
             events: {
               onReady: (e) => {
@@ -283,10 +291,16 @@ export function MusicGhost() {
                 resolve(e.target);
               },
               onStateChange: (e) => {
-                /* 1 = playing, 2 = paused, 3 = buffering */
+                /* 1 = playing, 2 = paused, 3 = buffering, 0 = ended */
                 setPlaying(e.data === 1);
                 setWarming(e.data === 3);
                 if (e.data === 1) setNeedsTap(false);
+                /* the loop-back: when the needle hits the end and the
+                   loop is armed, the same track plays again */
+                if (e.data === 0 && loopRef.current) {
+                  e.target.seekTo(0, true);
+                  e.target.playVideo();
+                }
               },
             },
           });
@@ -442,17 +456,32 @@ export function MusicGhost() {
     }
   };
   const onUp = () => {
-    /* the ear opens on the first click — instantly, no sibling-wait.
-       Closing is ✕, esc, or a click outside. The old code made the chat
-       wait 260ms for a possible second click — a slow double-click then
-       fired the chat toggle and the video gesture raced it. */
-    if (drag.current.active && !drag.current.moved) setChatOpen(true);
+    /* the ear opens on a single click — after one short beat, so the
+       browser can tell it from a double-click (the video's gesture,
+       which always cancels this) */
+    if (drag.current.active && !drag.current.moved) {
+      if (clickTimer.current) clearTimeout(clickTimer.current);
+      clickTimer.current = setTimeout(() => {
+        clickTimer.current = null;
+        chatAuto.current = true;
+        setChatOpen(true);
+      }, 250);
+    }
     drag.current.active = false;
   };
 
-  /* the video gesture is the browser's own double-click — two gestures,
-     two surfaces, no hand-rolled timing to race */
+  /* the video gesture is the browser's own double-click. The pending
+     single-click never fires; a chat it already opened (slow doubles)
+     is closed — a double-click is the video's gesture, never the ear's */
   const onDouble = () => {
+    if (clickTimer.current) {
+      clearTimeout(clickTimer.current);
+      clickTimer.current = null;
+    }
+    if (chatAuto.current) {
+      chatAuto.current = false;
+      setChatOpen(false);
+    }
     if (!track) return;
     if (needsTap) {
       cocoSay("tap play first — then I can take it to the background.");
@@ -465,6 +494,12 @@ export function MusicGhost() {
       setCard(true);
       cocoSay("the screen is back.");
     }
+  };
+
+  const toggleLoop = () => {
+    const next = !loopRef.current;
+    loopRef.current = next;
+    setLoop(next);
   };
 
   /* coco's own ear: control verbs run on the local rules brain at zero
@@ -577,22 +612,23 @@ export function MusicGhost() {
 
   if (!pos || state === "hidden") return null;
 
-  const cardShown = track !== null && (card || needsTap);
-
   return (
     <div
       ref={wrapRef}
       className={cn(
-        "fixed z-50 select-none transition-all duration-300 ease-out",
+        "fixed z-50 flex select-none flex-col items-end gap-2 transition-all duration-300 ease-out",
         tucked && "pointer-events-none translate-y-3 scale-90 opacity-0"
       )}
       style={{ left: pos.x, top: pos.y }}
       data-ghost=""
     >
+      {/* one flow column — the card, the chat and the head can never
+          overlap: they stack, above or below coco depending on where it
+          lives (flex order swaps with chatBelow) */}
       {track && (
         <div
           className={cn(
-            "animate-rise absolute bottom-[64px] right-0 w-[236px] overflow-hidden rounded-[6px] border border-line-strong bg-card transition-all duration-300 ease-out",
+            "animate-rise order-2 w-[236px] overflow-hidden rounded-[6px] border border-line-strong bg-card transition-all duration-300 ease-out",
             !(card || needsTap) && "pointer-events-none translate-y-2 scale-95 opacity-0"
           )}
           role="region"
@@ -602,7 +638,7 @@ export function MusicGhost() {
               the player (and the music) survive the background sink; the
               iframe dies only when the track does */}
           <div className="overflow-hidden border-b border-line">
-            <div ref={mountRef} className="block h-[112px] w-[200px]" />
+            <div ref={mountRef} className="block h-[133px] w-full" />
           </div>
           <div className="px-3 pb-2.5 pt-2">
             <p className="truncate text-[12.5px] leading-snug text-ink" title={track.title}>
@@ -645,13 +681,16 @@ export function MusicGhost() {
                 </button>
               )}
               <button
-                onClick={() => {
-                  musicBus.emit({ action: "skip" });
-                }}
-                className="flex h-7 w-9 items-center justify-center rounded-[4px] border border-line2 text-[11.5px] text-ink transition-colors hover:border-ink/40"
-                aria-label="skip to the next track in the queue"
+                onClick={toggleLoop}
+                aria-pressed={loop}
+                aria-label={loop ? "loop is on — the track plays again and again" : "loop the track"}
+                title="loop — play it again and again"
+                className={cn(
+                  "flex h-7 w-9 items-center justify-center rounded-[4px] border text-[11.5px] transition-colors",
+                  loop ? "border-ink/50 bg-ink/[0.06] text-ink" : "border-line2 text-ink hover:border-ink/40"
+                )}
               >
-                ⇥
+                ⟲
               </button>
               <button
                 onClick={() => {
@@ -674,8 +713,8 @@ export function MusicGhost() {
       {chatOpen && (
         <div
           className={cn(
-            "animate-rise absolute right-0 flex max-h-[400px] w-[280px] flex-col overflow-hidden rounded-[6px] border border-line-strong bg-card",
-            chatBelow ? "top-full mt-2" : cardShown ? "bottom-[316px]" : "bottom-[64px]"
+            "animate-rise flex max-h-[400px] w-[280px] flex-col overflow-hidden rounded-[6px] border border-line-strong bg-card",
+            chatBelow ? "order-3" : "order-1"
           )}
           role="dialog"
           aria-label="coco chat"
@@ -785,7 +824,8 @@ export function MusicGhost() {
         aria-label="coco — the desk's red ghost — drag to move, click to chat, double-click to sink the video"
         title="coco — drag me, click to chat, double-click to sink the video"
         className={cn(
-          "relative z-10 block cursor-grab touch-none active:cursor-grabbing",
+          "relative z-10 block shrink-0 cursor-grab touch-none active:cursor-grabbing",
+          chatBelow ? "order-1" : "order-3",
           state === "arriving" && "ghost-arrive",
           state === "leaving" && "ghost-sink"
         )}
