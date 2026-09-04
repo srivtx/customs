@@ -111,7 +111,7 @@ export function Playground() {
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ sessionId: sessionRef.current, message, adapter }),
+          body: JSON.stringify({ sessionId: sessionRef.current, message, adapter, tier }),
         });
         const data = (await res.json()) as ChatResponse;
         const rest = MIN_THINK_MS - (performance.now() - thinkFrom);
@@ -153,7 +153,7 @@ export function Playground() {
         setBusy(false);
       }
     },
-    [adapter]
+    [adapter, tier]
   );
 
   useEffect(() => {
@@ -294,8 +294,13 @@ export function Playground() {
                 disabled={t === tier || t === "MANDATED"}
                 title={t === "MANDATED" ? "mandates are signed by the desk — escalate via attest" : `act as ${t}`}
                 onClick={() => {
-                  // switching identity starts a fresh session at that tier
+                  // switching identity starts a fresh session at that tier —
+                  // and the fresh session must actually reach the desk: the
+                  // client-minted id is cleared and the tier is SENT, so the
+                  // server session is born at it. (Before, the passport
+                  // promised ₹5,000 while the server still enforced ₹500.)
                   setTier(t);
+                  sessionRef.current = null;
                   setSessionId(null);
                   setEvents([]);
                   setChips([]);

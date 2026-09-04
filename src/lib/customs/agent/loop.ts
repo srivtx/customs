@@ -240,6 +240,18 @@ export async function agentTurn(
       const t = TRUST_TIERS[next];
       events.push({ id: eid(), ts: now(), kind: "tier", tier: next, note: `${rupees(t.maxAmountPaise)} cap · ${t.maxItems} item${t.maxItems > 1 ? "s" : ""} · ${Math.round(t.mandateTtlMs / 60000)} min` });
       say(next === "ATTESTED" ? "You're verified." : "Standing mandate — the highest limits.");
+      /* compound commands: "attest the pro earbuds" attests AND shops —
+         the tail used to be dropped silently and the cart looked haunted */
+      if (intent.rest) {
+        const r = parseIntent(intent.rest);
+        const product = r.kind === "add" ? { id: r.productId, query: r.query } : r.kind === "search" && r.results.length ? { id: r.results[0].id, query: r.results[0].name } : null;
+        if (product?.id) {
+          await runTool("add_to_cart", { productId: product.id, quantity: 1 }, "Added to cart");
+          say(`And they're in the cart — say checkout when ready.`);
+        } else {
+          say(`I didn't catch "${intent.rest}" as a command — attested, nothing added.`);
+        }
+      }
       break;
     }
     case "music": {
@@ -295,6 +307,17 @@ export async function agentTurn(
       break;
     }
     case "checkout": {
+      /* compound commands: "checkout the pro earbuds" or "add x and
+         checkout" — the tail may carry the add; an empty cart that ignores
+         it reads as a broken desk (the ghost-cart incident, 2026-09-04) */
+      if (intent.rest && session.cart.size === 0) {
+        const r = parseIntent(intent.rest);
+        const product = r.kind === "add" ? { id: r.productId, name: r.query } : r.kind === "search" && r.results.length ? { id: r.results[0].id, name: r.results[0].name } : null;
+        if (product?.id) {
+          await runTool("add_to_cart", { productId: product.id, quantity: 1 }, "Added to cart");
+          say(`Added — the ${product.name} are in.`);
+        }
+      }
       const lines = cartLines(rt, session);
       if (!lines.length) {
         say(`Nothing to check out yet. Search and add something first.`);

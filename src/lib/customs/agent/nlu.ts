@@ -19,15 +19,28 @@ export type Intent =
   | { kind: "add"; productId: string | null; query: string; quantity: number }
   | { kind: "remove"; productId: string }
   | { kind: "cart" }
-  | { kind: "checkout" }
+  | { kind: "checkout"; rest?: string }
   | { kind: "confirm" }
   | { kind: "attack"; attackId: string }
   | { kind: "status" }
-  | { kind: "attest" }
+  | { kind: "attest"; rest?: string }
+  | { kind: "checkout"; rest?: string }
   | { kind: "music"; action: MusicIntent["action"]; query: string | null; mood: string | null }
   | { kind: "unknown"; query: string };
 
 const ATTACK_RE = /^attack[:\s]+([a-z0-9-]+)/i;
+
+/* the words a human strings around a command — "attest the pro earbuds",
+   "checkout then add socks". The command fires AND the remainder is kept,
+   never silently dropped (the ghost-cart incident, 2026-09-04). */
+function remainder(text: string, match: RegExpMatchArray): string {
+  const start = match.index ?? 0;
+  const around = (text.slice(0, start) + " " + text.slice(start + match[0].length)).trim();
+  return around
+    .replace(/^(?:please|now|and|then|also|first|after that)\b[\s,]*/i, "")
+    .replace(/[\s,]*(?:and|then|also|after that|please|now)?[.!\s]*$/, "")
+    .trim();
+}
 
 function quantityOf(text: string): number {
   const m = text.match(/(?:x|qty|quantity)?\s*(\d{1,2})\s*(?:x|qty|pcs|pieces|units)?\b/i);
@@ -54,11 +67,17 @@ export function parseIntent(raw: string): Intent {
   if (/^(whats up|what's up|wassup|sup|how are you|how are things|how is it going|thanks|thank you|thx|ty|who are you|what are you|good (night|day))\b/.test(lower) || /^(hi|hello|hey|namaste|yo|good (morning|evening|afternoon))\b/.test(lower))
     return { kind: "greeting" };
   if (/^(help|what can you do|commands|how does this work)/.test(lower)) return { kind: "help" };
-  if (/\b(attest\w*|verify me|otp|upgrade (my )?(tier|identity))\b/.test(lower))
-    return { kind: "attest" };
+  const attestM = lower.match(/\b(attest\w*|verify me|otp|upgrade (my )?(tier|identity))\b/);
+  if (attestM) {
+    const rest = remainder(text, attestM);
+    return rest ? { kind: "attest", rest } : { kind: "attest" };
+  }
   if (/\b(status|balance|mandate status|my tier|who am i)\b/.test(lower)) return { kind: "status" };
-  if (/\b(checkout|pay now|buy now|place the order|complete (the )?purchase|bind and pay)\b/.test(lower))
-    return { kind: "checkout" };
+  const checkoutM = lower.match(/\b(checkout|pay now|buy now|place the order|complete (the )?purchase|bind and pay)\b/);
+  if (checkoutM) {
+    const rest = remainder(text, checkoutM);
+    return rest ? { kind: "checkout", rest } : { kind: "checkout" };
+  }
   if (/^(yes|y|confirm|go ahead|do it|approve|proceed|continue)\b/.test(lower))
     return { kind: "confirm" };
 
