@@ -1,9 +1,9 @@
 {
   "status": "pass",
-  "measured_at": "2026-09-04T10:05:14.729Z",
+  "measured_at": "2026-09-04T12:46:07.899Z",
   "metrics": {
     "length": 258,
-    "headHash": "a47eb9ec79d19acce4c9f6be930cb719a8a2dfc5e3079b1d5a6c3175ac7c0e04",
+    "headHash": "5654a93614a02388143debda8fdbae8152efeb7f7a0e578bfec2724f1470ed45",
     "tamperDetected": true,
     "tamperBreakSeq": 130
   },
