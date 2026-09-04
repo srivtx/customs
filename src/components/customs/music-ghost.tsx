@@ -409,13 +409,19 @@ export function MusicGhost() {
   const onUp = () => {
     if (drag.current.active && !drag.current.moved) {
       if (clickTimer.current) {
-        /* the second click of a double: the video sinks to the
-           background — the music hums on, coco stays to talk to */
+        /* the second click of a double: the video toggles — it sinks to
+           the background with the music humming on, and comes back the
+           same way. coco stays to talk to either way. */
         clearTimeout(clickTimer.current);
         clickTimer.current = null;
         if (track) {
-          setCard(false);
-          cocoSay("video in the background — the music hums on.");
+          if (card || needsTap) {
+            setCard(false);
+            cocoSay("video in the background — the music hums on.");
+          } else {
+            setCard(true);
+            cocoSay("the screen is back.");
+          }
         }
       } else {
         clickTimer.current = setTimeout(() => {

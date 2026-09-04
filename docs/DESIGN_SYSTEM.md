@@ -224,9 +224,10 @@ summoned by the desk agent's chat and plays what was asked.
    zero tokens; a play wish is deflected to the desk, never drained
    through an LLM. Hide ≠ stop: "hide" (chat word or header button)
    tucks coco away while the music keeps humming; "give me controls"
-   recalls it. A **double-click** on coco sinks the video to the
-   background — the music hums on, coco stays to talk to; "give me
-   controls" brings the card back.
+   recalls it. A **double-click** on coco toggles the video: it sinks
+   to the background — the music hums on, coco stays to talk to — and a
+   second double-click brings the screen back. "give me controls"
+   always works too.
 6. The summon is logged in both transcripts as a compact `coco ·` chip
    with the chosen track — a receipt of the handoff, not decoration.
 
