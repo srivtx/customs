@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import { musicBus } from "@/lib/customs/music/store";
 import type { MusicCommand } from "@/lib/customs/music/store";
 import type { Track } from "@/lib/customs/music/youtube";
+import type { ChatEvent } from "@/lib/customs/agent/loop";
 import { parseMusicIntent } from "@/lib/customs/music/brain";
 
 const POS_KEY = "customs-ghost-pos-v1";
@@ -156,6 +157,7 @@ export function MusicGhost() {
   /* the fresh page: the conversation fades before it clears — a reset
      should read as turning a sheet over, not a wipe */
   const [chatClearing, setChatClearing] = useState(false);
+  const [fetching, setFetching] = useState(false);
   /* the chat opens downward when coco lives in the upper sky (the desk
      panel's own law), upward when it sits near the floor */
   const [chatBelow, setChatBelow] = useState(false);
@@ -174,6 +176,8 @@ export function MusicGhost() {
   const chatIdRef = useRef(1);
   /* single vs double click: the first click waits a beat for a sibling */
   const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /* one crate search at a time — the ref is law, the state is the dot */
+  const fetchingRef = useRef(false);
 
   const eyeMood = useEyeMood(playing);
 
@@ -443,13 +447,14 @@ export function MusicGhost() {
   };
 
   /* coco's own ear: control verbs run on the local rules brain at zero
-     tokens; a play wish is deflected to the desk — the record crate is
-     the desk's tool, and no token is spent pretending otherwise */
+     tokens; a play wish rides the desk's chat pipeline over the wire —
+     the server-side rules brain catches it at zero tokens (the LLM
+     never wakes) and the crate answers here, in coco's voice */
   const cocoSay = (text: string) => {
     const line: ChatLine = { id: chatIdRef.current++, who: "coco", text };
     setChat((p) => [...p, line]);
   };
-  const tellCoco = (raw: string) => {
+  const tellCoco = async (raw: string) => {
     const text = raw.trim();
     if (!text) return;
     const userLine: ChatLine = { id: chatIdRef.current++, who: "user", text };
@@ -471,11 +476,37 @@ export function MusicGhost() {
       return;
     }
     if (intent?.action === "play") {
-      cocoSay(
-        intent.query
-          ? `the desk holds the record crate — ask it to play ${intent.query}.`
-          : "the desk holds the record crate — ask it for a track."
-      );
+      if (fetchingRef.current) {
+        cocoSay("one beat — the crate is already spinning.");
+        return;
+      }
+      fetchingRef.current = true;
+      setFetching(true);
+      cocoSay("searching the crate…");
+      try {
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ message: `play ${intent.query ?? "chill lofi beats mix"}`, adapter: "naive" }),
+        });
+        const data = (await res.json()) as { ok: boolean; events?: ChatEvent[] };
+        const music = data.events?.find(
+          (e): e is Extract<ChatEvent, { kind: "music" }> => "kind" in e && e.kind === "music"
+        );
+        if (music && music.action === "play" && music.tracks.length) {
+          musicBus.emit({ action: "play", tracks: music.tracks, query: music.query, mood: music.mood, error: music.note });
+          cocoSay(`▶ ${music.tracks[0].title} — ${music.tracks[0].channel}.`);
+        } else if (music?.note === "no-key") {
+          cocoSay("the record crate is locked — no YouTube key on this desk.");
+        } else {
+          cocoSay("nothing surfaced for that — try another name.");
+        }
+      } catch {
+        cocoSay("the crate didn't answer — try again.");
+      } finally {
+        fetchingRef.current = false;
+        setFetching(false);
+      }
       return;
     }
     cocoSay("I hum — tell me skip, pause, louder, hide, or give me controls.");
@@ -660,7 +691,7 @@ export function MusicGhost() {
               e.preventDefault();
               const el = e.currentTarget.elements.namedItem("tell") as HTMLInputElement | null;
               if (!el) return;
-              tellCoco(el.value);
+              void tellCoco(el.value);
               el.value = "";
             }}
             className="border-t border-line p-2.5"
@@ -676,8 +707,9 @@ export function MusicGhost() {
               />
               <button
                 type="submit"
+                disabled={fetching}
                 aria-label="send to coco"
-                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[3px] bg-ink text-paper transition-opacity hover:opacity-90"
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[3px] bg-ink text-paper transition-opacity hover:opacity-90 disabled:opacity-30"
               >
                 <svg viewBox="0 0 16 16" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                   <path d="M8 13V3M4 7l4-4 4 4" />

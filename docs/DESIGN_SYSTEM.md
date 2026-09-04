@@ -224,8 +224,10 @@ summoned by the desk agent's chat and plays what was asked.
    downward from coco when there is sky below, rises when coco sits
    low — clearing the card when the card is up (the desk panel's own
    below/above law). Its ear is the rules brain: control verbs run at
-   zero tokens; a play wish is deflected to the desk, never drained
-   through an LLM. Hide ≠ stop: "hide" (chat word or header button)
+   zero tokens; a play wish rides the desk's chat pipeline over the
+   wire — the server-side rules brain catches it at zero tokens (the
+   LLM never wakes) and the crate answers in coco's own chat, no desk
+   conversation required. Hide ≠ stop: "hide" (chat word or header button)
    tucks coco away while the music keeps humming; "give me controls"
    recalls it. A **double-click** on coco toggles the video: it sinks
    to the background — the music hums on, coco stays to talk to — and a
