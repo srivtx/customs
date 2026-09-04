@@ -34,8 +34,23 @@ export interface CustomsRuntime {
   ephemeral: boolean;
   stateDir: string | null;
   sessions: Map<string, BuyerSession>;
+  turnLocks: Map<string, Promise<unknown>>;
   deps: EngineDeps;
   catalog: ReturnType<typeof catalogSnapshot>;
+}
+
+/* one turn at a time per buyer session — concurrent chat POSTs for the same
+   session used to read-modify-write the cart and lose updates (an add could
+   silently vanish under a second in-flight turn). The lock chains turns onto
+   the previous turn's promise, so every read-modify-write sees the one before. */
+export function withSessionLock<T>(rt: CustomsRuntime, sessionId: string, fn: () => Promise<T>): Promise<T> {
+  const prev = rt.turnLocks.get(sessionId) ?? Promise.resolve();
+  const next = prev.then(
+    () => fn(),
+    () => fn(),
+  );
+  rt.turnLocks.set(sessionId, next.catch(() => undefined));
+  return next;
 }
 
 const PROBE = "customs-state-probe";
@@ -72,6 +87,7 @@ export function getRuntime(): CustomsRuntime {
     ephemeral,
     stateDir: dir,
     sessions: new Map(),
+    turnLocks: new Map(),
     deps,
     catalog: catalogSnapshot(keys.publicKeyPem, keys.fingerprint),
   };
@@ -86,6 +102,7 @@ export function resetRuntime(): CustomsRuntime {
   const rt = getRuntime();
   rt.ledger.reset();
   rt.sessions.clear();
+  rt.turnLocks.clear();
   seedHistory(rt.deps);
   rt.ledger.append("demo.seeded", { note: "reset requested — deterministic history regenerated", ephemeral: rt.ephemeral });
   return rt;

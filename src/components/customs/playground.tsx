@@ -65,6 +65,14 @@ export function Playground() {
   const [brain, setBrain] = useState("rules");
   const [sessionFresh, setSessionFresh] = useState(true);
   const [chips, setChips] = useState<Suggestion[]>([]);
+  /* the session id is minted CLIENT-side and kept in a ref: a first send
+     used to wait for the server to mint one, so a double-fire (Enter + click
+     in the same frame) opened two orphan sessions — the cart landed in one,
+     the UI followed the other, and the add looked lost */
+  const sessionRef = useRef<string | null>(null);
+  /* busy is checked on a ref too — React state lags a frame, and the
+     double-fire lands inside that frame */
+  const busyRef = useRef(false);
   /* per-event cascade: each event in a turn's batch mounts 90ms after the
      one above it (capped) — the transcript settles like speech, not a dump */
   const delays = useRef(new Map<string, number>());
@@ -88,9 +96,11 @@ export function Playground() {
   const send = useCallback(
     async (text: string) => {
       const message = text.trim();
-      if (!message || busy) return;
+      if (!message || busyRef.current) return;
+      busyRef.current = true;
       setBusy(true);
       setInput("");
+      if (!sessionRef.current) sessionRef.current = crypto.randomUUID();
       /* the desk takes a breath before answering: a reply that lands in
          80ms reads as fake (and the thinking morph never plays). Hold the
          thinking state for at least a beat — the grok tell needs stage
@@ -101,7 +111,7 @@ export function Playground() {
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ sessionId, message, adapter }),
+          body: JSON.stringify({ sessionId: sessionRef.current, message, adapter }),
         });
         const data = (await res.json()) as ChatResponse;
         const rest = MIN_THINK_MS - (performance.now() - thinkFrom);
@@ -139,10 +149,11 @@ export function Playground() {
           { id: `err_${Date.now()}`, ts: Date.now(), role: "agent", text: "Network error reaching the desk." },
         ]);
       } finally {
+        busyRef.current = false;
         setBusy(false);
       }
     },
-    [busy, sessionId, adapter]
+    [adapter]
   );
 
   useEffect(() => {

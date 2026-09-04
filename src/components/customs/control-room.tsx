@@ -92,18 +92,24 @@ export function ControlRoom() {
   const seenIds = useRef<Set<string>>(new Set());
   const [flashIds, setFlashIds] = useState<Set<string>>(new Set());
 
+  /* the poll is stable: one interval for the component's whole life, a
+     monotonic sequence drops any response that lands after a newer one —
+     a slow poll used to clobber fresher state and rows flickered in/out */
+  const stateRef = useRef<StateResponse | null>(null);
+  const pollSeq = useRef(0);
   const refresh = useCallback(async () => {
+    const seq = ++pollSeq.current;
     try {
       const res = await fetch("/api/state", { cache: "no-store" });
       const data = (await res.json()) as StateResponse;
-      if (data.ok) {
-        prevGmv.current = state?.meter.gmvPaise ?? 0;
-        setState(data);
-      }
+      if (!data.ok || seq !== pollSeq.current) return;
+      prevGmv.current = stateRef.current?.meter.gmvPaise ?? 0;
+      stateRef.current = data;
+      setState(data);
     } catch {
       /* next poll retries */
     }
-  }, [state]);
+  }, []);
 
   /* new rows since the last poll flash once — the ledger visibly ticks */
   useEffect(() => {

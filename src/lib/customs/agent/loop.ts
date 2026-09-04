@@ -302,7 +302,10 @@ export async function agentTurn(
       }
       const total = lines.reduce((s, l) => s + l.unitPricePaise * l.quantity, 0);
       if (total > TRUST_TIERS[session.tier].maxAmountPaise) {
-        say(`That's over your current limit.`);
+        const cap = TRUST_TIERS[session.tier];
+        say(
+          `The cart totals ₹${Math.round(total / 100).toLocaleString("en-IN")} — over your ${cap.label} limit of ₹${Math.round(cap.maxAmountPaise / 100).toLocaleString("en-IN")}. Escalate with "attest" or trim the cart.`
+        );
         break;
       }
       await runTool("request_mandate", {}, "Requested a mandate from the desk");

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getRuntime, BuyerSession } from "@/lib/customs/runtime";
+import { getRuntime, withSessionLock, BuyerSession } from "@/lib/customs/runtime";
 import { agentTurn, newSession } from "@/lib/customs/agent/loop";
 import type { AdapterId } from "@/lib/customs/adapters";
 import { brainMode } from "@/lib/customs/agent/llm";
@@ -24,9 +24,6 @@ export async function POST(req: NextRequest) {
     const rt = getRuntime();
     const adapter = (ADAPTERS.includes(body.adapter as AdapterId) ? body.adapter : "naive") as AdapterId;
 
-    let session: BuyerSession | undefined = body.sessionId ? rt.sessions.get(body.sessionId) : undefined;
-    if (!session) session = newSession(rt, (body.tier === "ATTESTED" || body.tier === "MANDATED" ? body.tier : "UNVERIFIED") as BuyerSession["tier"]);
-
     const persona = body.persona === "coco" ? ("coco" as const) : ("desk" as const);
     /* the ghost's state, if it hums — one compact line of context so the
        cheap voice can answer ANY phrasing of "what's playing" (the
@@ -39,7 +36,16 @@ export async function POST(req: NextRequest) {
             playing: body.music.playing === true,
           }
         : null;
-    const result = await agentTurn(rt, session.sessionId, body.message ?? "", adapter, { persona, music });
+
+    /* session resolution AND the turn ride the per-session lock: two rapid
+       sends (double-Enter before the client's busy flag renders) used to
+       race the cart read-modify-write and lose adds */
+    const { result, session } = await withSessionLock(rt, body.sessionId ?? "new", async () => {
+      let s: BuyerSession | undefined = body.sessionId ? rt.sessions.get(body.sessionId) : undefined;
+      if (!s) s = newSession(rt, (body.tier === "ATTESTED" || body.tier === "MANDATED" ? body.tier : "UNVERIFIED") as BuyerSession["tier"]);
+      const r = await agentTurn(rt, s.sessionId, body.message ?? "", adapter, { persona, music });
+      return { result: r, session: s };
+    });
     return NextResponse.json({
       ok: true,
       sessionId: session.sessionId,
