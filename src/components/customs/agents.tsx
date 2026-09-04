@@ -2,19 +2,24 @@
 
 /**
  * agents.tsx — the agents view, in the landing's own grammar: a hero
- * stage (display type + the two heads large on the felt, the bus wire
- * drawn between them, the real summon button), then py-16 sections —
- * the sewn frame, the handoff log, the cheap pair. The craft is the
- * house's own felt vocabulary (HeroFabric mat, static grain,
- * running-stitch seams, woven-label nameplates, a band dye wash on the
- * ghost's cloth) held to the discipline: hover changes one quiet
- * thing; the delight budget is the live heads + the one-shot ping.
+ * stage (display type + the two heads large on their woven desk mat,
+ * the summon button), then py-16 sections — the sewn frame, the
+ * handoff log, the cheap pair. The stage fabric is the agents' OWN
+ * object, deliberately not the bot's wool: where HeroFabric is a
+ * hand-cut felt blob with turbulence edges and aurora pastels, this is
+ * a rectangular WOVEN mat — warp/weft crosshatch, machine hem, two
+ * cloths (moco's ink pool, coco's band pool) joined by a hand
+ * running-stitch seam that runs corner to corner. The seam IS the bus
+ * wire: the handoff is the join between the two cloths, the bus node
+ * rides it at center. The craft is the house's felt vocabulary (static
+ * grain, running-stitch seams, woven-label nameplates) held to the
+ * discipline: hover changes one quiet thing; the delight budget is
+ * the live heads + the one-shot ping.
  */
 import { useId, useState } from "react";
 import { cn } from "@/lib/utils";
 import { DeskHead, GhostButton, InkButton, Reveal, SectionLabel } from "./bits";
 import { GhostBody } from "./music-ghost";
-import { HeroFabric } from "./hero-fabric";
 import { musicBus } from "@/lib/customs/music/store";
 import type { ChatEvent } from "@/lib/customs/agent/loop";
 import type { View } from "./shell";
@@ -29,6 +34,94 @@ function FeltGrain() {
         <feColorMatrix type="saturate" values="0" />
       </filter>
       <rect width="100%" height="100%" filter={`url(#${id})`} opacity="0.05" style={{ mixBlendMode: "overlay" }} />
+    </svg>
+  );
+}
+
+/**
+ * AgentsFabric — the woven desk mat the two agents share. The bot's
+ * mat is hand-cut wool; this is its structural opposite: loom cloth.
+ * Warp and weft as a crosshatch pattern, a machine hem (fine dash —
+ * a different stitch voice from the hand seam), two dye pools (ink
+ * for moco's cloth, band for coco's), one fold, one sheen, and the
+ * hand seam that sews the two cloths together corner to corner —
+ * the bus wire rides that seam. Static throughout; token colors only.
+ */
+function AgentsFabric({ className }: { className?: string }) {
+  const uid = useId().replace(/:/g, "");
+  const mat = `af-mat-${uid}`;
+  const weave = `af-weave-${uid}`;
+  const dyeM = `af-dm-${uid}`;
+  const dyeC = `af-dc-${uid}`;
+  const soft = `af-soft-${uid}`;
+  return (
+    <svg aria-hidden viewBox="0 0 340 340" className={cn("select-none", className)}>
+      <defs>
+        <clipPath id={mat}>
+          <rect x="6" y="6" width="328" height="328" rx="14" />
+        </clipPath>
+        {/* the weave — warp and weft, two hairline sets */}
+        <pattern id={weave} width="8" height="8" patternUnits="userSpaceOnUse">
+          <path d="M0 4H8" stroke="var(--ink)" strokeOpacity="0.05" strokeWidth="1" />
+          <path d="M4 0V8" stroke="var(--ink)" strokeOpacity="0.035" strokeWidth="1" />
+        </pattern>
+        {/* the dyes — moco's cloth takes ink, coco's takes band */}
+        <radialGradient id={dyeM} cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0" stopColor="var(--ink)" stopOpacity="0.07" />
+          <stop offset="1" stopColor="var(--ink)" stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id={dyeC} cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0" stopColor="var(--band)" stopOpacity="0.14" />
+          <stop offset="1" stopColor="var(--band)" stopOpacity="0" />
+        </radialGradient>
+        <filter id={soft} x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="18" />
+        </filter>
+      </defs>
+
+      {/* the mat's thickness — underlay peeking 10px below, the same
+          cheapest-3D the bot's wool uses */}
+      <rect x="6" y="16" width="328" height="328" rx="14" fill="var(--ink)" opacity="0.12" />
+      <g clipPath={`url(#${mat})`}>
+        <rect x="6" y="6" width="328" height="328" fill="var(--paper2)" />
+        <rect x="6" y="6" width="328" height="328" fill={`url(#${weave})`} />
+        <ellipse cx="100" cy="110" rx="150" ry="120" fill={`url(#${dyeM})`} />
+        <ellipse cx="240" cy="235" rx="160" ry="130" fill={`url(#${dyeC})`} />
+        {/* one fold — the cloth isn't ironed */}
+        <ellipse
+          cx="170"
+          cy="205"
+          rx="150"
+          ry="18"
+          fill="var(--ink)"
+          opacity="0.05"
+          filter={`url(#${soft})`}
+          transform="rotate(-38 170 205)"
+        />
+        {/* one breath of light across the weave */}
+        <ellipse cx="120" cy="90" rx="140" ry="44" fill="#ffffff" opacity="0.1" filter={`url(#${soft})`} />
+      </g>
+
+      {/* the hand seam — two cloths sewn corner to corner; the bus
+          rides this seam, so the wire is never drawn separately */}
+      <g strokeLinecap="round">
+        <line x1="58" y1="74.5" x2="282" y2="270.5" stroke="var(--line-strong)" strokeOpacity="0.4" strokeWidth="1.6" strokeDasharray="0.5 11" />
+        <line x1="58" y1="69.5" x2="282" y2="265.5" stroke="var(--line-strong)" strokeWidth="2" strokeDasharray="0.5 11" />
+        {/* threads left on the desk */}
+        <path d="M166 166 q 11 6 7 17" fill="none" stroke="var(--line-strong)" strokeWidth="1.4" opacity="0.55" />
+        <path d="M247 108 q -9 7 -4 16" fill="none" stroke="var(--line-strong)" strokeWidth="1.2" opacity="0.4" />
+      </g>
+
+      {/* the hem — machine stitch, a different voice from the hand seam */}
+      <rect x="15" y="15" width="310" height="310" rx="9" fill="none" stroke="var(--ink)" strokeOpacity="0.25" strokeWidth="1.3" strokeDasharray="4 4" />
+
+      {/* corner tacks — cross stitches */}
+      <g stroke="var(--ink)" strokeOpacity="0.35" strokeWidth="1.5" strokeLinecap="round" fill="none">
+        <path d="M21 21l7 7M28 21l-7 7" />
+        <path d="M312 21l7 7M319 21l-7 7" />
+        <path d="M21 312l7 7M28 312l-7 7" />
+        <path d="M312 312l7 7M319 312l-7 7" />
+      </g>
     </svg>
   );
 }
@@ -189,24 +282,11 @@ export function AgentsPage({ onEnter }: { onEnter: (v: View) => void }) {
             </p>
           </div>
 
-          {/* the stage: both heads on the felt, the bus wire between them */}
+          {/* the stage: both heads on their woven mat, the bus seam
+              between them — sewn into the fabric, not drawn on top */}
           <div className="relative mx-auto w-[min(80vw,340px)] lg:w-full">
-            <HeroFabric className="absolute inset-0 h-full w-full" />
+            <AgentsFabric className="absolute inset-0 h-full w-full" />
             <div className="relative aspect-square">
-              {/* the wire — one dashed seam, corner to corner */}
-              <svg aria-hidden className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                <line
-                  x1="20"
-                  y1="27"
-                  x2="80"
-                  y2="73"
-                  stroke="var(--line-strong)"
-                  strokeWidth="1.5"
-                  strokeDasharray="0.15 3.2"
-                  strokeLinecap="round"
-                  vectorEffect="non-scaling-stroke"
-                />
-              </svg>
               <div className="absolute left-[4%] top-[6%]">
                 <DeskHead size={120} className="text-ink" />
               </div>

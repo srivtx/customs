@@ -239,12 +239,18 @@ summoned by the desk agent's chat and plays what was asked.
    clears — turning a sheet over, not a wipe; the music is untouched.
 6. The summon is logged in both transcripts as a compact `coco ·` chip
    with the chosen track — a receipt of the handoff, not decoration.
-7. **The agents view** presents both characters on ONE felt desk split
-   by the bus seam — the house's own craft vocabulary (static
-   feTurbulence grain, running-stitch seams, woven-label nameplates,
-   cross-stitch corner tacks, a band dye wash on the ghost's patch,
-   thread = hairline gray except on the ghost's own cloth) held to the
-   craft school's discipline (Web Interface Guidelines / 
+7. **The agents view** presents both characters on their OWN woven desk
+   mat — deliberately not the bot's wool (HeroFabric is a hand-cut felt
+   blob with turbulence edges and aurora pastels; the agents' mat is
+   rectangular loom cloth: warp/weft crosshatch, machine hem, two dye
+   pools — ink for moco's cloth, band for coco's). The two cloths are
+   sewn together by a hand running-stitch seam corner to corner, and
+   the seam IS the bus wire — the handoff is the join between the two
+   cloths, never a line drawn on top. Elsewhere the house's craft
+   vocabulary holds (static feTurbulence grain, running-stitch seams,
+   woven-label nameplates, cross-stitch corner tacks, thread = hairline
+   gray except on the ghost's own cloth) under the craft school's
+   discipline (Web Interface Guidelines /
    animations.dev / Linear's calmer interface): hover changes one
    quiet thing, the live heads and the one-shot wire ping are the
    delight budget, and the card/chat/head stack in one flow column
