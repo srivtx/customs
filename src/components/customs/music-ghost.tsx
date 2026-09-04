@@ -20,7 +20,7 @@
  * once and never orphaned. Hide ≠ stop: tucking coco away keeps the
  * music humming.
  */
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { musicBus } from "@/lib/customs/music/store";
 import type { MusicCommand } from "@/lib/customs/music/store";
@@ -168,9 +168,6 @@ export function MusicGhost() {
      should read as turning a sheet over, not a wipe */
   const [chatClearing, setChatClearing] = useState(false);
   const [fetching, setFetching] = useState(false);
-  /* the chat opens downward when coco lives in the upper sky (the desk
-     panel's own law), upward when it sits near the floor */
-  const [chatBelow, setChatBelow] = useState(false);
 
   const mountRef = useRef<HTMLDivElement>(null);
   const readyRef = useRef<Promise<YTPlayer> | null>(null);
@@ -203,14 +200,21 @@ export function MusicGhost() {
         if (raw) {
           const p = JSON.parse(raw) as { x: number; y: number };
           if (typeof p.x === "number" && typeof p.y === "number") {
-            setPos(p);
+            /* restored positions are clamped to today's viewport — a
+               saved spot can never park coco off-screen */
+            setPos({
+              x: Math.min(Math.max(8, p.x), window.innerWidth - 64),
+              y: Math.min(Math.max(8, p.y), window.innerHeight - 68),
+            });
             return;
           }
         }
       } catch {
         /* private mode: dock default */
       }
-      setPos({ x: window.innerWidth - 96, y: window.innerHeight - 190 });
+      /* the fresh dock: mid-lower sky — the head stays visible and the
+         panels have room below */
+      setPos({ x: window.innerWidth - 96, y: Math.max(8, window.innerHeight * 0.42) });
     }, 0);
     return () => clearTimeout(t);
   }, []);
@@ -222,7 +226,6 @@ export function MusicGhost() {
       } catch {
         /* private mode */
       }
-      setChatBelow(pos.y < window.innerHeight * 0.45);
     }
   }, [pos]);
 
@@ -451,7 +454,8 @@ export function MusicGhost() {
     if (drag.current.moved) {
       setPos({
         x: Math.min(Math.max(8, drag.current.ox + dx), window.innerWidth - 72),
-        y: Math.min(Math.max(8, drag.current.oy + dy), window.innerHeight - 170),
+        /* the head never leaves the viewport: 56px head + 12px breath */
+        y: Math.min(Math.max(8, drag.current.oy + dy), window.innerHeight - 68),
       });
     }
   };
@@ -622,9 +626,9 @@ export function MusicGhost() {
       style={{ left: pos.x, top: pos.y }}
       data-ghost=""
     >
-      {/* one flow column — the card, the chat and the head can never
-          overlap: they stack, above or below coco depending on where it
-          lives (flex order swaps with chatBelow) */}
+      {/* one flow column — the card and the chat stack below the head,
+          so nothing ever overlaps; the drag clamp keeps the head itself
+          on-screen while the panels reach for the floor */}
       {track && (
         <div
           className={cn(
@@ -713,8 +717,7 @@ export function MusicGhost() {
       {chatOpen && (
         <div
           className={cn(
-            "animate-rise flex max-h-[400px] w-[280px] flex-col overflow-hidden rounded-[6px] border border-line-strong bg-card",
-            chatBelow ? "order-3" : "order-1"
+            "animate-rise order-3 flex max-h-[400px] w-[280px] flex-col overflow-hidden rounded-[6px] border border-line-strong bg-card",
           )}
           role="dialog"
           aria-label="coco chat"
@@ -824,8 +827,7 @@ export function MusicGhost() {
         aria-label="coco — the desk's red ghost — drag to move, click to chat, double-click to sink the video"
         title="coco — drag me, click to chat, double-click to sink the video"
         className={cn(
-          "relative z-10 block shrink-0 cursor-grab touch-none active:cursor-grabbing",
-          chatBelow ? "order-1" : "order-3",
+          "relative z-10 order-1 block shrink-0 cursor-grab touch-none active:cursor-grabbing",
           state === "arriving" && "ghost-arrive",
           state === "leaving" && "ghost-sink"
         )}
@@ -844,15 +846,54 @@ export function MusicGhost() {
  * plays, the beat bob on the whole head.
  */
 export function GhostBody({ playing, mood, size = 56 }: { playing: boolean; mood: Mood; size?: number }) {
+  /* the sheen: the bot's aurora pattern scaled to the head — a static
+     rect clipped to the circle, the paint drifting via SMIL. Nothing
+     can escape the silhouette; reduced motion pauses the paint. */
+  const uid = useId().replace(/:/g, "");
+  const gradId = `coco-grad-${uid}`;
+  const clipId = `coco-clip-${uid}`;
+  const svgRef = useRef<SVGSVGElement>(null);
+  useEffect(() => {
+    const el = svgRef.current;
+    if (!el) return;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const apply = () => (mq.matches ? el.pauseAnimations() : el.unpauseAnimations());
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
   return (
     <svg
+      ref={svgRef}
       width={size}
       height={size}
       viewBox="0 0 32 32"
       aria-hidden="true"
       className={cn("ghost-stage", playing && "ghost-playing")}
     >
+      <defs>
+        <linearGradient id={gradId} gradientUnits="userSpaceOnUse" x1="-6" y1="8" x2="38" y2="24">
+          <stop offset="0" stopColor="#ffffff" stopOpacity="0" />
+          <stop offset="0.42" stopColor="#ffffff" stopOpacity="0.32" />
+          <stop offset="0.58" stopColor="#ffffff" stopOpacity="0.32" />
+          <stop offset="1" stopColor="#ffffff" stopOpacity="0" />
+          <animateTransform
+            attributeName="gradientTransform"
+            type="translate"
+            values="-20 0; 20 0; -20 0"
+            keyTimes="0; 0.5; 1"
+            dur="9s"
+            calcMode="spline"
+            keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"
+            repeatCount="indefinite"
+          />
+        </linearGradient>
+        <clipPath id={clipId}>
+          <circle cx="16" cy="16" r="13" />
+        </clipPath>
+      </defs>
       <circle cx="16" cy="16" r="13" className="ghost-body-fill" fill="var(--band)" />
+      <rect x="0" y="3" width="32" height="26" clipPath={`url(#${clipId})`} fill={`url(#${gradId})`} opacity="0.5" />
       {(
         [
           [11.5, "e1"],

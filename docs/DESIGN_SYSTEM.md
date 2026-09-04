@@ -203,9 +203,11 @@ summoned by the desk agent's chat and plays what was asked.
    so is coco). Expression is eye state (wide; happy arcs when the
    passage earns it) plus body motion. No new parts.
 2. **Twin law:** the silhouette is the desk head's own — one circle, no
-   skirt, no extra geometry. The band fill and the beat bob are the only
-   departures. Paused music freezes the bob — coco breathes only when
-   the track does.
+   skirt, no extra geometry. The band fill, the beat bob, and the sheen
+   (the bot's aurora pattern scaled down: a static rect clipped to the
+   circle, the paint drifting via SMIL, paused under reduced motion)
+   are the only departures. Paused music freezes the bob — coco
+   breathes only when the track does.
 3. **Motion budget:** arrive/sink (one 0.9s transform each), the beat
    bob, the shared eye choreography, the tucked-away fade. That is all.
 4. **Controls** live in one hairline bubble: the YouTube player at
@@ -237,15 +239,16 @@ summoned by the desk agent's chat and plays what was asked.
    clears — turning a sheet over, not a wipe; the music is untouched.
 6. The summon is logged in both transcripts as a compact `coco ·` chip
    with the chosen track — a receipt of the handoff, not decoration.
-7. **The agents view** presents both characters in ONE hairline frame
-   split by the bus rail (duality as structure). Built on the craft
-   school (Web Interface Guidelines / animations.dev / Linear's calmer
-   interface): no spotlight, no glows, no texture, no stitch borders —
-   the live heads and the one-shot wire ping (a real summon's
-   causality) are the entire delight budget; hover changes exactly one
-   quiet thing (the hairline eases toward the accent on the ghost's
-   side); panels never overlap (the card, chat and head stack in one
-   flow column, ordered by where coco lives).
+7. **The agents view** presents both characters on ONE felt desk split
+   by the bus seam — the house's own craft vocabulary (static
+   feTurbulence grain, running-stitch seams, woven-label nameplates,
+   cross-stitch corner tacks, a band dye wash on the ghost's patch,
+   thread = hairline gray except on the ghost's own cloth) held to the
+   craft school's discipline (Web Interface Guidelines / 
+   animations.dev / Linear's calmer interface): hover changes one
+   quiet thing, the live heads and the one-shot wire ping are the
+   delight budget, and the card/chat/head stack in one flow column
+   below the head so nothing ever overlaps.
 
 ## 8. Copy voice
 
