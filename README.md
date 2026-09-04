@@ -143,7 +143,7 @@ the **Why it exists** view and `PAPER.md` §7.
 - `PAPER.md` — the working paper (machine-legible twin of the in-app paper)
 - `make triage` — self-guided judge tour: prints claims, runs checks, exits 0
 - `make verify` — the exact checks CI runs on every push
-- **222 evidence checks** — and the count verifies itself: `make verify` fails if this number drifts (`node scripts/verify.mjs | grep -c PASS`)
+- **220 evidence checks** — and the count verifies itself: `make verify` fails if this number drifts (`node scripts/verify.mjs | grep -c PASS`)
 - `ENGINEERING_LOG.md` — dated incidents; every incident becomes a test
 - `ARCHITECTURE.md` — one diagram + the decisions that mattered
 - `llms.txt` / `AGENTS.md` — the repo, machine-legible; the invariants
@@ -161,8 +161,7 @@ the **Why it exists** view and `PAPER.md` §7.
 | `AGENTS.md` | how coding agents work here + the invariants |
 | `docs/DESIGN_SYSTEM.md` | the design contract — tokens, type, motion, the bot's containment law |
 | `ENGINEERING_LOG.md` | dated incidents, the honest failure story |
-| `ARCHITECTURE.md` | the one diagram + decisions table |
-| `VIDEO_TRANSCRIPT.md` | the 5:00 pitch script (recorded at submission) |
+| `ARCHITECTURE.md` | the one diagram + the decisions that mattered |
 | `CLEANUP.md` | operator runbook: what to delete before pushing to GitHub |
 | `DEPLOY.md` | operator runbook: run locally, keep it alive, deploy free, operate |
 | `AGENT_KIT.md` | bring your own agent — the counter's HTTP contract + the `make kit` proof |

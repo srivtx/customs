@@ -155,8 +155,7 @@ logged (`REPLAY_DETECTED`), which is exactly what the fuzz corpus pins.
 
 1. Replace the PENDING deployment line in `JUDGE.md` and `README.md` with
    the URL — CI then checks it answers 200 on every push.
-2. Record the 5:00 video against the live URL (VIDEO_TRANSCRIPT.md is the
-   script).
+2. Record the 5:00 video against the live URL.
 3. Paste the submission form from `docs/FORM_ANSWERS.md`.
 4. After the deadline: rotate the GitHub PAT (it was shared in chat) per
    CLEANUP.md §3.

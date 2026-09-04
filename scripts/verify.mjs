@@ -21,7 +21,7 @@ console.log("customs :: verify — evidence checks (CI entry)\n");
 // 1. required files exist (the product + the proof layer)
 const REQUIRED = [
   "README.md", "JUDGE.md", "PAPER.md", "LICENSE", "llms.txt", "AGENTS.md", "ARCHITECTURE.md",
-  "ENGINEERING_LOG.md", "VIDEO_TRANSCRIPT.md", "CLEANUP.md", "DEPLOY.md",
+  "ENGINEERING_LOG.md", "CLEANUP.md", "DEPLOY.md",
   "Makefile", ".env.example", ".github/workflows/verify.yml",
   "scripts/verify.mjs", "scripts/triage.mjs", "scripts/spike-d1-1.mjs",
   "scripts/fuzz.ts", "scripts/ablation.ts", "scripts/meter.ts",
@@ -136,7 +136,7 @@ const URL_ALLOW = [
   /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/, // local dev instructions only
 ];
 const META_FILES = ["README.md", "JUDGE.md", "PAPER.md", "llms.txt", "AGENTS.md",
-  "ARCHITECTURE.md", "ENGINEERING_LOG.md", "VIDEO_TRANSCRIPT.md"];
+  "ARCHITECTURE.md", "ENGINEERING_LOG.md"];
 const urlRe = /https?:\/\/[^\s)\]"<>]+/g;
 let urlCount = 0;
 for (const f of META_FILES) {

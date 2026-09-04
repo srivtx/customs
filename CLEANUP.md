@@ -94,7 +94,7 @@ any one LLM key (`GROQ_API_KEY` / `GEMINI_API_KEY` have free tiers) with
 
 ## 6. Before you submit (the last mile)
 
-- Record the 5:00 video per `VIDEO_TRANSCRIPT.md` (reset the demo first:
+- Record the 5:00 video against the live URL (reset the demo first:
   `curl -X POST <live-url>/api/reset`).
 - Refresh `docs/demo.gif` if the UI changed (`scripts/make-gif.sh`) — the
   README embeds it and nothing else.
