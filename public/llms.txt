@@ -1,0 +1,71 @@
+# Customs — both sides of the agentic counter
+
+> Machine index for coding agents, judges and any reader who arrives with a
+> token budget. Everything is verifiable by command; nothing is asserted.
+
+## what
+
+A two-sided agentic checkout for the Razorpay AI Buildathon 2026 (Track 1 —
+AI Growth & Agentic Commerce). Buyer side: a chat storefront where an agent
+searches, builds a cart, requests an Ed25519-signed spending mandate and pays
+inside its bounds. Merchant side: a control room with the channel P&L meter
+(agent GMV minus AI serving cost, live, at-1M projection), human approvals
+over ₹10,000, order ledger, span replay, protocol ablation and a red-team log.
+One desk, two agents: the desk agent (moco, black) summons the music ghost
+(coco, red) over a live event bus — play/skip/pause are a zero-token rules
+brain, proven by `tests/music-brain.test.ts`; free-form questions ride an
+optional cheap chat voice. Test mode only; without Razorpay keys the rail is
+a labeled simulation.
+
+## how to verify
+
+- `make triage` — 60-second self-guided tour (prints claims, runs checks, exits 0)
+- `make verify` — the exact checks CI runs on every push (zero deps)
+- `make test` — fuzz + ablation + audit + ledger-fork (concurrent-writer convergence), exit codes propagate
+- `make demo` — run the product (no keys needed)
+- `make kit` — an external agent walks the golden path over pure HTTP (the agent-kit proof)
+
+## key files
+
+- JUDGE.md — claims mapped to the judging criteria + evidence commands
+- PAPER.md — the working paper: problem, protocol, economics, evaluation (twin of the in-app paper view)
+- README.md — product overview, quickstart, file map
+- ARCHITECTURE.md — the one diagram, decisions table, threat model
+- AGENTS.md — working guide + the 11 invariants
+- docs/DESIGN_SYSTEM.md — the design contract: tokens, type, motion rules, the mascot containment law (read before touching any UI)
+- ENGINEERING_LOG.md — dated incidents; every incident became a test
+- CLEANUP.md — what to delete before pushing to GitHub
+- DEPLOY.md — the operating runbook: run locally, keep alive, deploy free, operate
+- AGENT_KIT.md — bring your own agent: the counter's HTTP contract; /api/mcp is a REAL MCP server (Streamable HTTP, 2025-06-18), /api/acp a core REST profile with Ed25519-signed receipts; `make kit` proves an outside client clears the counter
+- src/lib/customs/gate/ — mandate contract, canonical JSON, decision checklist
+- src/lib/customs/ledger/ — hash-chained JSONL audit trail (the database)
+- src/lib/customs/fuzz/corpus.ts — the 12 authored attacks, expected verdicts
+- src/lib/customs/meter.ts — channel P&L + projection, assumptions declared
+- src/components/customs/why.tsx — the why page: architecture drawn as cards + desk ledger (shipped / simulated / the work order for next)
+- src/components/customs/agent-kit.tsx — the agent kit view: the HTTP contract, the protocol, and a live golden-path walkthrough in-page
+- src/components/customs/agents.tsx — the agents view: the two characters live, the summon, the handoff wire
+- src/lib/customs/music/ — the ghost: zero-token rules brain (music intents), server-side YouTube resolution (YouTube Data API v3), the client bus the desk agent calls the ghost over
+- tests/music-brain.test.ts — proves the music command path costs zero tokens
+- src/components/customs/paper.tsx — the paper view: a clean theme-aware document page; §5–§6 numbers read live from the ledger
+- src/components/customs/demo-player.tsx — the landing demo: the golden path plays itself in code, loops (docs/demo.gif is a recording of it)
+- src/components/customs/hero-bot.tsx — the customs bot: one smooth animated volume on the hero, token-inked, reduced-motion aware
+- src/components/customs/theme.tsx — dark/light theme toggle (footer, persisted, no flash)
+- docs/demo.gif — the recorded golden path (embedded in README.md)
+- results/ — every measured number, JSON only, regeneration-only
+
+## numbers policy
+
+No number is hand-written. Measured values enter via `make meter|fuzz|ablation|project|audit`.
+Latency is machine-dependent and never cited as a promise. Competitor numbers never appear.
+
+## status
+
+Live deployment: https://customs.srivtx.xyz — /api/health answers ok:true on
+real Razorpay test rails (simulated:false). Payment mechanism: the D1-1 spike
+executed on real test keys (2026-09-01) — hosted-checkout completion on real
+rails is the demo mechanism; the labeled simulation stays the no-keys/volume
+fallback and zero-UI tokenized payment is impossible in test mode (receipts in
+results/d1_1_spike.json). The ghost's crate needs YOUTUBE_API_KEY; without it
+coco reports the crate locked and everything else runs. Payment rail: test
+mode when keys are set; labeled in-process simulation as the no-keys fallback.
+x402: declared stretch goal, not core scope.

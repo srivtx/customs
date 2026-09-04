@@ -7,8 +7,10 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const failures = [];
+let checks = 0;
 
 function ok(name, cond, detail = "") {
+  checks++;
   const line = `${cond ? "PASS" : "FAIL"}  ${name}${detail ? " — " + detail : ""}`;
   console.log(line);
   if (!cond) failures.push(name);
@@ -28,6 +30,7 @@ const REQUIRED = [
   "src/app/page.tsx", "src/app/layout.tsx", "src/app/icon.svg",
   "src/app/api/chat/route.ts", "src/app/api/state/route.ts",
   "src/app/api/agent/kit/route.ts", "src/app/api/mcp/route.ts",
+  "src/app/api/acp/route.ts",
   "src/app/api/acp/agents/route.ts", "src/app/api/acp/sessions/route.ts",
   "src/app/api/acp/sessions/[id]/route.ts",
   "src/app/api/decision/route.ts", "src/app/api/fuzz/route.ts",
@@ -123,6 +126,7 @@ ok(
 const URL_ALLOW = [
   /^https:\/\/github\.com\/srivtx\//,
   /^https:\/\/customs\.srivtx\.xyz\/?$/,
+  /^https:\/\/customs\.srivtx\.xyz\/api\/health$/,
   /^https:\/\/customs-phi\.vercel\.app\/?$/,
   /^https:\/\/github\.com\/HRaj07\/eacp$/,
   /^https:\/\/(www\.)?razorpay\.com\/docs\//,
@@ -171,6 +175,21 @@ ok("package identity is customs", pkg.name === "customs");
 const PRUNED = ["prisma", "@prisma/client", "next-auth", "next-intl", "recharts", "sharp", "zod", "uuid"];
 for (const dep of PRUNED) {
   ok(`manifest is pruned: ${dep} absent`, !(pkg.dependencies ?? {})[dep] && !(pkg.devDependencies ?? {})[dep]);
+}
+
+// 9. llms.txt twin: the served copy (public/) must match the repo copy byte-for-byte
+const llms = readFileSync(join(ROOT, "llms.txt"));
+const served = existsSync(join(ROOT, "public", "llms.txt"))
+  ? readFileSync(join(ROOT, "public", "llms.txt"))
+  : null;
+ok("llms.txt twin: public/llms.txt (served at the domain root) matches llms.txt", !!served && served.equals(llms));
+
+// 10. the check count is a claim: the number stated in README must equal this run
+{
+  const readme = readFileSync(join(ROOT, "README.md"), "utf8");
+  const m = readme.match(/(\d+) evidence checks/);
+  const expected = checks + 1; // this comparison is itself one of the checks
+  ok(`README evidence-check count (${m ? m[1] : "absent"}) matches this run (${expected})`, !!m && Number(m[1]) === expected);
 }
 
 console.log("");
