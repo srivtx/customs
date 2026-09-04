@@ -7,6 +7,7 @@
  * seed hand-writes ledger events — every line went through the gate.
  */
 import { mkdirSync, writeFileSync, unlinkSync } from "node:fs";
+import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 import { Ledger } from "./ledger/ledger";
 import { loadKeys, KeyPair } from "./gate/keys";
@@ -29,6 +30,7 @@ export interface BuyerSession {
 }
 
 export interface CustomsRuntime {
+  bootId: string;
   keys: KeyPair;
   ledger: Ledger;
   ephemeral: boolean;
@@ -82,6 +84,7 @@ export function getRuntime(): CustomsRuntime {
     merchantFingerprint: keys.fingerprint,
   };
   runtime = {
+    bootId: randomUUID().slice(0, 8),
     keys,
     ledger,
     ephemeral,

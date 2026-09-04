@@ -5,6 +5,46 @@ it became. If it broke once, it is a test case forever (`AGENTS.md`, invariant 7
 
 ---
 
+## 2026-09-04 — D8: the ghost cart (live) — three races and a restart
+
+**What happened:** on the live deployment, a buyer's cart kept vanishing between turns —
+"add the pro earbuds", attest, then checkout answered "Nothing to check out yet", and the
+Control Room rows flickered in and out. It reproduced on the live site but never locally.
+
+**Evidence (CDP drives of the deployed site + code reads):**
+1. **Orphan sessions** — the client sent `sessionId: null` on the first send and a
+   double-fire (Enter + click in one frame, `busy` is React state and lags a frame)
+   opened two sessions; the cart landed in one, the UI followed the other.
+2. **No server-side turn serialization** — concurrent POSTs for one session could
+   read-modify-write the cart map.
+3. **Control Room poll clobbering** — `refresh` was a `useCallback([state])` and the
+   interval effect depended on it: every poll result tore down and restarted the
+   interval, and an out-of-order response overwrote fresher state.
+4. **The prod edition** — the deployment is ephemeral multi-instance: a turn landing on
+   a fresh instance found no session, minted an empty one under the same id, and the
+   cart was gone ("Keep browsing" chip, no error anywhere).
+5. **Compound-intent swallowing (the rules brain)** — `attest` and `checkout` matched
+   anywhere in a sentence and returned: "attest the pro earbuds" attested and silently
+   threw the earbuds away; the tier switch cleared UI state but not the client-minted
+   session id and never sent the tier, so the passport promised ₹5,000 while the gate
+   enforced ₹500.
+
+**What we changed:** client mints its session id in a ref and checks busy on a ref;
+per-session turn lock (`withSessionLock`); Control Room poll drops stale responses via a
+monotonic sequence; the chat route flags `recreated` and the client rebuilds the cart
+from the tab's last-known cart, saying so in the transcript; `bootId` on the runtime is
+exposed in `/api/health` and chat so instance switches are observable; the rules brain
+keeps the remainder of compound commands ("attest the pro earbuds" attests AND adds);
+the tier switch clears the session ref and sends the tier so the server session is born
+at the promised cap.
+
+**The tests they became:** `tests/session-lock.test.ts` (parallel adds, ordering,
+cross-session independence) · `tests/compound-intents.test.ts` (attest+add in one turn,
+checkout-empty-add, add-and-checkout, bare attest) · `tests/ephemeral.test.ts` (bootId
+stability, turn-after-session-loss).
+
+---
+
 ## 2026-09-01 — D1-1: payment-mechanism spike
 
 

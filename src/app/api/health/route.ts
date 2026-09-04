@@ -13,6 +13,7 @@ export async function GET() {
     return NextResponse.json({
       ok: true,
       service: "customs",
+      bootId: rt.bootId,
       rail: railInfo(),
       brain: brainMode(),
       ephemeral: rt.ephemeral,

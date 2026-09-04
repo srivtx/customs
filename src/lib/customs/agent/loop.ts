@@ -47,11 +47,14 @@ export interface MandateView {
 let eventCounter = 0;
 const eid = () => `ev_${(eventCounter += 1).toString(36)}`;
 
-export function newSession(rt: CustomsRuntime, tier: TrustTier = "UNVERIFIED"): BuyerSession {
-  const sessionId = `ses_${randomUUID().slice(0, 8)}`;
+export function newSession(rt: CustomsRuntime, tier: TrustTier = "UNVERIFIED", sessionId?: string): BuyerSession {
+  /* a caller-supplied id is honored: after a serverless restart the client
+     arrives with the id it minted — the rebuilt session must live UNDER
+     that id, or every following turn orphans another cart */
+  const sid = sessionId ?? `ses_${randomUUID().slice(0, 8)}`;
   const session: BuyerSession = {
-    sessionId,
-    buyerId: `buyer-${sessionId.slice(-6)}`,
+    sessionId: sid,
+    buyerId: `buyer-${sid.slice(-6)}`,
     tier,
     cart: new Map(),
     mandate: null,
@@ -59,8 +62,8 @@ export function newSession(rt: CustomsRuntime, tier: TrustTier = "UNVERIFIED"): 
     lastOrderId: null,
     createdAtMs: Date.now(),
   };
-  rt.sessions.set(sessionId, session);
-  rt.ledger.append("session.opened", { sessionId, buyerId: session.buyerId, tier, adapter: null });
+  rt.sessions.set(sid, session);
+  rt.ledger.append("session.opened", { sessionId: sid, buyerId: session.buyerId, tier, adapter: null });
   return session;
 }
 
@@ -118,7 +121,7 @@ export async function agentTurn(
   let firstMatch: { id: string; name: string } | null = null;
   const session = opts?.sessionless
     ? { sessionId: "ses_adhoc", buyerId: "buyer-adhoc", tier: "UNVERIFIED" as TrustTier, cart: new Map<string, number>(), mandate: null, awaitingMandateApproval: false, lastOrderId: null, createdAtMs: Date.now() }
-    : rt.sessions.get(sessionId) ?? newSession(rt);
+    : rt.sessions.get(sessionId) ?? newSession(rt, "UNVERIFIED", sessionId);
   const now = () => Date.now();
 
   events.push({ id: eid(), ts: now(), role: "user", text: message });

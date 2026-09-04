@@ -24,6 +24,12 @@ export async function POST(req: NextRequest) {
     const rt = getRuntime();
     const adapter = (ADAPTERS.includes(body.adapter as AdapterId) ? body.adapter : "naive") as AdapterId;
 
+    /* the desk is honest about restarts: on serverless a fresh instance
+       carries a fresh session map — the same sessionId arrives unknown.
+       Flag it, and the client rebuilds the cart instead of the human
+       staring at a "Keep browsing" chip wondering where their earbuds went. */
+    const recreated = !!body.sessionId && !rt.sessions.has(body.sessionId);
+
     const persona = body.persona === "coco" ? ("coco" as const) : ("desk" as const);
     /* the ghost's state, if it hums — one compact line of context so the
        cheap voice can answer ANY phrasing of "what's playing" (the
@@ -42,7 +48,7 @@ export async function POST(req: NextRequest) {
        race the cart read-modify-write and lose adds */
     const { result, session } = await withSessionLock(rt, body.sessionId ?? "new", async () => {
       let s: BuyerSession | undefined = body.sessionId ? rt.sessions.get(body.sessionId) : undefined;
-      if (!s) s = newSession(rt, (body.tier === "ATTESTED" || body.tier === "MANDATED" ? body.tier : "UNVERIFIED") as BuyerSession["tier"]);
+      if (!s) s = newSession(rt, (body.tier === "ATTESTED" || body.tier === "MANDATED" ? body.tier : "UNVERIFIED") as BuyerSession["tier"], body.sessionId);
       const r = await agentTurn(rt, s.sessionId, body.message ?? "", adapter, { persona, music });
       return { result: r, session: s };
     });
@@ -57,6 +63,8 @@ export async function POST(req: NextRequest) {
       suggestions: result.suggestions,
       brain: brainMode(),
       rail: railInfo(),
+      recreated,
+      bootId: rt.bootId,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "chat turn failed";

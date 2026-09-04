@@ -51,6 +51,8 @@ interface ChatResponse {
   suggestions?: Suggestion[];
   brain: string;
   rail: { id: string; label: string; simulated: boolean };
+  recreated?: boolean;
+  bootId?: string;
   error?: string;
 }
 
@@ -70,6 +72,10 @@ export function Playground() {
      in the same frame) opened two orphan sessions — the cart landed in one,
      the UI followed the other, and the add looked lost */
   const sessionRef = useRef<string | null>(null);
+  /* the cart as this tab last saw the desk hold it — when a serverless
+     restart orphans the session, the tab rebuilds it instead of the human
+     staring at "Keep browsing" and wondering where the earbuds went */
+  const cartRef = useRef<[string, number][]>([]);
   /* busy is checked on a ref too — React state lags a frame, and the
      double-fire lands inside that frame */
   const busyRef = useRef(false);
@@ -125,6 +131,31 @@ export function Playground() {
           data.events.forEach((e, i) => delays.current.set(e.id, Math.min(i * 90, 400)));
           setEvents((prev) => [...prev, ...data.events]);
           setChips(data.suggestions ?? []);
+          /* a recreated session means the desk restarted between turns
+             (serverless, honestly flagged) — rebuild the cart this tab
+             remembers, say so, and carry on */
+          if (data.recreated && cartRef.current.length > 0) {
+            const lost = cartRef.current;
+            for (const [pid, qty] of lost) {
+              await fetch("/api/chat", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ sessionId: sessionRef.current, message: `add ${pid}${qty > 1 ? ` x${qty}` : ""}`, adapter, tier }),
+              });
+            }
+            cartRef.current = lost;
+            setEvents((prev) => [
+              ...prev,
+              {
+                id: `rebuilt_${Date.now()}`,
+                ts: Date.now(),
+                role: "agent",
+                text: `The desk restarted between turns — ephemeral state, flagged honestly. Your cart was rebuilt from this tab (${lost.map(([p, q]) => `${p} ×${q}`).join(", ")}). The mandate didn't survive; say checkout again.`,
+              },
+            ]);
+          } else {
+            cartRef.current = data.cart ?? [];
+          }
           /* the handoff: the playground's desk calls the ghost too —
              the same bus, wherever the counter speaks */
           for (const e of data.events) {
@@ -301,6 +332,7 @@ export function Playground() {
                   // promised ₹5,000 while the server still enforced ₹500.)
                   setTier(t);
                   sessionRef.current = null;
+                  cartRef.current = [];
                   setSessionId(null);
                   setEvents([]);
                   setChips([]);
