@@ -57,7 +57,7 @@ function summarize(events: ChatEvent[], startId: number): Line[] {
       out.push({ id: id++, who: "note", text: `receipt ${e.manifestNo} · ₹${(e.totalPaise / 100).toLocaleString("en-IN")}` });
     } else if (e.kind === "music") {
       const what = e.action === "play" ? (e.tracks[0] ? `▶ ${e.tracks[0].title}` : "▶") : e.action;
-      out.push({ id: id++, who: "note", text: `ghost · ${what}` });
+      out.push({ id: id++, who: "note", text: `coco · ${what}` });
     }
   }
   return out;
@@ -101,6 +101,11 @@ export function FloatingAgent({ view }: { view: View }) {
   const bodyRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const idRef = useRef(1);
+  /* the synchronous busy ref: two rapid submits ride past the async
+     busy STATE (React hasn't committed setBusy yet), so the ref rides
+     beside it — the ref is law for the fetch, the state is law for
+     the dot. */
+  const busyRef = useRef(false);
   const drag = useRef({ active: false, moved: false, px: 0, py: 0, ox: 0, oy: 0 });
   const idleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -276,10 +281,24 @@ export function FloatingAgent({ view }: { view: View }) {
   const send = async (e?: React.FormEvent) => {
     e?.preventDefault();
     const message = input.trim();
-    if (!message || busy) return;
+    if (!message || busy || busyRef.current) return;
+    busyRef.current = true;
     setBusy(true);
     setInput("");
-    setLines((p) => [...p, { id: idRef.current++, who: "user", text: message }]);
+    /* ids are minted SYNCHRONOUSLY at creation, never lazily inside a
+       state updater. The mint that minted this bug: two rapid submits
+       ride past the async busy state, and if both responses' batches
+       computed their start INSIDE the queued updater, both would read
+       the same final counter at render (the handlers' += had already
+       run) — overlapping ranges, two <p> sharing a key. The handler
+       mints the whole batch and advances the counter BEFORE the (now
+       pure) updater is queued, and pure updaters are also what keeps
+       StrictMode's double-invoke honest — a counter bump inside an
+       updater would mint twice per message. Overlap is now
+       structurally impossible: handlers are sequential, each mints
+       its range synchronously, done. */
+    const userLine: Line = { id: idRef.current++, who: "user", text: message };
+    setLines((p) => [...p, userLine]);
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
@@ -294,8 +313,9 @@ export function FloatingAgent({ view }: { view: View }) {
         } catch {
           /* session won't survive a refresh in private mode */
         }
-        setLines((p) => [...p, ...summarize(data.events, idRef.current)]);
-        idRef.current += summarize(data.events, idRef.current).length;
+        const batch = summarize(data.events, idRef.current);
+        idRef.current += batch.length;
+        setLines((p) => [...p, ...batch]);
         /* the handoff: music events ride the bus to the ghost — this is
            the desk agent calling the second agent */
         for (const e of data.events) {
@@ -309,11 +329,14 @@ export function FloatingAgent({ view }: { view: View }) {
           }
         }
       } else {
-        setLines((p) => [...p, { id: idRef.current++, who: "agent", text: "The desk hit a snag — try again." }]);
+        const snag: Line = { id: idRef.current++, who: "agent", text: "The desk hit a snag — try again." };
+        setLines((p) => [...p, snag]);
       }
     } catch {
-      setLines((p) => [...p, { id: idRef.current++, who: "agent", text: "Network error reaching the desk." }]);
+      const net: Line = { id: idRef.current++, who: "agent", text: "Network error reaching the desk." };
+      setLines((p) => [...p, net]);
     } finally {
+      busyRef.current = false;
       setBusy(false);
     }
   };

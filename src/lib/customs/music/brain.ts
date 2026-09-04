@@ -18,7 +18,9 @@ export type MusicAction =
   | "resume"
   | "stop"
   | "louder"
-  | "quieter";
+  | "quieter"
+  | "hide"
+  | "controls";
 
 export interface MusicIntent {
   action: MusicAction;
@@ -43,16 +45,22 @@ export const MOODS: Record<string, string> = {
 /* control verbs — anchored to the whole command, tails allowed. A bare
    word inside a sentence ("add the pause-proof keyboard") never fires. */
 const STOP_RE =
-  /^(?:stop|enough|silence|that's enough|thats enough|make it stop|shut it (?:down|off)|kill (?:the )?(?:music|song|sound|ghost))(?:\s+(?:the\s+)?(?:music|song|it|please|now))?[.!]*$/i;
+  /^(?:stop|enough|silence|that's enough|thats enough|make it stop|shut it (?:down|off)|kill (?:the )?(?:music|song|sound|ghost|coco))(?:\s+(?:the\s+)?(?:music|song|it|please|now))?[.!]*$/i;
 const SKIP_RE = /^(?:skip(?:\s+this)?|next(?:\s+(?:song|one|track|please))?(?:\s+please)?|another one)[.!]*$/i;
 const PAUSE_RE = /^(?:pause|hold on|hold up|freeze|hold the music)(?:\s+(?:the\s+)?(?:music|song|it|please))?[.!]*$/i;
 const RESUME_RE = /^(?:resume|unpause|carry on|go on|keep going|back on)(?:\s+please)?[.!]*$/i;
 const LOUDER_RE = /^(?:louder|volume up|turn it up|crank it(?: up)?|too quiet)(?:\s+please)?[.!]*$/i;
 const QUIETER_RE = /^(?:quieter|softer|volume down|turn it down|too loud|shh)(?:\s+please)?[.!]*$/i;
+/* hide ≠ stop: hiding tucks the ghost away while the music keeps
+   humming; "controls" recalls it and pops the control card */
+const HIDE_RE =
+  /^(?:(?:go\s+)?away|hide|hide\s+yourself|tuck\s+(?:away|yourself)|shoo|scram|leave\s+me\s+alone|get\s+lost)(?:\s+please)?[.!]*$/i;
+const CONTROLS_RE =
+  /^(?:(?:give|bring)\s+me\s+(?:the\s+)?controls|show\s+(?:me\s+)?(?:the\s+)?controls|controls(?:\s+please)?|come\s+back|where\s+are\s+you|unhide|coco\??|hey\s+coco|yo\s+coco)(?:\s+please)?[.!]*$/i;
 
 /* play leads the sentence — polite lead-ins allowed, nothing else */
 const PLAY_RE =
-  /^(?:(?:hey|hi|ok|okay)\s+(?:desk|ghost|customs)[,.]?\s*)?(?:(?:can|could|would|will)\s+you\s+)?(?:please\s+)?(?:play|put on|sing|perform|dj(?:\s+for\s+me)?)\b\s*(.*)$|^start (?:the )?music\b\s*(.*)$|^some music please[.!]*$/i;
+  /^(?:(?:hey|hi|ok|okay)\s+(?:desk|ghost|coco|customs)[,.]?\s*)?(?:(?:can|could|would|will)\s+you\s+)?(?:please\s+)?(?:play|put on|sing|perform|dj(?:\s+for\s+me)?)\b\s*(.*)$|^start (?:the )?music\b\s*(.*)$|^some music please[.!]*$/i;
 
 /* bare invocations: a mood word alone, or music with nothing else */
 const BARE_MOOD = new RegExp(`^(?:${Object.keys(MOODS).join("|")})[.!]*$`, "i");
@@ -78,6 +86,8 @@ export function parseMusicIntent(raw: string): MusicIntent | null {
   if (RESUME_RE.test(text)) return { action: "resume", query: null, mood: null };
   if (LOUDER_RE.test(text)) return { action: "louder", query: null, mood: null };
   if (QUIETER_RE.test(text)) return { action: "quieter", query: null, mood: null };
+  if (HIDE_RE.test(text)) return { action: "hide", query: null, mood: null };
+  if (CONTROLS_RE.test(text)) return { action: "controls", query: null, mood: null };
 
   if (BARE_MOOD.test(text)) {
     const mood = moodOf(text);

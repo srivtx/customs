@@ -28,6 +28,32 @@ describe("music brain: control verbs", () => {
   });
 });
 
+describe("music brain: hide ≠ stop, controls recall", () => {
+  test.each([
+    ["hide", "hide"],
+    ["hide yourself", "hide"],
+    ["go away", "hide"],
+    ["tuck away", "hide"],
+    ["shoo", "hide"],
+    ["leave me alone", "hide"],
+    ["give me controls", "controls"],
+    ["give me the controls", "controls"],
+    ["show controls", "controls"],
+    ["controls", "controls"],
+    ["come back", "controls"],
+    ["where are you", "controls"],
+    ["coco", "controls"],
+    ["hey coco", "controls"],
+  ])("maps %q to %q", (phrase, action) => {
+    expect(parseMusicIntent(phrase)).toMatchObject({ action });
+    expect(parseIntent(phrase)).toMatchObject({ kind: "music", action });
+  });
+
+  test("a sentence about hiding something is not a tuck", () => {
+    expect(parseMusicIntent("hide the ridge mouse from the cart")).toBeNull();
+  });
+});
+
 describe("music brain: play + query extraction", () => {
   test("a named song keeps the listener's exact wish", () => {
     expect(parseMusicIntent("play africa by toto")).toMatchObject({

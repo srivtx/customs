@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { musicBus } from "@/lib/customs/music/store";
 import type { MusicCommand } from "@/lib/customs/music/store";
 import type { Track } from "@/lib/customs/music/youtube";
+import { parseMusicIntent } from "@/lib/customs/music/brain";
 
 const POS_KEY = "customs-ghost-pos-v1";
 
@@ -113,6 +114,9 @@ export function MusicGhost() {
   const [deck, setDeck] = useState<"full" | "mini">("full");
   const [progress, setProgress] = useState(0);
   const [needsTap, setNeedsTap] = useState(false);
+  const [tucked, setTucked] = useState(false);
+  const [card, setCard] = useState(false);
+  const [cocoLine, setCocoLine] = useState<string | null>(null);
 
   const mountRef = useRef<HTMLDivElement>(null);
   const readyRef = useRef<Promise<YTPlayer> | null>(null);
@@ -204,6 +208,8 @@ export function MusicGhost() {
       queueRef.current = { tracks, index: 0 };
       setTrack(tracks[0]);
       setDeck("full");
+      setCard(true);
+      setTucked(false);
       setProgress(0);
       setState("arriving");
       schedule(950, () => setState("out"));
@@ -234,6 +240,16 @@ export function MusicGhost() {
       if (cmd.action === "play") {
         if (cmd.error || !cmd.tracks.length) return;
         perform(cmd.tracks);
+        return;
+      }
+      /* hide ≠ stop: tucked away, the music keeps humming */
+      if (cmd.action === "hide") {
+        setTucked(true);
+        return;
+      }
+      if (cmd.action === "controls") {
+        setTucked(false);
+        setCard(true);
         return;
       }
       const has = (t: Track | null): t is Track => t !== null;
@@ -321,16 +337,51 @@ export function MusicGhost() {
     drag.current.active = false;
   };
 
+  /* coco's own ear: type straight to the ghost — control verbs run on
+     the local rules brain at zero tokens; anything else gets an honest
+     deflection instead of a silent token drain */
+  const tellCoco = (raw: string) => {
+    const text = raw.trim();
+    if (!text) return;
+    const intent = parseMusicIntent(text);
+    if (intent && intent.action !== "play") {
+      musicBus.emit({ action: intent.action });
+      setCocoLine(
+        intent.action === "hide"
+          ? "tucked — still humming"
+          : intent.action === "controls"
+            ? "controls up"
+            : `${intent.action}, ok`
+      );
+      return;
+    }
+    setCocoLine("I hum — ask the desk for a track, or tell me skip / pause / hide");
+  };
+
   if (!pos || state === "hidden") return null;
 
   return (
-    <div className="fixed z-50 select-none" style={{ left: pos.x, top: pos.y }} data-ghost="">
-      {track && (
+    <div
+      className={cn(
+        "fixed z-50 select-none transition-all duration-300 ease-out",
+        tucked && "pointer-events-none translate-y-3 scale-90 opacity-0"
+      )}
+      style={{ left: pos.x, top: pos.y }}
+      data-ghost=""
+    >
+      {track && (card || needsTap) && (
         <div
           className="animate-rise absolute bottom-[64px] right-0 w-[236px] overflow-hidden rounded-[6px] border border-line-strong bg-card"
           role="region"
-          aria-label="now playing"
+          aria-label="coco is playing"
         >
+          <button
+            onClick={() => setCard(false)}
+            aria-label="close the controls — the music keeps playing"
+            className="absolute right-1.5 top-1.5 z-10 flex h-5 w-5 items-center justify-center rounded-[4px] border border-line2 bg-card text-[10px] text-inksoft transition-colors hover:border-ink/40"
+          >
+            ×
+          </button>
           {/* the stage — the React-owned wrapper persists through the
               full ⇄ mini flip, so the player is created once and the
               music never dies on a collapse */}
@@ -382,14 +433,53 @@ export function MusicGhost() {
               )}
               <button
                 onClick={() => {
+                  musicBus.emit({ action: "hide" });
+                }}
+                className="flex h-7 w-9 items-center justify-center rounded-[4px] border border-line2 text-[11.5px] text-ink transition-colors hover:border-ink/40"
+                aria-label="hide coco — the music keeps playing"
+                title="hide — the music keeps humming"
+              >
+                ▾
+              </button>
+              <button
+                onClick={() => {
                   musicBus.emit({ action: "stop" });
                 }}
                 className="flex h-7 w-9 items-center justify-center rounded-[4px] border border-line2 text-[11.5px] text-ink transition-colors hover:border-ink/40"
-                aria-label="dismiss the ghost"
+                aria-label="stop the music and dismiss coco"
               >
                 ■
               </button>
             </div>
+            {deck === "full" && (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const input = e.currentTarget.elements.namedItem("tell") as HTMLInputElement | null;
+                  if (!input) return;
+                  tellCoco(input.value);
+                  input.value = "";
+                }}
+                className="mt-2 flex items-center gap-1.5"
+              >
+                <input
+                  name="tell"
+                  placeholder="tell coco…"
+                  aria-label="tell coco"
+                  className="h-6 min-w-0 flex-1 rounded-[4px] border border-line2 bg-transparent px-1.5 font-mono text-[10.5px] text-ink outline-none placeholder:text-inksoft focus:border-ink/40"
+                />
+                <button
+                  type="submit"
+                  className="flex h-6 w-7 items-center justify-center rounded-[4px] border border-line2 text-[10.5px] text-ink transition-colors hover:border-ink/40"
+                  aria-label="send to coco"
+                >
+                  ↵
+                </button>
+              </form>
+            )}
+            {cocoLine && deck === "full" && (
+              <p className="mt-1 font-mono text-[9.5px] text-inksoft">{cocoLine}</p>
+            )}
           </div>
         </div>
       )}
@@ -398,8 +488,8 @@ export function MusicGhost() {
         onPointerDown={onDown}
         onPointerMove={onMove}
         onPointerUp={onUp}
-        aria-label="the music ghost — drag to move, click to flip the deck"
-        title="the music ghost — drag me, click me"
+        aria-label="coco — the desk's red ghost — drag to move, click to flip the deck"
+        title="coco — drag me, click me"
         className={cn(
           "relative z-10 block cursor-grab touch-none active:cursor-grabbing",
           state === "arriving" && "ghost-arrive",
