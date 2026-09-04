@@ -18,6 +18,8 @@ import { cn } from "@/lib/utils";
 import { DeskHead } from "./bits";
 import type { View } from "./shell";
 import type { ChatEvent } from "@/lib/customs/agent/loop";
+import { musicBus } from "@/lib/customs/music/store";
+import type { MusicCommand } from "@/lib/customs/music/store";
 
 /* v2: the default dock moved from bottom-right to top-right (~15% down);
    the key is version-bumped so every browser gets the new dock once —
@@ -53,6 +55,9 @@ function summarize(events: ChatEvent[], startId: number): Line[] {
       out.push({ id: id++, who: "note", text: `payment ${e.status} · ₹${(e.totalPaise / 100).toLocaleString("en-IN")}` });
     } else if (e.kind === "receipt") {
       out.push({ id: id++, who: "note", text: `receipt ${e.manifestNo} · ₹${(e.totalPaise / 100).toLocaleString("en-IN")}` });
+    } else if (e.kind === "music") {
+      const what = e.action === "play" ? (e.tracks[0] ? `▶ ${e.tracks[0].title}` : "▶") : e.action;
+      out.push({ id: id++, who: "note", text: `ghost · ${what}` });
     }
   }
   return out;
@@ -291,6 +296,18 @@ export function FloatingAgent({ view }: { view: View }) {
         }
         setLines((p) => [...p, ...summarize(data.events, idRef.current)]);
         idRef.current += summarize(data.events, idRef.current).length;
+        /* the handoff: music events ride the bus to the ghost — this is
+           the desk agent calling the second agent */
+        for (const e of data.events) {
+          if ("kind" in e && e.kind === "music") {
+            const m = e as Extract<ChatEvent, { kind: "music" }>;
+            const cmd: MusicCommand =
+              m.action === "play"
+                ? { action: "play", tracks: m.tracks, query: m.query, mood: m.mood, error: m.note }
+                : { action: m.action };
+            musicBus.emit(cmd);
+          }
+        }
       } else {
         setLines((p) => [...p, { id: idRef.current++, who: "agent", text: "The desk hit a snag — try again." }]);
       }

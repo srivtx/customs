@@ -59,6 +59,9 @@ numbers read live from the ledger).
 Evidence: `make demo` · `make triage` · `data/state/ledger.jsonl` (hash-chained
 JSONL — the audit trail IS the database) · `src/components/customs/why.tsx` ·
 `src/components/customs/paper.tsx` + `PAPER.md` (twins, AGENTS invariant 11).
+Try the second agent too: tell the desk agent "play africa by toto" — a red
+ghost is summoned over an event bus and performs it; the commands cost zero
+tokens (tests/music-brain.test.ts proves the rules brain owns the path).
 
 ### 4 — Failure handling & recovery
 Claim: twelve authored attacks are refused (or held) with specific reason

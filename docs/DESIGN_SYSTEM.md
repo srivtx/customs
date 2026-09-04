@@ -50,6 +50,12 @@ be colored (the single exception: the bot's aurora, §7):
 Each has `-ink` (a ~8–10% tint for fills) and `-contrast` (text on solid fills)
 companions. A color that does not map to a verdict does not exist here.
 
+**The one non-verdict hue: the band.** `--band` (`#e0604e` dark / `#c04a3a` light,
+with `-ink`/`-contrast` companions) belongs to the music ghost — the second
+agent — the way the aurora hues belong to the bot. It is a character color,
+not a verdict: it must never appear on stamps, chips, text or borders outside
+the ghost and its transcript chip. Nothing else in the product may wear it.
+
 ### The sheet
 
 `.sheet` (the paper view) is a **white document in both themes** — x.ai's dark site
@@ -185,6 +191,30 @@ are cute: smooth, quiet, small tells.
 6. Colors: structural colors are tokens; the aurora's four hues (sage, sky,
    lilac, amber at 0.7–0.85 stops, themed total opacity 0.55 dark / 0.38 light)
    are the only non-verdict colors in the product. Keep exactly four.
+
+### The second character: the music ghost — `music-ghost.tsx`
+
+The desk head's second body: the same round volume and two eyes, in the
+band red, with a wisp skirt. It is summoned by the desk agent's chat and
+plays what was asked.
+
+1. **Face law:** eyes only — no mouth, ever (the desk head is mouthless;
+   so is the ghost). Expression is eye state (wide on the beat, happy
+   arcs when enjoying, squint when poked) plus body motion. No new parts.
+2. **Containment law (as the bot's):** the wisp is part of the
+   silhouette — one path, head circle flowing into the skirt — and its
+   inner drift is clipped to that path. Sway is transform-only. Nothing
+   renders outside the silhouette.
+3. **Motion budget:** arrive/sink (one 0.9s transform each), the beat bob
+   ±2.6px on a ~109 BPM clock, the wisp sway slower than the bob, the
+   eye pulse, the idle wander. That is all. **Paused music freezes the
+   bob and the pulse** — the ghost breathes only when the track does.
+4. **Controls** live in one hairline bubble: the YouTube player at
+   visible size (never a hidden or 1px frame), track, channel, a
+   transform-only progress ride, three buttons. Mono for the metadata,
+   sans for the title.
+5. The summon is logged in the transcript as a compact `ghost` chip with
+   the chosen track — a receipt of the handoff, not decoration.
 
 ## 8. Copy voice
 

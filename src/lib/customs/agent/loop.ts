@@ -17,6 +17,8 @@ import { signMandate, buildMandateBody } from "../gate/mandate";
 import { runTransaction, newSpan } from "../engine";
 import { ATTACK_CORPUS, AttackCase, attackTxInput } from "../fuzz/corpus";
 import { railInfo } from "../payments";
+import { searchTracks, Track } from "../music/youtube";
+import { MusicAction } from "../music/brain";
 
 export type ChatEvent =
   | { id: string; ts: number; role: "agent" | "user"; text: string }
@@ -28,7 +30,8 @@ export type ChatEvent =
   | { id: string; ts: number; kind: "payment"; orderId: string; totalPaise: number; status: "captured" | "held" | "refused"; rail: string; simulated: boolean }
   | { id: string; ts: number; kind: "receipt"; orderId: string; manifestNo: string; lines: { name: string; quantity: number; unitPricePaise: number }[]; totalPaise: number; rail: string; simulated: boolean }
   | { id: string; ts: number; kind: "attack"; attackId: string; label: string; verdict: string; code: string | null; checks: { label: string; pass: boolean | null; detail: string }[] }
-  | { id: string; ts: number; kind: "tier"; tier: TrustTier; note: string };
+  | { id: string; ts: number; kind: "tier"; tier: TrustTier; note: string }
+  | { id: string; ts: number; kind: "music"; action: MusicAction; tracks: Track[]; query: string | null; mood: string | null; note: string | null };
 
 export interface MandateView {
   id: string;
@@ -114,11 +117,13 @@ export async function agentTurn(
 
   events.push({ id: eid(), ts: now(), role: "user", text: message });
 
-  // LLM brain (optional): parse intent via model, fall back to rules
+  // LLM brain (optional): parse intent via model, fall back to rules.
+  // Music never reaches the model — the rules brain owns it entirely,
+  // so summoning the ghost costs zero tokens (D7).
   let intent: Intent = parseIntent(message);
   let tokensIn = 0;
   let tokensOut = 0;
-  const llm = brainMode() === "llm" ? getLlmBrain() : null;
+  const llm = brainMode() === "llm" && intent.kind !== "music" ? getLlmBrain() : null;
   /* the companion voice — independent of AGENT_BRAIN: any provider key
      unlocks it, because casual chat is not the demo-critical intent path */
   const voice = getChatVoice();
@@ -201,6 +206,30 @@ export async function agentTurn(
       const t = TRUST_TIERS[next];
       events.push({ id: eid(), ts: now(), kind: "tier", tier: next, note: `${rupees(t.maxAmountPaise)} cap · ${t.maxItems} item${t.maxItems > 1 ? "s" : ""} · ${Math.round(t.mandateTtlMs / 60000)} min` });
       say(next === "ATTESTED" ? "You're verified." : "Standing mandate — the highest limits.");
+      break;
+    }
+    case "music": {
+      if (intent.action === "play") {
+        const query = intent.query ?? "chill lofi beats mix";
+        const res = await searchTracks(query);
+        if (res.error === "no-key") {
+          events.push({ id: eid(), ts: now(), kind: "music", action: "play", tracks: [], query, mood: intent.mood, note: "no-key" });
+          say(`The ghost can't reach the record crate — no YouTube key on the desk. Add YOUTUBE_API_KEY to .env and summon again.`);
+          break;
+        }
+        if (res.error || !res.tracks.length) {
+          say(`Nothing surfaced for that — try another name.`);
+          break;
+        }
+        events.push({ id: eid(), ts: now(), kind: "music", action: "play", tracks: res.tracks, query, mood: intent.mood, note: null });
+        say(
+          `The ghost takes it from here — **${res.tracks[0].title}**, ${res.tracks[0].channel}.` +
+            (intent.mood ? ` (${intent.mood} mood)` : ``)
+        );
+        break;
+      }
+      events.push({ id: eid(), ts: now(), kind: "music", action: intent.action, tracks: [], query: null, mood: null, note: null });
+      say(`Relayed to the ghost.`);
       break;
     }
     case "search": {

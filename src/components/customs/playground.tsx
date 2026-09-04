@@ -14,6 +14,7 @@ import type { ChatEvent, Suggestion } from "@/lib/customs/agent/loop";
 import type { AdapterId } from "@/lib/customs/adapters";
 import { ADAPTERS } from "@/lib/customs/adapters";
 import { TRUST_TIERS, TrustTier } from "@/lib/customs/gate/types";
+import { musicBus } from "@/lib/customs/music/store";
 
 const ADAPTER_ORDER: AdapterId[] = ["naive", "mcp", "acp"];
 const TIERS: TrustTier[] = ["UNVERIFIED", "ATTESTED", "MANDATED"];
@@ -114,6 +115,18 @@ export function Playground() {
           data.events.forEach((e, i) => delays.current.set(e.id, Math.min(i * 90, 400)));
           setEvents((prev) => [...prev, ...data.events]);
           setChips(data.suggestions ?? []);
+          /* the handoff: the playground's desk calls the ghost too —
+             the same bus, wherever the counter speaks */
+          for (const e of data.events) {
+            if ("kind" in e && e.kind === "music") {
+              const m = e as Extract<ChatEvent, { kind: "music" }>;
+              musicBus.emit(
+                m.action === "play"
+                  ? { action: "play", tracks: m.tracks, query: m.query, mood: m.mood, error: m.note }
+                  : { action: m.action }
+              );
+            }
+          }
         } else {
           setEvents((prev) => [
             ...prev,

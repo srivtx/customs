@@ -165,6 +165,9 @@ the **Why it exists** view and `PAPER.md` §7.
 | `src/lib/customs/agent/nlu.ts` | deterministic rules brain |
 | `src/lib/customs/agent/llm.ts` | optional LLM brain — measured, never trusted |
 | `src/lib/customs/adapters/index.ts` | naive / MCP-style / ACP-style transports |
+| `src/lib/customs/music/brain.ts` | the ghost's rules brain — zero-token music intents |
+| `src/lib/customs/music/youtube.ts` | server-side track resolution (YouTube Data API v3) |
+| `src/lib/customs/music/store.ts` | the client bus the desk agent calls the ghost over |
 | `src/lib/customs/fuzz/corpus.ts` | the authored attack corpus |
 | `src/lib/customs/meter.ts` | channel P&L + projection (assumptions declared) |
 | `src/lib/customs/store/catalog.ts` | Fieldnote Supply — 21 products, integer paise |
@@ -179,6 +182,7 @@ the **Why it exists** view and `PAPER.md` §7.
 | `src/components/customs/hero-bot.tsx` | the customs bot — one smooth volume, token-inked, reduced-motion aware |
 | `src/components/customs/why.tsx` | why it exists + the architecture (drawn as cards) + desk ledger |
 | `src/components/customs/agent-kit.tsx` | the agent kit view — three doors (chat / real MCP / ACP), the kit board, copy-context, live walkthrough |
+| `src/components/customs/music-ghost.tsx` | the second agent — the red ghost the desk summons to play music |
 | `src/components/customs/paper.tsx` | the working paper view — a clean document page, numbers live |
 | `src/components/customs/playground.tsx` | buyer side: chat, mandate approval, red team |
 | `src/components/customs/control-room.tsx` | merchant side: P&L, approvals, the order ledger |

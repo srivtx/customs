@@ -169,6 +169,7 @@ export function WhyPage({ onEnter }: { onEnter: (v: View) => void }) {
                 "Protocol ablation across naive / MCP-style / ACP-style transports, wire overhead measured",
                 "Channel P&L meter (agent GMV − AI serving cost) with the at-1M projection, assumptions declared",
                 "The agent kit — the counter's HTTP surface published for outside agents: a REAL MCP server (Streamable HTTP, spec 2025-06-18) at /api/mcp, ACP core REST with Ed25519-signed receipts at /api/acp, and a reference client with no in-repo state walking the golden path over pure HTTP (make kit)",
+                "The music ghost — a second agent the desk summons over an event bus: deterministic zero-token commands (skip/pause/volume without a model in the loop), server-side track resolution via the official YouTube Data API, and a visible embed on the ghost's card",
                 "A 60-second machine-legible judge tour (make triage) and zero-dep evidence checks in CI (make verify)",
               ]}
               dot="bg-cleared"
@@ -178,7 +179,7 @@ export function WhyPage({ onEnter }: { onEnter: (v: View) => void }) {
               items={[
                 "The simulation fallback — on a fresh clone or a sandboxed runner with no keys set, the rail degrades to a loudly-labeled in-process simulation, so nothing ever pretends to move money. Live keys are refused at construction.",
                 "The LLM brain — optional by design. The deterministic rules brain runs everything by default so every demo replays bit-for-bit; any OpenAI-compatible key (Groq and Gemini have free tiers) turns the LLM arm on and the ablation measures it.",
-                "MCP / ACP transports — protocol-shaped adapters, honestly labeled. They demonstrate the gate's protocol-agnostic core, not certified spec implementations.",
+                "The beat you feel is a clock, not the waveform — YouTube's embed blocks cross-origin audio analysis, so the ghost grooves on a fixed ~109 BPM tempo and reacts to player state, honestly approximated.",
               ]}
               dot="bg-held"
             />

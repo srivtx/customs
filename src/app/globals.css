@@ -60,6 +60,9 @@
   --color-refused-contrast: var(--refused-contrast);
   --color-held: var(--held);
   --color-held-ink: var(--held-ink);
+  --color-band: var(--band);
+  --color-band-ink: var(--band-ink);
+  --color-band-contrast: var(--band-contrast);
 }
 
 /*
@@ -95,6 +98,13 @@
   --refused-contrast: #140a08;
   --held: #d6a251;
   --held-ink: rgba(214, 162, 81, 0.09);
+
+  /* the band — the music ghost's one hue. A character color, not a
+     verdict: it belongs to the second agent the way the aurora hues
+     belong to the bot (DESIGN_SYSTEM §7). Nothing else may wear it. */
+  --band: #e0604e;
+  --band-ink: rgba(224, 96, 78, 0.12);
+  --band-contrast: #1c0a07;
 
   --sb-thumb: rgba(255, 255, 255, 0.14);
   --sb-thumb-hover: rgba(255, 255, 255, 0.28);
@@ -167,6 +177,9 @@ html.light {
   --refused-contrast: #f8efe9;
   --held: #916a1e;
   --held-ink: rgba(145, 106, 30, 0.07);
+  --band: #c04a3a;
+  --band-ink: rgba(192, 74, 58, 0.1);
+  --band-contrast: #fdf1ee;
 
   --sb-thumb: rgba(10, 10, 10, 0.22);
   --sb-thumb-hover: rgba(10, 10, 10, 0.4);
@@ -425,6 +438,74 @@ html.light {
   }
   .desk-head.thinking .desk-eye-g.e2 .desk-eye {
     animation-delay: 1.07s;
+  }
+
+  /* the music ghost — the desk head's second body, in the band's red.
+     Motion budget (DESIGN_SYSTEM §7): the arrive/sink (one transform
+     each), the beat bob ±3px on a ~109 BPM clock, the wisp sway slower
+     than the bob, the beat pulse on the eyes, the idle wander. Paused
+     music freezes the bob and the pulse — the ghost breathes only when
+     the track does. All transform/opacity; kill-switched below. */
+  .ghost-arrive {
+    animation: ghost-arrive 0.9s cubic-bezier(0.25, 1, 0.5, 1) both;
+  }
+  .ghost-sink {
+    animation: ghost-sink 0.9s cubic-bezier(0.25, 1, 0.5, 1) both;
+  }
+  .ghost-stage .ghost-bob {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: ghost-wander 7s ease-in-out infinite;
+  }
+  .ghost-stage.ghost-playing .ghost-bob {
+    animation: ghost-bob 1.15s ease-in-out infinite alternate, ghost-wander 7s ease-in-out infinite;
+  }
+  .ghost-stage .ghost-wisp {
+    transform-box: fill-box;
+    transform-origin: 50% 0%;
+    animation: ghost-sway 3.2s ease-in-out infinite alternate;
+  }
+  .ghost-stage .ghost-eye-open {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .ghost-stage.ghost-playing .ghost-eye-open {
+    animation: ghost-pulse 1.15s ease-in-out infinite alternate;
+  }
+  .ghost-eye-arc,
+  .ghost-eye-squint {
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: opacity 0.35s ease;
+  }
+  .ghost-eye-open {
+    transition: opacity 0.35s ease;
+  }
+  @keyframes ghost-arrive {
+    from { transform: translateY(56%) ; opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes ghost-sink {
+    from { transform: translateY(0); opacity: 1; }
+    to { transform: translateY(56%); opacity: 0; }
+  }
+  @keyframes ghost-bob {
+    from { transform: translateY(-2.6px) rotate(-2deg); }
+    to { transform: translateY(2.6px) rotate(2deg); }
+  }
+  @keyframes ghost-pulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.14); }
+  }
+  @keyframes ghost-sway {
+    from { transform: translateX(-1.6px) rotate(-1.2deg); }
+    to { transform: translateX(1.6px) rotate(1.2deg); }
+  }
+  @keyframes ghost-wander {
+    0%, 12%, 100% { transform: translate(0, 0); }
+    6%, 9% { transform: translate(0, -2px); }
+    45%, 49% { transform: translate(1.8px, 0); }
+    72%, 76% { transform: translate(-1.8px, 0); }
   }
   @keyframes desk-idle {
     0%, 12%, 100% { transform: translate(0, 0); }
@@ -969,7 +1050,12 @@ html.light {
   .hb-glint,
   .hb-shadow,
   .hb-pom,
-  .agent-yarn {
+  .agent-yarn,
+  .ghost-arrive,
+  .ghost-sink,
+  .ghost-stage .ghost-bob,
+  .ghost-stage .ghost-wisp,
+  .ghost-stage .ghost-eye-open {
     animation: none !important;
   }
   .pulse-dot::after {

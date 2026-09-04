@@ -17,6 +17,7 @@ import { AgentKitPage } from "./agent-kit";
 import { Playground } from "./playground";
 import { ControlRoom } from "./control-room";
 import { FloatingAgent } from "./floating-agent";
+import { MusicGhost } from "./music-ghost";
 import { SiteFooter } from "./footer";
 import { SystemThemeAsk } from "./theme";
 
@@ -160,6 +161,9 @@ export function CustomsApp() {
 
       {/* the everywhere-agent — draggable, on every view, real shopping */}
       <FloatingAgent view={view} />
+      {/* the second agent — summoned by the desk agent's chat, the ghost
+          performs whatever the counter asks for */}
+      <MusicGhost />
       <SystemThemeAsk />
     </div>
   );

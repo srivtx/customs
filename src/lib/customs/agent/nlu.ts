@@ -10,6 +10,7 @@
  * code (AGENTS.md invariant 5).
  */
 import { parsePriceCeiling, searchCatalog, Product } from "../store/catalog";
+import { parseMusicIntent, MusicIntent } from "../music/brain";
 
 export type Intent =
   | { kind: "greeting" }
@@ -23,6 +24,7 @@ export type Intent =
   | { kind: "attack"; attackId: string }
   | { kind: "status" }
   | { kind: "attest" }
+  | { kind: "music"; action: MusicIntent["action"]; query: string | null; mood: string | null }
   | { kind: "unknown"; query: string };
 
 const ATTACK_RE = /^attack[:\s]+([a-z0-9-]+)/i;
@@ -42,6 +44,13 @@ export function parseIntent(raw: string): Intent {
 
   const atk = lower.match(ATTACK_RE);
   if (atk) return { kind: "attack", attackId: atk[1] };
+
+  /* the ghost's commands ride their own rules brain, before the buyer
+     verbs — "play" and "skip" are nobody's shopping words, and music
+     text must never reach the LLM path (zero tokens, D7) */
+  const music = parseMusicIntent(text);
+  if (music) return { kind: "music", action: music.action, query: music.query, mood: music.mood };
+
   if (/^(whats up|what's up|wassup|sup|how are you|how are things|how is it going|thanks|thank you|thx|ty|who are you|what are you|good (night|day))\b/.test(lower) || /^(hi|hello|hey|namaste|yo|good (morning|evening|afternoon))\b/.test(lower))
     return { kind: "greeting" };
   if (/^(help|what can you do|commands|how does this work)/.test(lower)) return { kind: "help" };

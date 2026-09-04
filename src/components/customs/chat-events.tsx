@@ -91,6 +91,8 @@ function ChatEventInner({
   switch (event.kind) {
     case "step":
       return <StepChip event={event} />;
+    case "music":
+      return <MusicCard event={event} />;
     case "products":
       return (
         <div className="animate-rise py-2">
@@ -195,6 +197,48 @@ function ChatEventInner({
     default:
       return null;
   }
+}
+
+/**
+ * MusicCard — the handoff receipt: the desk called the ghost, and the
+ * summon lands in the transcript like any other tool call. One hairline
+ * row, the band chip, the track it chose. Controls live on the ghost.
+ */
+function MusicCard({ event }: { event: Extract<ChatEventT, { kind: "music" }> }) {
+  const label =
+    event.action === "play"
+      ? event.tracks[0]
+        ? "now playing"
+        : "summon refused"
+      : event.action;
+  const track = event.action === "play" ? event.tracks[0] : null;
+  return (
+    <div className="animate-rise flex items-center gap-2.5 py-2">
+      <span className="stamp shrink-0 border-band/50 bg-band-ink font-mono uppercase text-band">ghost</span>
+      {track ? (
+        <span className="flex min-w-0 items-center gap-2.5">
+          {track.thumbnail && (
+            <img src={track.thumbnail} alt="" width={44} height={33} className="h-[33px] w-[59px] shrink-0 rounded-[3px] border border-line object-cover" />
+          )}
+          <span className="min-w-0">
+            <span className="block truncate text-[12.5px] leading-snug text-ink" title={track.title}>
+              {track.title}
+            </span>
+            <span className="block truncate font-mono text-[10px] text-inksoft">
+              {track.channel}
+              {track.durationSec ? ` · ${Math.floor(track.durationSec / 60)}:${String(track.durationSec % 60).padStart(2, "0")}` : ""}
+              {event.mood ? ` · ${event.mood}` : ""}
+            </span>
+          </span>
+        </span>
+      ) : (
+        <span className="truncate text-[12.5px] text-inksoft">
+          {label}
+          {event.note === "no-key" ? " — no YouTube key on the desk" : ""}
+        </span>
+      )}
+    </div>
+  );
 }
 
 function StepChip({ event }: { event: Extract<ChatEventT, { kind: "step" }> }) {
