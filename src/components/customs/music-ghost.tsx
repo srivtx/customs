@@ -616,24 +616,36 @@ export function MusicGhost() {
 
   if (!pos || state === "hidden") return null;
 
+  /* moco's own law, inherited: the panels drop downward while more sky
+     lies below the head than above it, and rise when coco stands low —
+     the head itself is always the anchor, so the drag clamp alone
+     decides where coco can ever stand */
+  const low = pos.y * 2 > window.innerHeight;
+
   return (
     <div
       ref={wrapRef}
       className={cn(
-        "fixed z-50 flex w-14 select-none flex-col items-end gap-2 transition-all duration-300 ease-out",
+        "fixed z-50 w-14 select-none transition-all duration-300 ease-out",
         tucked && "pointer-events-none translate-y-3 scale-90 opacity-0"
       )}
       style={{ left: pos.x, top: pos.y }}
       data-ghost=""
     >
-      {/* one flow column — the card and the chat stack below the head,
-          so nothing ever overlaps; the drag clamp keeps the head itself
-          on-screen while the panels reach for the floor */}
+      {/* the panels live in one absolute column anchored to the head —
+          below it while there is sky, above it when coco stands low */}
+      {(track || chatOpen) && (
+        <div
+          className={cn(
+            "absolute right-0 z-0 flex items-end gap-2",
+            low ? "bottom-[calc(100%+8px)] flex-col-reverse" : "top-[calc(100%+8px)] flex-col"
+          )}
+        >
       {track && (
         <div
           className={cn(
-            "animate-rise order-2 w-[236px] overflow-hidden rounded-[6px] border border-line-strong bg-card transition-all duration-300 ease-out",
-            !(card || needsTap) && "pointer-events-none translate-y-2 scale-95 opacity-0"
+            "w-[236px] max-h-[340px] overflow-hidden rounded-[6px] border border-line-strong bg-card transition-all duration-300 ease-out",
+            !(card || needsTap) && "pointer-events-none invisible max-h-0 border-transparent opacity-0"
           )}
           role="region"
           aria-label="coco is playing"
@@ -711,14 +723,10 @@ export function MusicGhost() {
       )}
 
       {/* coco's chat — the desk agent's panel in miniature: same hairline
-          header with the face and one dot, same quiet close, same well.
-          It drops downward from coco when there is sky below, otherwise
-          rises — clearing the card when the card is up. */}
+          header with the face and one dot, same quiet close, same well. */}
       {chatOpen && (
         <div
-          className={cn(
-            "animate-rise order-3 flex max-h-[400px] w-[280px] flex-col overflow-hidden rounded-[6px] border border-line-strong bg-card",
-          )}
+          className="animate-rise flex max-h-[400px] w-[280px] flex-col overflow-hidden rounded-[6px] border border-line-strong bg-card"
           role="dialog"
           aria-label="coco chat"
         >
@@ -818,6 +826,8 @@ export function MusicGhost() {
           </form>
         </div>
       )}
+        </div>
+      )}
 
       <button
         onPointerDown={onDown}
@@ -827,7 +837,7 @@ export function MusicGhost() {
         aria-label="coco — the desk's red ghost — drag to move, click to chat, double-click to sink the video"
         title="coco — drag me, click to chat, double-click to sink the video"
         className={cn(
-          "relative z-10 order-1 block shrink-0 cursor-grab touch-none active:cursor-grabbing",
+          "relative z-10 block shrink-0 cursor-grab touch-none active:cursor-grabbing",
           state === "arriving" && "ghost-arrive",
           state === "leaving" && "ghost-sink"
         )}
