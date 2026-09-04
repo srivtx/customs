@@ -605,7 +605,7 @@ export function MusicGhost() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ message: text, adapter: "naive", persona: "coco" }),
+        body: JSON.stringify({ message: text, adapter: "naive", persona: "coco", music: musicBus.snapshot() }),
         signal: ctrl.signal,
       });
       clearTimeout(kill);

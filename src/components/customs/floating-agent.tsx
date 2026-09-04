@@ -325,7 +325,10 @@ export function FloatingAgent({ view }: { view: View }) {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ sessionId, message, adapter: "naive" }),
+        /* the ghost's state rides along: one line of context, so any
+           phrasing of "what's playing" is understood — the regex above
+           keeps the canonical query free */
+        body: JSON.stringify({ sessionId, message, adapter: "naive", music: musicBus.snapshot() }),
       });
       const data = (await res.json()) as { ok: boolean; sessionId: string; events: ChatEvent[]; error?: string };
       if (data.ok) {

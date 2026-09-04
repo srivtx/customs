@@ -10,7 +10,7 @@ import { randomUUID, createHmac } from "node:crypto";
 import { CustomsRuntime, BuyerSession } from "../runtime";
 import { parseIntent, Intent } from "./nlu";
 import { adapterCall, AdapterId, ADAPTERS } from "../adapters";
-import { getLlmBrain, brainMode, getChatVoice, COCO_SYSTEM_PROMPT } from "./llm";
+import { getLlmBrain, brainMode, getChatVoice, COCO_SYSTEM_PROMPT, CHAT_SYSTEM_PROMPT } from "./llm";
 import { Product, searchCatalog, parsePriceCeiling } from "../store/catalog";
 import { GateDecision, TrustTier, TRUST_TIERS, Mandate } from "../gate/types";
 import { signMandate, buildMandateBody } from "../gate/mandate";
@@ -105,7 +105,13 @@ export async function agentTurn(
   sessionId: string,
   message: string,
   adapter: AdapterId,
-  opts?: { sessionless?: boolean; persona?: "desk" | "coco" }
+  opts?: {
+    sessionless?: boolean;
+    persona?: "desk" | "coco";
+    /* what the ghost hums, published by the client — chatter context
+       only, never the money path; commands stay on the rules brain */
+    music?: { title: string; channel: string; playing: boolean } | null;
+  }
 ): Promise<TurnResult> {
   const events: ChatEvent[] = [];
   const say = (text: string) => events.push({ id: eid(), ts: Date.now(), role: "agent", text });
@@ -131,13 +137,22 @@ export async function agentTurn(
      coco talks ghost. Commands never reach here; this is chatter only,
      metered like everything else. */
   const cocoPersona = opts?.persona === "coco";
+  /* one line of music context, appended to the persona prompt: with it
+     the cheap voice understands ANY phrasing of "what's playing" —
+     ~40 tokens, metered, and no state machine guessing English */
+  const musicLine = opts?.music
+    ? `Desk music right now: "${opts.music.title}" by ${opts.music.channel}, ${opts.music.playing ? "playing" : "paused"}. If asked about the music, answer from this line and nothing else — two short sentences, all lowercase.`
+    : "";
   const speakThroughVoice = async (message: string, fallback: string) => {
     if (!voice) {
       say(fallback);
       return;
     }
     const t0 = performance.now();
-    const { reply, usage, model } = await voice.chat(message, cocoPersona ? COCO_SYSTEM_PROMPT : undefined);
+    const system = cocoPersona || musicLine
+      ? `${cocoPersona ? COCO_SYSTEM_PROMPT : CHAT_SYSTEM_PROMPT}${musicLine ? `\n\n${musicLine}` : ""}`
+      : undefined;
+    const { reply, usage, model } = await voice.chat(message, system);
     newSpan(rt.deps, `tr_ses_${session.sessionId}`, session.lastOrderId ?? "none", "llm.chat", Math.round(performance.now() - t0), adapter, {
       tokensIn: usage.tokensIn,
       tokensOut: usage.tokensOut,
