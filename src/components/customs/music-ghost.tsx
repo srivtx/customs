@@ -153,6 +153,9 @@ export function MusicGhost() {
   const [card, setCard] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [chat, setChat] = useState<ChatLine[]>([]);
+  /* the chat opens downward when coco lives in the upper sky (the desk
+     panel's own law), upward when it sits near the floor */
+  const [chatBelow, setChatBelow] = useState(false);
 
   const mountRef = useRef<HTMLDivElement>(null);
   const readyRef = useRef<Promise<YTPlayer> | null>(null);
@@ -166,6 +169,8 @@ export function MusicGhost() {
   /* chat ids mint synchronously in the handler, never inside an updater
      — the desk panel's duplicate-key lesson, inherited whole */
   const chatIdRef = useRef(1);
+  /* single vs double click: the first click waits a beat for a sibling */
+  const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const eyeMood = useEyeMood(playing);
 
@@ -197,6 +202,7 @@ export function MusicGhost() {
       } catch {
         /* private mode */
       }
+      setChatBelow(pos.y < window.innerHeight * 0.45);
     }
   }, [pos]);
 
@@ -229,6 +235,7 @@ export function MusicGhost() {
   useEffect(() => () => {
     readyRef.current = null;
     stateTimers.current.forEach(clearTimeout);
+    if (clickTimer.current) clearTimeout(clickTimer.current);
   }, []);
 
   const schedule = (ms: number, fn: () => void) => {
@@ -400,7 +407,23 @@ export function MusicGhost() {
     }
   };
   const onUp = () => {
-    if (drag.current.active && !drag.current.moved) setChatOpen((v) => !v);
+    if (drag.current.active && !drag.current.moved) {
+      if (clickTimer.current) {
+        /* the second click of a double: the video sinks to the
+           background — the music hums on, coco stays to talk to */
+        clearTimeout(clickTimer.current);
+        clickTimer.current = null;
+        if (track) {
+          setCard(false);
+          cocoSay("video in the background — the music hums on.");
+        }
+      } else {
+        clickTimer.current = setTimeout(() => {
+          clickTimer.current = null;
+          setChatOpen((v) => !v);
+        }, 260);
+      }
+    }
     drag.current.active = false;
   };
 
@@ -528,12 +551,13 @@ export function MusicGhost() {
 
       {/* coco's chat — the desk agent's panel in miniature: same hairline
           header with the face and one dot, same quiet close, same well.
-          It docks above the card when the card is up, beside it when not. */}
+          It drops downward from coco when there is sky below, otherwise
+          rises — clearing the card when the card is up. */}
       {chatOpen && (
         <div
           className={cn(
-            "animate-rise absolute right-0 flex max-h-[400px] w-[264px] flex-col overflow-hidden rounded-[6px] border border-line-strong bg-card",
-            cardShown ? "bottom-[316px]" : "bottom-[64px]"
+            "animate-rise absolute right-0 flex max-h-[400px] w-[280px] flex-col overflow-hidden rounded-[6px] border border-line-strong bg-card",
+            chatBelow ? "top-full mt-2" : cardShown ? "bottom-[316px]" : "bottom-[64px]"
           )}
           role="dialog"
           aria-label="coco chat"
@@ -622,8 +646,8 @@ export function MusicGhost() {
         onPointerDown={onDown}
         onPointerMove={onMove}
         onPointerUp={onUp}
-        aria-label="coco — the desk's red ghost — drag to move, click to chat"
-        title="coco — drag me, click to chat"
+        aria-label="coco — the desk's red ghost — drag to move, click to chat, double-click for background"
+        title="coco — drag me, click to chat, double-click for background"
         className={cn(
           "relative z-10 block cursor-grab touch-none active:cursor-grabbing",
           state === "arriving" && "ghost-arrive",

@@ -217,11 +217,16 @@ summoned by the desk agent's chat and plays what was asked.
 5. **Coco's chat** is the desk agent's panel in miniature, and it opens
    on a click of coco: the same hairline header (the face at 24px, one
    status dot — band while humming), the same quiet text close, the
-   same sunken composer well, TypeLine for coco's voice. Its ear is the
-   rules brain: control verbs run at zero tokens; a play wish is
-   deflected to the desk, never drained through an LLM. Hide ≠ stop:
-   "hide" (chat word or header button) tucks coco away while the music
-   keeps humming; "give me controls" recalls it.
+   same sunken composer well, TypeLine for coco's voice. It drops
+   downward from coco when there is sky below, rises when coco sits
+   low — clearing the card when the card is up (the desk panel's own
+   below/above law). Its ear is the rules brain: control verbs run at
+   zero tokens; a play wish is deflected to the desk, never drained
+   through an LLM. Hide ≠ stop: "hide" (chat word or header button)
+   tucks coco away while the music keeps humming; "give me controls"
+   recalls it. A **double-click** on coco sinks the video to the
+   background — the music hums on, coco stays to talk to; "give me
+   controls" brings the card back.
 6. The summon is logged in both transcripts as a compact `coco ·` chip
    with the chosen track — a receipt of the handoff, not decoration.
 
