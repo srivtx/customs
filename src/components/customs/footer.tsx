@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * footer.tsx — the bottom of the desk, rebuilt on x.ai's footer pattern:
- * a left column (mark, one copyright line, the theme toggle and the
+ * footer.tsx — the bottom of the desk: a left column (mark, one copyright
+ * line, the theme toggle and the
  * source pill at its foot) and quiet link columns on the right —
  * 13px links at half opacity that only reach full ink on approach.
  * A footer says where things are; it does not repeat the site.

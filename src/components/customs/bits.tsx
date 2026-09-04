@@ -31,7 +31,7 @@ export function monoId(id: string, max = 14): string {
  * eyes on the light desk, a pale head with dark eyes on the night desk.
  *
  * `thinking` morphs the eyes into three pulsing dots — the desk is working
- * tell (grok-style): the face compresses, the dots breathe in sequence,
+ * tell (the working-desk tell): the face compresses, the dots breathe in sequence,
  * and the reply arrives while the last dot is still mid-pulse.
  */
 export function DeskHead({
@@ -518,7 +518,7 @@ export function LiveDot({ label, className }: { label: string; className?: strin
  * separated — ids and amounts in the ledger's own mono, status wearing
  * its verdict color, the rail in soft ink. New rows rise and flash once,
  * the same confirmation the control room's ledger gives. A quiet data
- * table, not a marquee — x.ai shows live data sitting still.
+ * table, not a marquee — live data sits still.
  */
 export interface TickerItem {
   orderId: string;

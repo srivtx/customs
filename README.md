@@ -143,7 +143,7 @@ the **Why it exists** view and `PAPER.md` §7.
 - `PAPER.md` — the working paper (machine-legible twin of the in-app paper)
 - `make triage` — self-guided judge tour: prints claims, runs checks, exits 0
 - `make verify` — the exact checks CI runs on every push
-- **221 evidence checks** — and the count verifies itself: `make verify` fails if this number drifts (`node scripts/verify.mjs | grep -c PASS`)
+- **222 evidence checks** — and the count verifies itself: `make verify` fails if this number drifts (`node scripts/verify.mjs | grep -c PASS`)
 - `ENGINEERING_LOG.md` — dated incidents; every incident becomes a test
 - `ARCHITECTURE.md` — one diagram + the decisions that mattered
 - `llms.txt` / `AGENTS.md` — the repo, machine-legible; the invariants
@@ -207,6 +207,7 @@ the **Why it exists** view and `PAPER.md` §7.
 | `src/components/customs/why.tsx` | why it exists + the architecture (drawn as cards) + desk ledger |
 | `src/components/customs/agent-kit.tsx` | the agent kit view — three doors (chat / real MCP / ACP), the kit board, copy-context, live walkthrough |
 | `src/components/customs/agents.tsx` | the agents view — the two characters live, the handoff wire, a working summon |
+| `src/components/customs/video-modal.tsx` | the pitch video — a play button that opens it in a modal, one take |
 | `src/components/customs/music-ghost.tsx` | the second agent — the red ghost the desk summons to play music |
 | `src/components/customs/paper.tsx` | the working paper view — a clean document page, numbers live |
 | `src/components/customs/playground.tsx` | buyer side: chat, mandate approval, red team |
@@ -214,7 +215,7 @@ the **Why it exists** view and `PAPER.md` §7.
 | `src/components/customs/bits.tsx` | design primitives: chips, buttons, the gate diamond |
 | `src/components/customs/chat-events.tsx` | the transcript — tool calls, gate checklist, receipts |
 | `src/components/customs/theme.tsx` | the desk lamp — footer dark/light toggle, persisted, no-flash |
-| `src/components/customs/footer.tsx` | the footer — mark, quiet link columns, the theme toggle (x.ai pattern) |
+| `src/components/customs/footer.tsx` | the footer — mark, quiet link columns, the theme toggle |
 | `src/app/api/` | route handlers: chat, state, decision, fuzz, webhook, health, agent/kit, **mcp (real MCP server)**, acp (core REST) |
 | `public/logo.svg` | the gate diamond (badge tile) |
 | `public/wordmark-light.svg` | the wordmark, light surfaces (this README) |

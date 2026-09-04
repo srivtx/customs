@@ -406,7 +406,7 @@ export function FloatingAgent({ view }: { view: View }) {
 
           {/* the conversation: the visitor's words are the only filled
               surface — the desk's voice sits straight on the ground,
-              unhoused, the way x.ai lets answers breathe */}
+              unhoused, so answers breathe */}
           <div
             ref={bodyRef}
             role="log"

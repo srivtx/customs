@@ -6,7 +6,7 @@ without breaking the look. If a change you are about to make contradicts a rule 
 the change is wrong — or this file is wrong and must be amended in the same commit.
 Either way, never ship a silent contradiction.
 
-The reference is x.ai / grok.com: a near-black desk (or pure-white desk), one ink,
+The reference is the quiet-machine school: a near-black desk (or pure-white desk), one ink,
 hairlines instead of shadows, mono type wherever the system (not a human) is speaking.
 Restraint reads as production.
 
@@ -58,8 +58,8 @@ the ghost and its transcript chip. Nothing else in the product may wear it.
 
 ### The sheet
 
-`.sheet` (the paper view) is a **white document in both themes** — x.ai's dark site
-still shows white documents. The class re-scopes the tokens to ink-on-white inside
+`.sheet` (the paper view) is a **white document in both themes** — a dark desk still
+shows white documents. The class re-scopes the tokens to ink-on-white inside
 itself, so children need no per-element overrides. On the night desk it additionally
 gets one hairline border and one soft shadow. Do not restyle the sheet per-theme by
 hand; let the token flip do it.
@@ -161,7 +161,7 @@ never a wide bar.
 
 ## 7. The bot (mascot) contract — `hero-bot.tsx`
 
-The Customs bot is one egg, one face, one aurora. It is cute the way x.ai things
+The Customs bot is one egg, one face, one aurora. It is cute the way good machines
 are cute: smooth, quiet, small tells.
 
 1. **Containment law:** nothing — highlight, glow, gradient, shadow — may ever

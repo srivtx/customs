@@ -12,6 +12,7 @@ import { GhostButton, InkButton, inr, CountUp, LiveDot, LiveLedger, Reveal, Tick
 import { DemoPlayer } from "./demo-player";
 import { HeroBot } from "./hero-bot";
 import { HeroFabric } from "./hero-fabric";
+import { PitchVideo } from "./video-modal";
 import { TRUST_TIERS } from "@/lib/customs/gate/types";
 import { ADAPTERS, AdapterId } from "@/lib/customs/adapters";
 import type { View } from "./shell";
@@ -106,6 +107,7 @@ export function Landing({ onEnter }: { onEnter: (view: View) => void }) {
               <GhostButton onClick={() => onEnter("merchant")} ariaLabel="open the control room" variant="ink" className="h-11 px-5">
                 Open the control room
               </GhostButton>
+              <PitchVideo />
             </div>
           </div>
           {/* the customs bot — the desk's little officer, stamping as it

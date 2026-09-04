@@ -296,13 +296,13 @@ from an attack surface into an exhibit of discipline.
 ## D7-1 — the v2 redesign: research-first, one device
 
 **Date:** 2026-09-01 (evening)
-**Phase:** design round 2 — the x.ai benchmark, taken literally
+**Phase:** design round 2 — the quiet-machine benchmark, taken literally
 
 **What happened:** the first design language ("the customs house": warm paper,
 rotated rubber stamps, grain overlay, double borders, hard offset shadows,
 duotone photo collage, a recorded GIF) read as *decorated* rather than
 *deliberate* — the opposite of the reference. Before changing anything we
-fetched the reference itself (x.ai) and measured it: pure-black ground,
+fetched the reference itself and measured it: pure-black ground,
 Geist Sans/Mono, hairline borders at `rgba(255,255,255,0.06–0.1)`, 2–4px
 radii, near-zero tracking on huge sentence-case headlines, 300ms ease
 transitions, one muted sage accent. Our v1 used six decorative devices where
@@ -327,7 +327,7 @@ the benchmark uses one.
 - Verdict chips went upright (a finance system states verdicts, it does not
   decorate them) and were re-tuned for legibility after VLM review flagged
   contrast (borders 50%, tint 15%).
-- Motion unified on 300ms ease-out (the measured x.ai curve), 150ms
+- Motion unified on 300ms ease-out (the measured reference curve), 150ms
   micro-interactions, reduced-motion inert.
 
 **Bugs found and fixed during the round:**
@@ -342,7 +342,7 @@ the benchmark uses one.
 
 **The test it became:** `make verify` REQUIRED list now pins the v2 tree
 (demo-player.tsx, og.png, screenshots; GIF/script/hero removed). VLM design
-review at x.ai benchmark on five surfaces; both FIX verdicts (stats-bar
+review at the benchmark on five surfaces; both FIX verdicts (stats-bar
 breathing room, paper leading) applied and re-reviewed.
 
 **Why it matters for the pitch:** design is the first thing a judge sees and
@@ -359,7 +359,7 @@ numbers in mono is the aesthetic of a payment network, not a template.
 **What changed:**
 
 - **Two themes, one desk.** The night ledger stays the default; a light
-  "day ledger" is one toggle away — x.ai's footer pattern, measured from
+  "day ledger" is one toggle away — the benchmark's footer pattern, measured from
   their live DOM: a 28px round icon button at 40%/80% opacity, sun on the
   night desk, moon on the day desk. Implementation: every color was already
   a token, so the light theme is one `html.light { … }` block of flipped
@@ -375,7 +375,7 @@ numbers in mono is the aesthetic of a payment network, not a template.
   why-page architecture diagram re-inks itself: every stroke/fill is now a
   `--di-*` CSS variable set via SVG `style` props (var() does not resolve
   in presentation attributes — that detail cost one failed attempt).
-- **The footer rebuilt on x.ai's actual footer skeleton** (fetched and
+- **The footer rebuilt on the benchmark's actual footer skeleton** (fetched and
   measured): left column = mark + tiny © + theme toggle + source pill,
   right = quiet 13px link columns at half opacity. Killed: four columns of
   hints, two paragraphs, seven evidence blurbs, six command blurbs, three
@@ -387,7 +387,7 @@ numbers in mono is the aesthetic of a payment network, not a template.
   actual Bud-Pro photo (56px thumb on the cart line), same asset the
   playground serves.
 - **Typography discipline.** Fraunces removed from the app entirely —
-  Geist Sans/Mono everywhere (x.ai uses its own sans for docs, not a
+  Geist Sans/Mono everywhere (the benchmark uses its own sans for docs, not a
   serif); the paper page keeps its white-sheet concept but set in Geist
   with mono furniture, wider margins (sm:px-14, §-sections at mt-12/pt-8),
   1.8 leading, and `.quiet-scroll` pills on every `overflow-x-auto` block
@@ -424,7 +424,7 @@ different border weights in one panel: 0.06 / 0.08 / 0.15), the "AGENT"
 tag was set in gold so it ran into the mono text as one word
 ("AGENTcatalog.search"), the live ticker floated unframed on the page,
 the paper page was a cream "sheet" artifact rather than a document, and
-the control room opened with a wall of four badge chips. x.ai was
+the control room opened with a wall of four badge chips. The benchmark was
 re-fetched and re-measured before changing anything: Geist Mono in the
 hero headline spans, `font-medium` (not semibold) display type, radii
 3–6px, and — the useful find — their homepage animates the hero with
@@ -433,7 +433,7 @@ hero headline spans, `font-medium` (not semibold) display type, radii
 **What we changed:**
 
 - **hero-bot.tsx (new)** — the customs bot: a small SVG desk officer
-  beside the hero text. It borrows x.ai's shimmer (sage/ink gradient
+  beside the hero text. It borrows the benchmark's shimmer (sage/ink gradient
   sweeps riding three resting rails) and gives it a body: a geometric
   bot that floats, blinks (scaleY keyframes; eyes turn sage on hover),
   stamps a verdict ring out of its chest diamond every 3.8s, and wears
@@ -456,7 +456,7 @@ hero headline spans, `font-medium` (not semibold) display type, radii
   color · rail, with a status-colored dot.
 - **paper.tsx** — the white-sheet artifact is gone. The page is the
   document: same Geist, same hairlines, same tokens as every other
-  surface, so it re-inks with the theme (x.ai renders its documents in
+  surface, so it re-inks with the theme (the benchmark renders its documents in
   whatever theme you are in — so do we). Masthead restored to the
   exact landing label: "razorpay ai buildathon 2026 · track 1 · test
   mode". The `.sheet` class is deleted from globals.css.
@@ -500,7 +500,7 @@ the ticker ticking.
 
 **What the round fixed (all user-flagged, all verified in-browser):**
 
-- **The mono was everywhere.** Measured x.ai and grok.com directly
+- **The mono was everywhere.** Measured the reference sites directly
   (page_reader; Cloudflare blocks both curl and headless browsing):
   both set their UI in **Universal Sans Text/Display 400+550** with
   **Geist Mono only for code-ish spans** — and our control room alone
@@ -512,7 +512,7 @@ the ticker ticking.
   "razorpay ai buildathon 2026 · track 1 · test mode" style, which
   was always right). `GhostButton`, `TierChip`, inline code chips, the
   demo loop bar, and every small caption reset in the sans.
-- **Light mode was cream.** x.ai's light ground is `#ffffff` (verified
+- **Light mode was cream.** the benchmark's light ground is `#ffffff` (verified
   from the fetched HTML: `background-color:#fff`); ours was `#faf9f7`
   with warm inks. The day ledger is now pure white with neutral
   near-black ink and neutral hairlines; `--cleared` sharpened to
@@ -533,7 +533,7 @@ the ticker ticking.
 - **The live ledger was a marquee.** Now a quiet data list — the
   latest rows (time · id · amount · status · rail) hairline-separated,
   polling every 8s, new rows rising with the same flash the control
-  room gives. x.ai shows live data sitting still.
+  room gives. The benchmark shows live data sitting still.
 - **Control room redesigned properly:** a real page intro under the
   h2, a sans status strip, GMV promoted to a 38px hero stat, the
   at-1M four-cell band collapsed into one breathing summary row, sans

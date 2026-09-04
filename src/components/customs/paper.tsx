@@ -3,7 +3,7 @@
 /**
  * paper.tsx — "Customs: a signed-mandate checkpoint for agentic payments,"
  * as a real document: a WHITE sheet in both themes, exactly like a working
- * paper — x.ai's dark site still shows white documents, and so does the
+ * paper — a dark desk still shows white documents, and so does the
  * night desk here. The .sheet class scopes the ledger tokens back to
  * ink-on-white, so every child (hairlines, tables, pre blocks, stamps)
  * re-inks itself with no per-element overrides. §5–§6 numbers are read

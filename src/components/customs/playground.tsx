@@ -109,7 +109,7 @@ export function Playground() {
       if (!sessionRef.current) sessionRef.current = crypto.randomUUID();
       /* the desk takes a breath before answering: a reply that lands in
          80ms reads as fake (and the thinking morph never plays). Hold the
-         thinking state for at least a beat — the grok tell needs stage
+         thinking state for at least a beat — the thinking tell needs stage
          time to be believed. */
       const thinkFrom = performance.now();
       const MIN_THINK_MS = 1500;

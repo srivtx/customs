@@ -2,7 +2,7 @@
 
 /**
  * theme.tsx — the desk lamp. A 28px round, quiet icon button in the
- * footer's bottom-left corner — x.ai's pattern, down to the geometry:
+ * footer's bottom-left corner — the geometry is the point:
  * sun on the night desk, moon on the day desk, the other face hidden
  * by CSS so hydration never flickers. Choice persists in localStorage
  * and is applied pre-paint by the no-flash script in layout.tsx.

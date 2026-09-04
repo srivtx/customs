@@ -76,7 +76,7 @@
  * stamps, no second border style. Restraint reads as production.
  *
  * Two themes, one desk: the night ledger (default) and the day ledger
- * (opt-in, from the footer, persisted, no flash — x.ai's pattern). Every
+ * (opt-in, from the footer, persisted, no flash). Every
  * color is a token; the tokens flip; nothing else changes.
  */
 :root {
@@ -160,7 +160,7 @@
 html.light {
   color-scheme: light;
 
-  /* x.ai's light mode is pure white — no cream, no warm cast. The desk
+  /* The day ledger is pure white — no cream, no warm cast. The desk
      under daylight: white ground, near-black ink, neutral hairlines. */
   --paper: #ffffff;
   --paper2: #f5f5f5;
@@ -263,7 +263,7 @@ html.light {
   }
 
   /* the paper — a white document sheet in BOTH themes, exactly like a
-     real working paper: x.ai's dark site still shows white documents.
+     real working paper: a dark desk still shows white documents.
      Scoped tokens flip every child back to ink-on-white, so the article
      needs no per-element overrides. On the white day desk it is the page
      itself; on the night desk it sits as a lit sheet. */
@@ -299,8 +299,8 @@ html.light {
 
   /* ------------------------------------------------------------------
    * the one scrollbar — the window's own, thin and quiet on the desk.
-   * Inner panels hide theirs entirely (x.ai's way: the content scrolls
-   * on wheel and touch; the chrome stays invisible until the window).
+   * Inner panels hide theirs entirely (the quiet-machine way: the content
+   * scrolls on wheel and touch; the chrome stays invisible until the window).
    * ------------------------------------------------------------------ */
   html {
     scrollbar-width: thin;
@@ -360,7 +360,7 @@ html.light {
 
   /* ---------------- view transitions — the settle ----------------
    * Views swap instantly (no exit lag); the incoming surface fades
-   * and rises onto the desk in 300ms — the x.ai pattern.
+   * and rises onto the desk in 300ms.
    * ------------------------------------------------------------------ */
   .view-enter {
     /* no fill-mode: `both` would leave transform:translateY(0) computed
@@ -498,7 +498,7 @@ html.light {
     60% { transform: translateY(0.5px) scaleY(0.2); }
   }
 
-  /* the money tell — x.ai/grok language, take two: a scaled circle is
+  /* the money tell — the quiet-machine language, take two: a scaled circle is
      forever an ellipse, so the round eye does NOT stretch itself. A
      capsule (rect, rx = half width — round caps, straight parallel
      sides) grows OUT of the circle instead: at every scale >= 0.56 it
