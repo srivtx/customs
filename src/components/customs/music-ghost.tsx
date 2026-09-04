@@ -296,41 +296,60 @@ export function MusicGhost() {
   );
 
   /* the player: created once; its methods exist only after onReady, so
-     every caller goes through the ready promise */
+     every caller goes through the ready promise. Two hard lessons are
+     baked in: the mount div may not exist yet (a cached YT api resolves
+     before React commits the summoned card — wait for it, never
+     reject), and a failed attempt must clear the promise (a poisoned
+     ready ref used to kill every summon after one bad race). */
   const ensurePlayer = useCallback((): Promise<YTPlayer> => {
     if (readyRef.current) return readyRef.current;
+    const attempt = (resolve: (p: YTPlayer) => void, reject: (e: Error) => void, tries: number) => {
+      if (!window.YT?.Player) {
+        reject(new Error("no yt"));
+        return;
+      }
+      const el = mountRef.current;
+      if (!el) {
+        if (tries > 40) {
+          reject(new Error("no mount"));
+          return;
+        }
+        setTimeout(() => attempt(resolve, reject, tries + 1), 25);
+        return;
+      }
+      new window.YT.Player(el, {
+        width: 236,
+        height: 133,
+        playerVars: { rel: 0, modestbranding: 1 },
+        events: {
+          onReady: (e) => {
+            e.target.setVolume(volumeRef.current);
+            resolve(e.target);
+          },
+          onStateChange: (e) => {
+            /* 1 = playing, 2 = paused, 3 = buffering, 0 = ended */
+            setPlaying(e.data === 1);
+            setWarming(e.data === 3);
+            if (e.data === 1) setNeedsTap(false);
+            /* the loop-back: when the needle hits the end and the
+               loop is armed, the same track plays again */
+            if (e.data === 0 && loopRef.current) {
+              e.target.seekTo(0, true);
+              e.target.playVideo();
+            }
+          },
+        },
+      });
+    };
     readyRef.current = loadYtApi().then(
       () =>
         new Promise<YTPlayer>((resolve, reject) => {
-          if (!window.YT?.Player || !mountRef.current) {
-            reject(new Error("no yt"));
-            return;
-          }
-          new window.YT.Player(mountRef.current, {
-            width: 236,
-            height: 133,
-            playerVars: { rel: 0, modestbranding: 1 },
-            events: {
-              onReady: (e) => {
-                e.target.setVolume(volumeRef.current);
-                resolve(e.target);
-              },
-              onStateChange: (e) => {
-                /* 1 = playing, 2 = paused, 3 = buffering, 0 = ended */
-                setPlaying(e.data === 1);
-                setWarming(e.data === 3);
-                if (e.data === 1) setNeedsTap(false);
-                /* the loop-back: when the needle hits the end and the
-                   loop is armed, the same track plays again */
-                if (e.data === 0 && loopRef.current) {
-                  e.target.seekTo(0, true);
-                  e.target.playVideo();
-                }
-              },
-            },
-          });
+          attempt(resolve, reject, 0);
         })
     );
+    readyRef.current.catch(() => {
+      readyRef.current = null;
+    });
     return readyRef.current;
   }, []);
 
