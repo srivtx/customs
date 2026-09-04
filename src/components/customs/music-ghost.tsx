@@ -1,19 +1,24 @@
 "use client";
 
 /**
- * music-ghost.tsx — the second agent. The desk head's own body — same
- * round volume, same two eyes, same idle choreography (the classes are
- * shared with `DeskHead`, so the glance-for-glance movements are
- * identical) — filled with the band's red instead of ink.
+ * music-ghost.tsx — coco, the second agent. The desk head's own body —
+ * same round volume, same two eyes, same idle choreography (the classes
+ * are shared with `DeskHead`, glance for glance) — filled with the
+ * band's red instead of ink.
  *
  * Summoned over the music bus by the desk agent's chat, it bobs to the
- * beat, closes its eyes when a passage earns it, and obeys — from chat
- * ("play X", "skip", "stop"), from its own control card, or from a click.
+ * beat, closes its eyes when a passage earns it, and obeys — from the
+ * desk's chat, from its own control card (three buttons, one hairline
+ * bubble), or from its own chat window: click coco and a panel opens,
+ * the desk agent's chat in miniature. Its ear is the local rules brain
+ * — control verbs run at zero tokens; a play wish is honestly deflected
+ * to the desk, never drained through an LLM.
  *
  * Face law: eyes only, no mouth. Player law: the IFrame API's methods
  * only exist after onReady — everything goes through the ready promise;
- * the stage's React-owned wrapper persists (full ⇄ mini), so the player
- * is created once and never orphaned.
+ * the stage's React-owned wrapper persists, so the player is created
+ * once and never orphaned. Hide ≠ stop: tucking coco away keeps the
+ * music humming.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -106,17 +111,48 @@ function loadYtApi(): Promise<void> {
 
 const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 
+interface ChatLine {
+  id: number;
+  who: "user" | "coco" | "note";
+  text: string;
+}
+
+/**
+ * TypeLine — coco's voice arrives like speech, the desk agent's own
+ * reveal: a smooth left-to-right sweep (~80 chars/s), instant under
+ * reduced motion.
+ */
+function TypeLine({ text, className }: { text: string; className?: string }) {
+  const instant =
+    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const [n, setN] = useState(instant ? text.length : 0);
+  useEffect(() => {
+    if (instant) return;
+    const iv = setInterval(() => {
+      setN((v) => {
+        if (v >= text.length) {
+          clearInterval(iv);
+          return v;
+        }
+        return Math.min(v + 2, text.length);
+      });
+    }, 24);
+    return () => clearInterval(iv);
+  }, [text, instant]);
+  return <span className={className}>{text.slice(0, n)}</span>;
+}
+
 export function MusicGhost() {
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
   const [state, setState] = useState<GhostState>("hidden");
   const [track, setTrack] = useState<Track | null>(null);
   const [playing, setPlaying] = useState(false);
-  const [deck, setDeck] = useState<"full" | "mini">("full");
   const [progress, setProgress] = useState(0);
   const [needsTap, setNeedsTap] = useState(false);
   const [tucked, setTucked] = useState(false);
   const [card, setCard] = useState(false);
-  const [cocoLine, setCocoLine] = useState<string | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chat, setChat] = useState<ChatLine[]>([]);
 
   const mountRef = useRef<HTMLDivElement>(null);
   const readyRef = useRef<Promise<YTPlayer> | null>(null);
@@ -124,6 +160,12 @@ export function MusicGhost() {
   const drag = useRef({ active: false, moved: false, px: 0, py: 0, ox: 0, oy: 0 });
   const stateTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const volumeRef = useRef(70);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const chatBodyRef = useRef<HTMLDivElement>(null);
+  const chatInputRef = useRef<HTMLInputElement>(null);
+  /* chat ids mint synchronously in the handler, never inside an updater
+     — the desk panel's duplicate-key lesson, inherited whole */
+  const chatIdRef = useRef(1);
 
   const eyeMood = useEyeMood(playing);
 
@@ -157,6 +199,30 @@ export function MusicGhost() {
       }
     }
   }, [pos]);
+
+  /* the chat minds itself: it opens to its own ear, scrolls to the last
+     word, closes on esc — and on a click that lands outside coco */
+  useEffect(() => {
+    if (chatOpen) chatInputRef.current?.focus();
+    const el = chatBodyRef.current;
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+  }, [chatOpen, chat]);
+
+  useEffect(() => {
+    if (!chatOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setChatOpen(false);
+    };
+    const onDown = (e: PointerEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setChatOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("pointerdown", onDown);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("pointerdown", onDown);
+    };
+  }, [chatOpen]);
 
   /* the whole ghost unmounts when it tucks away — the player dies with
      it, so the ready promise must too (the next summon starts fresh) */
@@ -207,10 +273,12 @@ export function MusicGhost() {
       if (!tracks.length) return;
       queueRef.current = { tracks, index: 0 };
       setTrack(tracks[0]);
-      setDeck("full");
       setCard(true);
       setTucked(false);
       setProgress(0);
+      /* the handoff receipt rides coco's own chat, even while closed */
+      const note: ChatLine = { id: chatIdRef.current++, who: "note", text: `now playing · ${tracks[0].title}` };
+      setChat((p) => [...p, note]);
       setState("arriving");
       schedule(950, () => setState("out"));
       void ensurePlayer()
@@ -290,7 +358,6 @@ export function MusicGhost() {
               queueRef.current = { tracks: [], index: 0 };
               setTrack(null);
               setPlaying(false);
-              setDeck("full");
               setState("leaving");
               schedule(900, () => setState("hidden"));
               break;
@@ -314,7 +381,7 @@ export function MusicGhost() {
     return () => clearInterval(iv);
   }, [playing, track, ensurePlayer]);
 
-  /* drag vs click — the desk head's own law; a click flips the deck */
+  /* drag vs click — the desk head's own law; a click opens coco's ear */
   const onDown = (e: React.PointerEvent<HTMLButtonElement>) => {
     if (!pos) return;
     drag.current = { active: true, moved: false, px: e.clientX, py: e.clientY, ox: pos.x, oy: pos.y };
@@ -333,35 +400,56 @@ export function MusicGhost() {
     }
   };
   const onUp = () => {
-    if (drag.current.active && !drag.current.moved && track) setDeck((d) => (d === "full" ? "mini" : "full"));
+    if (drag.current.active && !drag.current.moved) setChatOpen((v) => !v);
     drag.current.active = false;
   };
 
-  /* coco's own ear: type straight to the ghost — control verbs run on
-     the local rules brain at zero tokens; anything else gets an honest
-     deflection instead of a silent token drain */
+  /* coco's own ear: control verbs run on the local rules brain at zero
+     tokens; a play wish is deflected to the desk — the record crate is
+     the desk's tool, and no token is spent pretending otherwise */
+  const cocoSay = (text: string) => {
+    const line: ChatLine = { id: chatIdRef.current++, who: "coco", text };
+    setChat((p) => [...p, line]);
+  };
   const tellCoco = (raw: string) => {
     const text = raw.trim();
     if (!text) return;
+    const userLine: ChatLine = { id: chatIdRef.current++, who: "user", text };
+    setChat((p) => [...p, userLine]);
+    if (/^(?:hi|hello|hey|yo|sup)\b[,.! ]*(?:coco)?[.!]*$/i.test(text)) {
+      cocoSay("hey. tell me skip, pause, hide — or say give me controls.");
+      return;
+    }
     const intent = parseMusicIntent(text);
     if (intent && intent.action !== "play") {
       musicBus.emit({ action: intent.action });
-      setCocoLine(
+      cocoSay(
         intent.action === "hide"
-          ? "tucked — still humming"
+          ? "tucked — still humming."
           : intent.action === "controls"
-            ? "controls up"
-            : `${intent.action}, ok`
+            ? "controls up."
+            : `${intent.action}, ok.`
       );
       return;
     }
-    setCocoLine("I hum — ask the desk for a track, or tell me skip / pause / hide");
+    if (intent?.action === "play") {
+      cocoSay(
+        intent.query
+          ? `the desk holds the record crate — ask it to play ${intent.query}.`
+          : "the desk holds the record crate — ask it for a track."
+      );
+      return;
+    }
+    cocoSay("I hum — tell me skip, pause, louder, hide, or give me controls.");
   };
 
   if (!pos || state === "hidden") return null;
 
+  const cardShown = track !== null && (card || needsTap);
+
   return (
     <div
+      ref={wrapRef}
       className={cn(
         "fixed z-50 select-none transition-all duration-300 ease-out",
         tucked && "pointer-events-none translate-y-3 scale-90 opacity-0"
@@ -369,47 +457,31 @@ export function MusicGhost() {
       style={{ left: pos.x, top: pos.y }}
       data-ghost=""
     >
-      {track && (card || needsTap) && (
+      {cardShown && track && (
         <div
           className="animate-rise absolute bottom-[64px] right-0 w-[236px] overflow-hidden rounded-[6px] border border-line-strong bg-card"
           role="region"
           aria-label="coco is playing"
         >
-          <button
-            onClick={() => setCard(false)}
-            aria-label="close the controls — the music keeps playing"
-            className="absolute right-1.5 top-1.5 z-10 flex h-5 w-5 items-center justify-center rounded-[4px] border border-line2 bg-card text-[10px] text-inksoft transition-colors hover:border-ink/40"
-          >
-            ×
-          </button>
-          {/* the stage — the React-owned wrapper persists through the
-              full ⇄ mini flip, so the player is created once and the
-              music never dies on a collapse */}
-          <div className={cn("overflow-hidden border-b border-line transition-all duration-300 ease-out", deck === "full" ? "max-h-[113px]" : "max-h-0")}>
+          {/* the stage — the React-owned wrapper persists, so the player
+              is created once and the music never dies on a re-render */}
+          <div className="overflow-hidden border-b border-line">
             <div ref={mountRef} className="block h-[112px] w-[200px]" />
           </div>
           <div className="px-3 pb-2.5 pt-2">
-            {deck === "full" && (
-              <>
-                <p className="truncate text-[12.5px] leading-snug text-ink" title={track.title}>
-                  {track.title}
-                </p>
-                <p className="mt-0.5 font-mono text-[10px] tracking-[0.04em] text-inksoft">{track.channel}</p>
-                <div className="mt-2 h-[3px] w-full overflow-hidden rounded-full bg-line2">
-                  <div className="h-full w-full origin-left rounded-full bg-band" style={{ transform: `scaleX(${progress})` }} />
-                </div>
-                <div className="mt-1 flex items-center justify-between font-mono text-[9.5px] text-inksoft">
-                  <span>{fmt(progress * (track.durationSec || 0))}</span>
-                  <span>{fmt(track.durationSec)}</span>
-                </div>
-              </>
-            )}
-            {deck === "mini" && (
-              <p className="mb-1.5 truncate text-[11.5px] leading-snug text-ink" title={track.title}>
-                {track.title}
-              </p>
-            )}
-            <div className="flex items-center gap-1.5">
+            <p className="truncate text-[12.5px] leading-snug text-ink" title={track.title}>
+              {track.title}
+            </p>
+            <p className="mt-0.5 font-mono text-[10px] tracking-[0.04em] text-inksoft">{track.channel}</p>
+            <div className="mt-2 h-[3px] w-full overflow-hidden rounded-full bg-line2">
+              <div className="h-full w-full origin-left rounded-full bg-band" style={{ transform: `scaleX(${progress})` }} />
+            </div>
+            <div className="mt-1 flex items-center justify-between font-mono text-[9.5px] text-inksoft">
+              <span>{fmt(progress * (track.durationSec || 0))}</span>
+              <span>{fmt(track.durationSec)}</span>
+            </div>
+            {/* three buttons, one hairline bubble — the contract's law */}
+            <div className="mt-2.5 flex items-center gap-1.5">
               {needsTap ? (
                 <button
                   onClick={() => {
@@ -433,13 +505,12 @@ export function MusicGhost() {
               )}
               <button
                 onClick={() => {
-                  musicBus.emit({ action: "hide" });
+                  musicBus.emit({ action: "skip" });
                 }}
                 className="flex h-7 w-9 items-center justify-center rounded-[4px] border border-line2 text-[11.5px] text-ink transition-colors hover:border-ink/40"
-                aria-label="hide coco — the music keeps playing"
-                title="hide — the music keeps humming"
+                aria-label="skip to the next track in the queue"
               >
-                ▾
+                ⇥
               </button>
               <button
                 onClick={() => {
@@ -451,36 +522,99 @@ export function MusicGhost() {
                 ■
               </button>
             </div>
-            {deck === "full" && (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const input = e.currentTarget.elements.namedItem("tell") as HTMLInputElement | null;
-                  if (!input) return;
-                  tellCoco(input.value);
-                  input.value = "";
-                }}
-                className="mt-2 flex items-center gap-1.5"
-              >
-                <input
-                  name="tell"
-                  placeholder="tell coco…"
-                  aria-label="tell coco"
-                  className="h-6 min-w-0 flex-1 rounded-[4px] border border-line2 bg-transparent px-1.5 font-mono text-[10.5px] text-ink outline-none placeholder:text-inksoft focus:border-ink/40"
-                />
-                <button
-                  type="submit"
-                  className="flex h-6 w-7 items-center justify-center rounded-[4px] border border-line2 text-[10.5px] text-ink transition-colors hover:border-ink/40"
-                  aria-label="send to coco"
-                >
-                  ↵
-                </button>
-              </form>
+          </div>
+        </div>
+      )}
+
+      {/* coco's chat — the desk agent's panel in miniature: same hairline
+          header with the face and one dot, same quiet close, same well.
+          It docks above the card when the card is up, beside it when not. */}
+      {chatOpen && (
+        <div
+          className={cn(
+            "animate-rise absolute right-0 flex max-h-[400px] w-[264px] flex-col overflow-hidden rounded-[6px] border border-line-strong bg-card",
+            cardShown ? "bottom-[316px]" : "bottom-[64px]"
+          )}
+          role="dialog"
+          aria-label="coco chat"
+        >
+          <div className="flex items-center gap-2.5 border-b border-line px-3.5 py-2.5">
+            <GhostBody playing={playing} mood="wide" size={24} />
+            <div className="flex-1">
+              <div className="label-caps">coco</div>
+              <div className="mt-0.5 flex items-center gap-1.5 text-[10.5px] text-inksoft">
+                <span aria-hidden className={cn("h-1 w-1 rounded-full", playing ? "bg-band" : "bg-inksoft/40")} />
+                {playing ? "humming" : "quiet"}
+              </div>
+            </div>
+            <button
+              onClick={() => musicBus.emit({ action: "hide" })}
+              aria-label="hide coco — the music keeps playing"
+              title="hide — the music keeps humming"
+              className="text-[11px] leading-none text-inksoft transition-colors hover:text-ink"
+            >
+              hide
+            </button>
+            <button
+              onClick={() => setChatOpen(false)}
+              aria-label="close coco's chat"
+              className="text-[13px] leading-none text-inksoft transition-colors hover:text-ink"
+            >
+              ✕
+            </button>
+          </div>
+          <div ref={chatBodyRef} role="log" aria-live="polite" className="flex-1 space-y-2.5 overflow-y-auto px-3.5 py-3">
+            {chat.length === 0 && (
+              <p className="animate-rise py-4 text-center text-[12px] leading-relaxed text-inksoft">
+                coco hums what the desk brings — tell it skip, pause, hide, or ask for controls.
+              </p>
             )}
-            {cocoLine && deck === "full" && (
-              <p className="mt-1 font-mono text-[9.5px] text-inksoft">{cocoLine}</p>
+            {chat.map((l) =>
+              l.who === "user" ? (
+                <div key={l.id} className="animate-rise flex justify-end">
+                  <div className="max-w-[85%] rounded-[4px] bg-ink px-2.5 py-1.5 text-[12.5px] text-paper">{l.text}</div>
+                </div>
+              ) : l.who === "coco" ? (
+                <p key={l.id} className="animate-rise text-[12.5px] leading-relaxed text-ink">
+                  <TypeLine text={l.text} />
+                </p>
+              ) : (
+                <p key={l.id} className="animate-rise border-l border-band pl-2 font-mono text-[10.5px] leading-relaxed text-inksoft">
+                  {l.text}
+                </p>
+              )
             )}
           </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const el = e.currentTarget.elements.namedItem("tell") as HTMLInputElement | null;
+              if (!el) return;
+              tellCoco(el.value);
+              el.value = "";
+            }}
+            className="border-t border-line p-2.5"
+          >
+            <div className="flex items-center gap-2 rounded-[4px] border border-line2 bg-paper2 px-2.5 py-1.5 transition-colors focus-within:border-ink/30">
+              <input
+                name="tell"
+                ref={chatInputRef}
+                placeholder="tell coco…"
+                aria-label="message coco"
+                autoComplete="off"
+                className="h-6 flex-1 bg-transparent text-[12.5px] text-ink placeholder:text-inksoft/60 focus:outline-none"
+              />
+              <button
+                type="submit"
+                aria-label="send to coco"
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[3px] bg-ink text-paper transition-opacity hover:opacity-90"
+              >
+                <svg viewBox="0 0 16 16" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="M8 13V3M4 7l4-4 4 4" />
+                </svg>
+              </button>
+            </div>
+          </form>
         </div>
       )}
 
@@ -488,8 +622,8 @@ export function MusicGhost() {
         onPointerDown={onDown}
         onPointerMove={onMove}
         onPointerUp={onUp}
-        aria-label="coco — the desk's red ghost — drag to move, click to flip the deck"
-        title="coco — drag me, click me"
+        aria-label="coco — the desk's red ghost — drag to move, click to chat"
+        title="coco — drag me, click to chat"
         className={cn(
           "relative z-10 block cursor-grab touch-none active:cursor-grabbing",
           state === "arriving" && "ghost-arrive",

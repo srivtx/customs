@@ -192,29 +192,38 @@ are cute: smooth, quiet, small tells.
    lilac, amber at 0.7–0.85 stops, themed total opacity 0.55 dark / 0.38 light)
    are the only non-verdict colors in the product. Keep exactly four.
 
-### The second character: the music ghost — `music-ghost.tsx`
+### The second character: coco, the music ghost — `music-ghost.tsx`
 
-The desk head's second body: the same round volume and two eyes, in the
-band red, with a wisp skirt. It is summoned by the desk agent's chat and
-plays what was asked.
+Coco is the desk head's own body in the band red: the same 32×32 round
+volume, the same `desk-eye-g` / `desk-eye` classes (glance for glance,
+blink for blink — the choreography is shared, not copied). It is
+summoned by the desk agent's chat and plays what was asked.
 
 1. **Face law:** eyes only — no mouth, ever (the desk head is mouthless;
-   so is the ghost). Expression is eye state (wide on the beat, happy
-   arcs when enjoying, squint when poked) plus body motion. No new parts.
-2. **Containment law (as the bot's):** the wisp is part of the
-   silhouette — one path, head circle flowing into the skirt — and its
-   inner drift is clipped to that path. Sway is transform-only. Nothing
-   renders outside the silhouette.
-3. **Motion budget:** arrive/sink (one 0.9s transform each), the beat bob
-   ±2.6px on a ~109 BPM clock, the wisp sway slower than the bob, the
-   eye pulse, the idle wander. That is all. **Paused music freezes the
-   bob and the pulse** — the ghost breathes only when the track does.
+   so is coco). Expression is eye state (wide; happy arcs when the
+   passage earns it) plus body motion. No new parts.
+2. **Twin law:** the silhouette is the desk head's own — one circle, no
+   skirt, no extra geometry. The band fill and the beat bob are the only
+   departures. Paused music freezes the bob — coco breathes only when
+   the track does.
+3. **Motion budget:** arrive/sink (one 0.9s transform each), the beat
+   bob, the shared eye choreography, the tucked-away fade. That is all.
 4. **Controls** live in one hairline bubble: the YouTube player at
    visible size (never a hidden or 1px frame), track, channel, a
-   transform-only progress ride, three buttons. Mono for the metadata,
-   sans for the title.
-5. The summon is logged in the transcript as a compact `ghost` chip with
-   the chosen track — a receipt of the handoff, not decoration.
+   transform-only progress ride, exactly three buttons (play/pause,
+   skip, stop). Mono for the metadata, sans for the title. No close box
+   on the card — the card is dismissed by stop, or hidden with the
+   music still humming.
+5. **Coco's chat** is the desk agent's panel in miniature, and it opens
+   on a click of coco: the same hairline header (the face at 24px, one
+   status dot — band while humming), the same quiet text close, the
+   same sunken composer well, TypeLine for coco's voice. Its ear is the
+   rules brain: control verbs run at zero tokens; a play wish is
+   deflected to the desk, never drained through an LLM. Hide ≠ stop:
+   "hide" (chat word or header button) tucks coco away while the music
+   keeps humming; "give me controls" recalls it.
+6. The summon is logged in both transcripts as a compact `coco ·` chip
+   with the chosen track — a receipt of the handoff, not decoration.
 
 ## 8. Copy voice
 
