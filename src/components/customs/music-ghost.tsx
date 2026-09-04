@@ -129,11 +129,15 @@ interface ChatLine {
 /**
  * TypeLine — coco's voice arrives like speech, the desk agent's own
  * reveal: a smooth left-to-right sweep (~80 chars/s), instant under
- * reduced motion.
+ * reduced motion. The already-written law: a line that has streamed
+ * once never re-types — reopen the chat, hide and return, the words
+ * are simply there.
  */
+const TYPED = new Set<string>();
 function TypeLine({ text, className }: { text: string; className?: string }) {
   const instant =
-    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) ||
+    TYPED.has(text);
   const [n, setN] = useState(instant ? text.length : 0);
   useEffect(() => {
     if (instant) return;
@@ -141,6 +145,7 @@ function TypeLine({ text, className }: { text: string; className?: string }) {
       setN((v) => {
         if (v >= text.length) {
           clearInterval(iv);
+          TYPED.add(text);
           return v;
         }
         return Math.min(v + 2, text.length);
@@ -267,11 +272,28 @@ export function MusicGhost() {
   };
 
   /* coco's voice: one line, minted synchronously — the desk panel's
-     duplicate-key law, inherited whole */
+     duplicate-key law, inherited whole. A line identical to coco's
+     last is dropped: the same words twice are noise, not speech. */
   const cocoSay = useCallback((text: string) => {
-    const line: ChatLine = { id: chatIdRef.current++, who: "coco", text };
-    setChat((p) => [...p, line]);
+    setChat((p) => {
+      const last = p[p.length - 1];
+      if (last && last.who === "coco" && last.text === text) return p;
+      return [...p, { id: chatIdRef.current++, who: "coco" as const, text }];
+    });
   }, []);
+
+  /* say-once law: the video gestures explain themselves the first time
+     and never again — a toggle repeated ten times must not narrate ten
+     times */
+  const saidOnceRef = useRef<Set<string>>(new Set());
+  const sayOnce = useCallback(
+    (key: string, text: string) => {
+      if (saidOnceRef.current.has(key)) return;
+      saidOnceRef.current.add(key);
+      cocoSay(text);
+    },
+    [cocoSay]
+  );
 
   /* the player: created once; its methods exist only after onReady, so
      every caller goes through the ready promise */
@@ -493,10 +515,10 @@ export function MusicGhost() {
     }
     if (card) {
       setCard(false);
-      cocoSay("video in the background — the music hums on.");
+      sayOnce("sink", "video in the background — the music hums on.");
     } else {
       setCard(true);
-      cocoSay("the screen is back.");
+      sayOnce("restore", "the screen is back.");
     }
   };
 
@@ -726,7 +748,7 @@ export function MusicGhost() {
           header with the face and one dot, same quiet close, same well. */}
       {chatOpen && (
         <div
-          className="animate-rise flex max-h-[400px] w-[280px] flex-col overflow-hidden rounded-[6px] border border-line-strong bg-card"
+          className="animate-rise flex max-h-[300px] w-[280px] flex-col overflow-hidden rounded-[6px] border border-line-strong bg-card"
           role="dialog"
           aria-label="coco chat"
         >
@@ -768,7 +790,7 @@ export function MusicGhost() {
             role="log"
             aria-live="polite"
             className={cn(
-              "min-h-0 flex-1 space-y-2.5 overflow-y-auto px-3.5 py-3 transition-opacity duration-300",
+              "chat-scroll min-h-0 flex-1 space-y-2.5 overflow-y-auto px-3.5 py-3 transition-opacity duration-300",
               chatClearing && "opacity-0"
             )}
           >

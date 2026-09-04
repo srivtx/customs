@@ -73,10 +73,14 @@ type Toast = "idle" | "blue" | "green" | "done";
 /**
  * TypeLine — the desk's voice arrives like speech: a smooth left-to-right
  * reveal (~80 chars/s), not a paste. Respects reduced-motion (instant).
+ * The already-written law: a line that has streamed once never re-types
+ * — close the panel, open it again, the words are simply there.
  */
+const TYPED = new Set<string>();
 function TypeLine({ text, className }: { text: string; className?: string }) {
   const instant =
-    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) ||
+    TYPED.has(text);
   const [n, setN] = useState(instant ? text.length : 0);
   useEffect(() => {
     if (instant) return;
@@ -84,6 +88,7 @@ function TypeLine({ text, className }: { text: string; className?: string }) {
       setN((v) => {
         if (v >= text.length) {
           clearInterval(iv);
+          TYPED.add(text);
           return v;
         }
         return Math.min(v + 2, text.length);
@@ -364,7 +369,7 @@ export function FloatingAgent({ view }: { view: View }) {
     <div ref={wrapRef} className="fixed z-50 select-none" style={{ left: pos.x, top: pos.y }}>
       {open && (
         <div
-          className="animate-rise absolute right-0 flex max-h-[470px] w-[330px] flex-col overflow-hidden rounded-[6px] border border-line-strong bg-card"
+          className="animate-rise absolute right-0 flex max-h-[340px] w-[330px] flex-col overflow-hidden rounded-[6px] border border-line-strong bg-card"
           style={panelBelow ? { top: "72px" } : { bottom: "84px" }}
           role="dialog"
           aria-label="the desk agent chat"
@@ -404,10 +409,9 @@ export function FloatingAgent({ view }: { view: View }) {
             role="log"
             aria-live="polite"
             className={cn(
-              "flex-1 space-y-2.5 overflow-y-auto px-3.5 py-3 transition-opacity duration-300",
+              "chat-scroll flex-1 space-y-2.5 overflow-y-auto px-3.5 py-3 transition-opacity duration-300",
               clearing && "opacity-0"
             )}
-            style={{ maxHeight: "330px" }}
           >
             {lines.length === 0 && !clearing && (
               <p className="animate-rise py-4 text-center text-[12px] leading-relaxed text-inksoft">

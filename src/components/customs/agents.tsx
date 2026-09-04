@@ -321,8 +321,9 @@ export function AgentsPage({ onEnter }: { onEnter: (v: View) => void }) {
             <CornerTack className="bottom-1.5 right-1.5 text-inksoft" />
 
             <div className="relative grid md:grid-cols-[1fr_auto_1fr]">
-              {/* moco's patch — ink felt, gray thread */}
-              <div className="border-b border-line p-7 transition-colors duration-150 hover:bg-card-hover md:border-b-0">
+              {/* moco's patch — ink felt, gray thread; no border stitch of
+                  its own: one stitch voice per object, the frame speaks */}
+              <div className="p-7 transition-colors duration-150 hover:bg-card-hover">
                 <FeltGrain />
                 <div className="relative flex items-center justify-center py-4">
                   <DeskHead size={96} className="text-ink" />
@@ -339,23 +340,52 @@ export function AgentsPage({ onEnter }: { onEnter: (v: View) => void }) {
                 </div>
               </div>
 
-              {/* the seam — the bus */}
-              <div aria-hidden className="hidden items-stretch md:flex">
-                <div className="flex w-px flex-col items-center bg-line">
-                  <span className="w-px flex-1" />
-                  <span className="relative my-4 flex size-12 shrink-0 items-center justify-center rounded-full border border-line-strong bg-card font-mono text-[9px] uppercase tracking-[0.08em] text-inksoft">
-                    bus
-                  </span>
-                  <span className="w-px flex-1" />
-                </div>
+              {/* the seam — two cloths sewn by one band-thread running
+                  stitch, the bus riding it (the hero mat's law, kept) */}
+              <div aria-hidden className="relative hidden w-14 shrink-0 md:block">
+                <svg className="absolute inset-0 h-full w-full">
+                  <line
+                    x1="50%"
+                    y1="0"
+                    x2="50%"
+                    y2="100%"
+                    stroke="var(--band)"
+                    strokeOpacity="0.55"
+                    strokeWidth="1.5"
+                    strokeDasharray="0.5 11"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <span className="absolute left-1/2 top-1/2 flex size-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-line-strong bg-card font-mono text-[9px] uppercase tracking-[0.08em] text-inksoft">
+                  bus
+                </span>
+              </div>
+              {/* the seam, stacked — the same stitch, horizontal on phones */}
+              <div aria-hidden className="relative h-12 md:hidden">
+                <svg className="absolute inset-0 h-full w-full">
+                  <line
+                    x1="0"
+                    y1="50%"
+                    x2="100%"
+                    y2="50%"
+                    stroke="var(--band)"
+                    strokeOpacity="0.55"
+                    strokeWidth="1.5"
+                    strokeDasharray="0.5 11"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <span className="absolute left-1/2 top-1/2 flex size-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-line-strong bg-card font-mono text-[9px] uppercase tracking-[0.08em] text-inksoft">
+                  bus
+                </span>
               </div>
 
-              {/* coco's patch — band dye, band thread, the sheen inside */}
-              <div className="relative border-t border-line p-7 transition-colors duration-150 hover:bg-card-hover md:border-l md:border-t-0 md:hover:border-band/50">
+              {/* coco's patch — band dye only; the band thread lives in
+                  the seam now, not on the border */}
+              <div className="p-7 transition-colors duration-150 hover:bg-card-hover">
                 <FeltGrain />
                 <div aria-hidden className="pointer-events-none absolute -right-12 -top-12 size-48 rounded-full bg-band-ink blur-3xl" />
                 <div aria-hidden className="pointer-events-none absolute -bottom-16 left-6 size-36 rounded-full bg-band-ink/70 blur-3xl" />
-                <Stitch inset={4} className="text-band" rx={2} />
                 <div className="relative flex items-center justify-center py-4">
                   <GhostBody size={96} mood="wide" playing={false} />
                 </div>
