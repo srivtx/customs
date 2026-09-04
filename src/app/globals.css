@@ -997,6 +997,25 @@ html.light {
   }
 }
 
+/* the wire's ping — one shot when a summon actually happens */
+.wire-packet {
+  animation: wire-run 0.9s cubic-bezier(0.25, 1, 0.5, 1) 1 both;
+}
+
+@keyframes wire-run {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  35% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.25);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-rise,
   .beat-in,
@@ -1021,7 +1040,8 @@ html.light {
   .agent-yarn,
   .ghost-arrive,
   .ghost-sink,
-  .ghost-stage.ghost-playing {
+  .ghost-stage.ghost-playing,
+  .wire-packet {
     animation: none !important;
   }
   .pulse-dot::after {

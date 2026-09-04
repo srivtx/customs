@@ -97,7 +97,7 @@ function loadYtApi(): Promise<void> {
   if (typeof window === "undefined") return Promise.resolve();
   if (window.YT?.Player) return Promise.resolve();
   if (ytLoading) return ytLoading;
-  ytLoading = new Promise<void>((resolve) => {
+  ytLoading = new Promise<void>((resolve, reject) => {
     const prev = window.onYouTubeIframeAPIReady;
     window.onYouTubeIframeAPIReady = () => {
       prev?.();
@@ -106,6 +106,13 @@ function loadYtApi(): Promise<void> {
     const s = document.createElement("script");
     s.src = "https://www.youtube.com/iframe_api";
     document.head.appendChild(s);
+    /* a slow crate must never wedge the ghost: one honest timeout, then
+       the next summon retries fresh instead of riding a dead promise
+       forever (the old bug — ytLoading never reset on failure) */
+    setTimeout(() => reject(new Error("yt api slow")), 12_000);
+  }).catch((err) => {
+    ytLoading = null;
+    throw err;
   });
   return ytLoading;
 }
@@ -150,6 +157,7 @@ export function MusicGhost() {
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [needsTap, setNeedsTap] = useState(false);
+  const [warming, setWarming] = useState(false);
   const [tucked, setTucked] = useState(false);
   const [card, setCard] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
@@ -174,8 +182,6 @@ export function MusicGhost() {
   /* chat ids mint synchronously in the handler, never inside an updater
      — the desk panel's duplicate-key lesson, inherited whole */
   const chatIdRef = useRef(1);
-  /* single vs double click: the first click waits a beat for a sibling */
-  const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   /* one crate search at a time — the ref is law, the state is the dot */
   const fetchingRef = useRef(false);
 
@@ -242,13 +248,19 @@ export function MusicGhost() {
   useEffect(() => () => {
     readyRef.current = null;
     stateTimers.current.forEach(clearTimeout);
-    if (clickTimer.current) clearTimeout(clickTimer.current);
   }, []);
 
   const schedule = (ms: number, fn: () => void) => {
     const t = setTimeout(fn, ms);
     stateTimers.current.push(t);
   };
+
+  /* coco's voice: one line, minted synchronously — the desk panel's
+     duplicate-key law, inherited whole */
+  const cocoSay = useCallback((text: string) => {
+    const line: ChatLine = { id: chatIdRef.current++, who: "coco", text };
+    setChat((p) => [...p, line]);
+  }, []);
 
   /* the player: created once; its methods exist only after onReady, so
      every caller goes through the ready promise */
@@ -271,8 +283,9 @@ export function MusicGhost() {
                 resolve(e.target);
               },
               onStateChange: (e) => {
-                /* 1 = playing, 2 = paused */
+                /* 1 = playing, 2 = paused, 3 = buffering */
                 setPlaying(e.data === 1);
+                setWarming(e.data === 3);
                 if (e.data === 1) setNeedsTap(false);
               },
             },
@@ -290,6 +303,7 @@ export function MusicGhost() {
       setCard(true);
       setTucked(false);
       setProgress(0);
+      setWarming(true);
       /* the handoff receipt rides coco's own chat, even while closed */
       const note: ChatLine = { id: chatIdRef.current++, who: "note", text: `now playing · ${tracks[0].title}` };
       setChat((p) => [...p, note]);
@@ -300,9 +314,12 @@ export function MusicGhost() {
           setNeedsTap(false);
           p.loadVideoById(tracks[0].videoId);
         })
-        .catch(() => {});
+        .catch(() => {
+          setWarming(false);
+          cocoSay("the crate is slow right now — try again in a moment.");
+        });
     },
-    [ensurePlayer]
+    [ensurePlayer, cocoSay]
   );
 
   /* a control with nothing playing: the ghost pops out, wanders its
@@ -350,6 +367,7 @@ export function MusicGhost() {
               queueRef.current = { ...q, index: next };
               setTrack(q.tracks[next]);
               setProgress(0);
+              setWarming(true);
               p.loadVideoById(q.tracks[next].videoId);
               break;
             }
@@ -375,6 +393,7 @@ export function MusicGhost() {
               readyRef.current = null;
               setTrack(null);
               setPlaying(false);
+              setWarming(false);
               setState("leaving");
               schedule(900, () => setState("hidden"));
               break;
@@ -417,43 +436,35 @@ export function MusicGhost() {
     }
   };
   const onUp = () => {
-    if (drag.current.active && !drag.current.moved) {
-      if (clickTimer.current) {
-        /* the second click of a double: the video toggles — it sinks to
-           the background with the music humming on, and comes back the
-           same way. A video the browser still holds back can't sink;
-           it hasn't begun. */
-        clearTimeout(clickTimer.current);
-        clickTimer.current = null;
-        if (track) {
-          if (needsTap) {
-            cocoSay("tap play first — then I can take it to the background.");
-          } else if (card) {
-            setCard(false);
-            cocoSay("video in the background — the music hums on.");
-          } else {
-            setCard(true);
-            cocoSay("the screen is back.");
-          }
-        }
-      } else {
-        clickTimer.current = setTimeout(() => {
-          clickTimer.current = null;
-          setChatOpen((v) => !v);
-        }, 260);
-      }
-    }
+    /* the ear opens on the first click — instantly, no sibling-wait.
+       Closing is ✕, esc, or a click outside. The old code made the chat
+       wait 260ms for a possible second click — a slow double-click then
+       fired the chat toggle and the video gesture raced it. */
+    if (drag.current.active && !drag.current.moved) setChatOpen(true);
     drag.current.active = false;
+  };
+
+  /* the video gesture is the browser's own double-click — two gestures,
+     two surfaces, no hand-rolled timing to race */
+  const onDouble = () => {
+    if (!track) return;
+    if (needsTap) {
+      cocoSay("tap play first — then I can take it to the background.");
+      return;
+    }
+    if (card) {
+      setCard(false);
+      cocoSay("video in the background — the music hums on.");
+    } else {
+      setCard(true);
+      cocoSay("the screen is back.");
+    }
   };
 
   /* coco's own ear: control verbs run on the local rules brain at zero
      tokens; a play wish rides the desk's chat pipeline over the wire —
      the server-side rules brain catches it at zero tokens (the LLM
      never wakes) and the crate answers here, in coco's voice */
-  const cocoSay = (text: string) => {
-    const line: ChatLine = { id: chatIdRef.current++, who: "coco", text };
-    setChat((p) => [...p, line]);
-  };
   const tellCoco = async (raw: string) => {
     const text = raw.trim();
     if (!text) return;
@@ -564,6 +575,11 @@ export function MusicGhost() {
               <span>{fmt(progress * (track.durationSec || 0))}</span>
               <span>{fmt(track.durationSec)}</span>
             </div>
+            {warming && (
+              <p className="mt-1.5 font-mono text-[9.5px] leading-relaxed text-inksoft">
+                warming up the needle<span className="type-caret" aria-hidden>▍</span>
+              </p>
+            )}
             {/* three buttons, one hairline bubble — the contract's law */}
             <div className="mt-2.5 flex items-center gap-1.5">
               {needsTap ? (
@@ -724,8 +740,9 @@ export function MusicGhost() {
         onPointerDown={onDown}
         onPointerMove={onMove}
         onPointerUp={onUp}
-        aria-label="coco — the desk's red ghost — drag to move, click to chat, double-click for background"
-        title="coco — drag me, click to chat, double-click for background"
+        onDoubleClick={onDouble}
+        aria-label="coco — the desk's red ghost — drag to move, click to chat, double-click to sink the video"
+        title="coco — drag me, click to chat, double-click to sink the video"
         className={cn(
           "relative z-10 block cursor-grab touch-none active:cursor-grabbing",
           state === "arriving" && "ghost-arrive",

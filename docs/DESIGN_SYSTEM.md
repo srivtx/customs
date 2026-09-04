@@ -237,6 +237,11 @@ summoned by the desk agent's chat and plays what was asked.
    clears — turning a sheet over, not a wipe; the music is untouched.
 6. The summon is logged in both transcripts as a compact `coco ·` chip
    with the chosen track — a receipt of the handoff, not decoration.
+7. **The agents view** presents both characters in ONE shared frame
+   split by the bus rail (duality as structure). The pointer spotlight
+   is a hover state, token-tinted per character, killed under reduced
+   motion; the wire ping runs once per real summon — motion confirms
+   causality, never decorates.
 
 ## 8. Copy voice
 
