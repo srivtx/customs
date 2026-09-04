@@ -1,17 +1,18 @@
 "use client";
 
 /**
- * shell.tsx — the app shell: one route, six surfaces (overview, why it
- * exists, the paper, the agent kit, agent playground, merchant control
- * room), the gate diamond in the masthead, honest status chips, and a
- * footer that says the true things. Views swap instantly and settle in
- * 300ms — no exit lag, one motion system everywhere.
+ * shell.tsx — the app shell: one route, seven surfaces (overview, why
+ * it exists, the agents, the paper, the agent kit, agent playground,
+ * merchant control room), the gate diamond in the masthead, honest
+ * status chips, and a footer that says the true things. Views swap
+ * instantly and settle in 300ms — no exit lag, one motion system everywhere.
  */
 import { useCallback, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { LogoMark } from "./bits";
 import { Landing } from "./landing";
 import { WhyPage } from "./why";
+import { AgentsPage } from "./agents";
 import { PaperPage } from "./paper";
 import { AgentKitPage } from "./agent-kit";
 import { Playground } from "./playground";
@@ -21,11 +22,12 @@ import { MusicGhost } from "./music-ghost";
 import { SiteFooter } from "./footer";
 import { SystemThemeAsk } from "./theme";
 
-export type View = "home" | "why" | "paper" | "kit" | "agent" | "merchant";
+export type View = "home" | "why" | "agents" | "paper" | "kit" | "agent" | "merchant";
 
 const NAV: { id: View; label: string }[] = [
   { id: "home", label: "Overview" },
   { id: "why", label: "Why" },
+  { id: "agents", label: "Agents" },
   { id: "paper", label: "Paper" },
   { id: "kit", label: "Agent kit" },
   { id: "agent", label: "Playground" },
@@ -149,6 +151,7 @@ export function CustomsApp() {
         <div key={view} className="view-enter">
           {view === "home" && <Landing onEnter={go} />}
           {view === "why" && <WhyPage onEnter={go} />}
+          {view === "agents" && <AgentsPage onEnter={go} />}
           {view === "paper" && <PaperPage onEnter={go} />}
           {view === "kit" && <AgentKitPage onEnter={go} />}
           {view === "agent" && <Playground />}

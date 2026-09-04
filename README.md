@@ -182,6 +182,7 @@ the **Why it exists** view and `PAPER.md` §7.
 | `src/components/customs/hero-bot.tsx` | the customs bot — one smooth volume, token-inked, reduced-motion aware |
 | `src/components/customs/why.tsx` | why it exists + the architecture (drawn as cards) + desk ledger |
 | `src/components/customs/agent-kit.tsx` | the agent kit view — three doors (chat / real MCP / ACP), the kit board, copy-context, live walkthrough |
+| `src/components/customs/agents.tsx` | the agents view — the two characters live, the handoff wire, a working summon |
 | `src/components/customs/music-ghost.tsx` | the second agent — the red ghost the desk summons to play music |
 | `src/components/customs/paper.tsx` | the working paper view — a clean document page, numbers live |
 | `src/components/customs/playground.tsx` | buyer side: chat, mandate approval, red team |
