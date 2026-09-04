@@ -153,6 +153,9 @@ export function MusicGhost() {
   const [card, setCard] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [chat, setChat] = useState<ChatLine[]>([]);
+  /* the fresh page: the conversation fades before it clears — a reset
+     should read as turning a sheet over, not a wipe */
+  const [chatClearing, setChatClearing] = useState(false);
   /* the chat opens downward when coco lives in the upper sky (the desk
      panel's own law), upward when it sits near the floor */
   const [chatBelow, setChatBelow] = useState(false);
@@ -472,6 +475,17 @@ export function MusicGhost() {
     cocoSay("I hum — tell me skip, pause, louder, hide, or give me controls.");
   };
 
+  /* the fresh page — the desk panel's ↻, inherited whole. The music is
+     untouched: a reset clears the conversation, never the hum. */
+  const resetChat = () => {
+    if (chatClearing) return;
+    setChatClearing(true);
+    setTimeout(() => {
+      setChat([]);
+      setChatClearing(false);
+    }, 260);
+  };
+
   if (!pos || state === "hidden") return null;
 
   const cardShown = track !== null && (card || needsTap);
@@ -586,6 +600,14 @@ export function MusicGhost() {
               hide
             </button>
             <button
+              onClick={resetChat}
+              aria-label="fresh page — clear this conversation"
+              title="fresh page"
+              className="px-0.5 text-[12px] leading-none text-inksoft transition-colors hover:text-ink"
+            >
+              ↻
+            </button>
+            <button
               onClick={() => setChatOpen(false)}
               aria-label="close coco's chat"
               className="text-[13px] leading-none text-inksoft transition-colors hover:text-ink"
@@ -593,8 +615,16 @@ export function MusicGhost() {
               ✕
             </button>
           </div>
-          <div ref={chatBodyRef} role="log" aria-live="polite" className="flex-1 space-y-2.5 overflow-y-auto px-3.5 py-3">
-            {chat.length === 0 && (
+          <div
+            ref={chatBodyRef}
+            role="log"
+            aria-live="polite"
+            className={cn(
+              "flex-1 space-y-2.5 overflow-y-auto px-3.5 py-3 transition-opacity duration-300",
+              chatClearing && "opacity-0"
+            )}
+          >
+            {chat.length === 0 && !chatClearing && (
               <p className="animate-rise py-4 text-center text-[12px] leading-relaxed text-inksoft">
                 coco hums what the desk brings — tell it skip, pause, hide, or ask for controls.
               </p>

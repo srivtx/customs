@@ -227,7 +227,8 @@ summoned by the desk agent's chat and plays what was asked.
    recalls it. A **double-click** on coco toggles the video: it sinks
    to the background — the music hums on, coco stays to talk to — and a
    second double-click brings the screen back. "give me controls"
-   always works too.
+   always works too. A ↻ fresh page fades the conversation before it
+   clears — turning a sheet over, not a wipe; the music is untouched.
 6. The summon is logged in both transcripts as a compact `coco ·` chip
    with the chosen track — a receipt of the handoff, not decoration.
 
