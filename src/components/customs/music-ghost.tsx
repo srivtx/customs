@@ -620,7 +620,7 @@ export function MusicGhost() {
     <div
       ref={wrapRef}
       className={cn(
-        "fixed z-50 flex select-none flex-col items-end gap-2 transition-all duration-300 ease-out",
+        "fixed z-50 flex w-14 select-none flex-col items-end gap-2 transition-all duration-300 ease-out",
         tucked && "pointer-events-none translate-y-3 scale-90 opacity-0"
       )}
       style={{ left: pos.x, top: pos.y }}
