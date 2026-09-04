@@ -440,11 +440,11 @@ html.light {
     animation-delay: 1.07s;
   }
 
-  /* the music ghost — the desk head's second body, in the band's red.
-     Motion budget (DESIGN_SYSTEM §7): the arrive/sink (one transform
-     each), the beat bob ±3px on a ~109 BPM clock, the wisp sway slower
-     than the bob, the beat pulse on the eyes, the idle wander. Paused
-     music freezes the bob and the pulse — the ghost breathes only when
+  /* the music ghost — the desk head's red twin. The eyes ARE the desk
+     head's eyes (shared .desk-eye-g/.desk-eye classes above — the same
+     idle choreography, glance for glance, blink for blink). The ghost
+     adds only: the arrive/sink, and while the track plays, the beat
+     bob. Paused music freezes the bob — the ghost breathes only when
      the track does. All transform/opacity; kill-switched below. */
   .ghost-arrive {
     animation: ghost-arrive 0.9s cubic-bezier(0.25, 1, 0.5, 1) both;
@@ -452,33 +452,15 @@ html.light {
   .ghost-sink {
     animation: ghost-sink 0.9s cubic-bezier(0.25, 1, 0.5, 1) both;
   }
-  .ghost-stage .ghost-bob {
+  .ghost-stage.ghost-playing {
     transform-box: fill-box;
     transform-origin: center;
-    animation: ghost-wander 7s ease-in-out infinite;
+    animation: ghost-bob 1.15s ease-in-out infinite alternate;
   }
-  .ghost-stage.ghost-playing .ghost-bob {
-    animation: ghost-bob 1.15s ease-in-out infinite alternate, ghost-wander 7s ease-in-out infinite;
-  }
-  .ghost-stage .ghost-wisp {
-    transform-box: fill-box;
-    transform-origin: 50% 0%;
-    animation: ghost-sway 3.2s ease-in-out infinite alternate;
-  }
-  .ghost-stage .ghost-eye-open {
+  .ghost-eye-state,
+  .ghost-eye-arc {
     transform-box: fill-box;
     transform-origin: center;
-  }
-  .ghost-stage.ghost-playing .ghost-eye-open {
-    animation: ghost-pulse 1.15s ease-in-out infinite alternate;
-  }
-  .ghost-eye-arc,
-  .ghost-eye-squint {
-    transform-box: fill-box;
-    transform-origin: center;
-    transition: opacity 0.35s ease;
-  }
-  .ghost-eye-open {
     transition: opacity 0.35s ease;
   }
   @keyframes ghost-arrive {
@@ -490,22 +472,8 @@ html.light {
     to { transform: translateY(56%); opacity: 0; }
   }
   @keyframes ghost-bob {
-    from { transform: translateY(-2.6px) rotate(-2deg); }
-    to { transform: translateY(2.6px) rotate(2deg); }
-  }
-  @keyframes ghost-pulse {
-    from { transform: scale(1); }
-    to { transform: scale(1.14); }
-  }
-  @keyframes ghost-sway {
-    from { transform: translateX(-1.6px) rotate(-1.2deg); }
-    to { transform: translateX(1.6px) rotate(1.2deg); }
-  }
-  @keyframes ghost-wander {
-    0%, 12%, 100% { transform: translate(0, 0); }
-    6%, 9% { transform: translate(0, -2px); }
-    45%, 49% { transform: translate(1.8px, 0); }
-    72%, 76% { transform: translate(-1.8px, 0); }
+    from { transform: translateY(-2.4px) rotate(-2deg); }
+    to { transform: translateY(2.4px) rotate(2deg); }
   }
   @keyframes desk-idle {
     0%, 12%, 100% { transform: translate(0, 0); }
@@ -1053,9 +1021,7 @@ html.light {
   .agent-yarn,
   .ghost-arrive,
   .ghost-sink,
-  .ghost-stage .ghost-bob,
-  .ghost-stage .ghost-wisp,
-  .ghost-stage .ghost-eye-open {
+  .ghost-stage.ghost-playing {
     animation: none !important;
   }
   .pulse-dot::after {
