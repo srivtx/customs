@@ -18,6 +18,8 @@ import { cn } from "@/lib/utils";
 import { DeskHead } from "./bits";
 import type { View } from "./shell";
 import type { ChatEvent } from "@/lib/customs/agent/loop";
+import { musicBus } from "@/lib/customs/music/store";
+import type { MusicCommand } from "@/lib/customs/music/store";
 
 /* v2: the default dock moved from bottom-right to top-right (~15% down);
    the key is version-bumped so every browser gets the new dock once —
@@ -53,20 +55,32 @@ function summarize(events: ChatEvent[], startId: number): Line[] {
       out.push({ id: id++, who: "note", text: `payment ${e.status} · ₹${(e.totalPaise / 100).toLocaleString("en-IN")}` });
     } else if (e.kind === "receipt") {
       out.push({ id: id++, who: "note", text: `receipt ${e.manifestNo} · ₹${(e.totalPaise / 100).toLocaleString("en-IN")}` });
+    } else if (e.kind === "music") {
+      const what = e.action === "play" ? (e.tracks[0] ? `▶ ${e.tracks[0].title}` : "▶") : e.action;
+      out.push({ id: id++, who: "note", text: `coco · ${what}` });
     }
   }
   return out;
 }
+
+/* "what is coco playing" never reaches the server — the ghost reports
+   its state on the bus, so moco answers at zero tokens */
+const COCO_STATUS_RE =
+  /what(?:'s| is)\s+(?:(?:coco|moco|the ghost)\s+)?(?:playing|humming)|what song|now playing|what(?:'s| is)\s+(?:coco|the ghost)\s+up to/i;
 
 type Toast = "idle" | "blue" | "green" | "done";
 
 /**
  * TypeLine — the desk's voice arrives like speech: a smooth left-to-right
  * reveal (~80 chars/s), not a paste. Respects reduced-motion (instant).
+ * The already-written law: a line that has streamed once never re-types
+ * — close the panel, open it again, the words are simply there.
  */
+const TYPED = new Set<string>();
 function TypeLine({ text, className }: { text: string; className?: string }) {
   const instant =
-    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) ||
+    TYPED.has(text);
   const [n, setN] = useState(instant ? text.length : 0);
   useEffect(() => {
     if (instant) return;
@@ -74,6 +88,7 @@ function TypeLine({ text, className }: { text: string; className?: string }) {
       setN((v) => {
         if (v >= text.length) {
           clearInterval(iv);
+          TYPED.add(text);
           return v;
         }
         return Math.min(v + 2, text.length);
@@ -96,6 +111,11 @@ export function FloatingAgent({ view }: { view: View }) {
   const bodyRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const idRef = useRef(1);
+  /* the synchronous busy ref: two rapid submits ride past the async
+     busy STATE (React hasn't committed setBusy yet), so the ref rides
+     beside it — the ref is law for the fetch, the state is law for
+     the dot. */
+  const busyRef = useRef(false);
   const drag = useRef({ active: false, moved: false, px: 0, py: 0, ox: 0, oy: 0 });
   const idleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -271,15 +291,44 @@ export function FloatingAgent({ view }: { view: View }) {
   const send = async (e?: React.FormEvent) => {
     e?.preventDefault();
     const message = input.trim();
-    if (!message || busy) return;
+    if (!message || busy || busyRef.current) return;
+    busyRef.current = true;
     setBusy(true);
     setInput("");
-    setLines((p) => [...p, { id: idRef.current++, who: "user", text: message }]);
+    /* ids are minted SYNCHRONOUSLY at creation, never lazily inside a
+       state updater. The mint that minted this bug: two rapid submits
+       ride past the async busy state, and if both responses' batches
+       computed their start INSIDE the queued updater, both would read
+       the same final counter at render (the handlers' += had already
+       run) — overlapping ranges, two <p> sharing a key. The handler
+       mints the whole batch and advances the counter BEFORE the (now
+       pure) updater is queued, and pure updaters are also what keeps
+       StrictMode's double-invoke honest — a counter bump inside an
+       updater would mint twice per message. Overlap is now
+       structurally impossible: handlers are sequential, each mints
+       its range synchronously, done. */
+    const userLine: Line = { id: idRef.current++, who: "user", text: message };
+    setLines((p) => [...p, userLine]);
+    /* moco knows what coco hums without a server turn: the ghost
+       publishes its state on the bus — one local line, zero tokens */
+    if (COCO_STATUS_RE.test(message)) {
+      const snap = musicBus.snapshot();
+      const answer: Line = snap
+        ? { id: idRef.current++, who: "note", text: `coco · ▶ ${snap.title} — ${snap.channel}${snap.playing ? "" : " (paused)"}` }
+        : { id: idRef.current++, who: "note", text: "coco is quiet — nothing hums right now." };
+      setLines((p) => [...p, answer]);
+      busyRef.current = false;
+      setBusy(false);
+      return;
+    }
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ sessionId, message, adapter: "naive" }),
+        /* the ghost's state rides along: one line of context, so any
+           phrasing of "what's playing" is understood — the regex above
+           keeps the canonical query free */
+        body: JSON.stringify({ sessionId, message, adapter: "naive", music: musicBus.snapshot() }),
       });
       const data = (await res.json()) as { ok: boolean; sessionId: string; events: ChatEvent[]; error?: string };
       if (data.ok) {
@@ -289,14 +338,30 @@ export function FloatingAgent({ view }: { view: View }) {
         } catch {
           /* session won't survive a refresh in private mode */
         }
-        setLines((p) => [...p, ...summarize(data.events, idRef.current)]);
-        idRef.current += summarize(data.events, idRef.current).length;
+        const batch = summarize(data.events, idRef.current);
+        idRef.current += batch.length;
+        setLines((p) => [...p, ...batch]);
+        /* the handoff: music events ride the bus to the ghost — this is
+           the desk agent calling the second agent */
+        for (const e of data.events) {
+          if ("kind" in e && e.kind === "music") {
+            const m = e as Extract<ChatEvent, { kind: "music" }>;
+            const cmd: MusicCommand =
+              m.action === "play"
+                ? { action: "play", tracks: m.tracks, query: m.query, mood: m.mood, error: m.note }
+                : { action: m.action };
+            musicBus.emit(cmd);
+          }
+        }
       } else {
-        setLines((p) => [...p, { id: idRef.current++, who: "agent", text: "The desk hit a snag — try again." }]);
+        const snag: Line = { id: idRef.current++, who: "agent", text: "moco hit a snag — try again." };
+        setLines((p) => [...p, snag]);
       }
     } catch {
-      setLines((p) => [...p, { id: idRef.current++, who: "agent", text: "Network error reaching the desk." }]);
+      const net: Line = { id: idRef.current++, who: "agent", text: "Network error reaching moco." };
+      setLines((p) => [...p, net]);
     } finally {
+      busyRef.current = false;
       setBusy(false);
     }
   };
@@ -307,7 +372,7 @@ export function FloatingAgent({ view }: { view: View }) {
     <div ref={wrapRef} className="fixed z-50 select-none" style={{ left: pos.x, top: pos.y }}>
       {open && (
         <div
-          className="animate-rise absolute right-0 flex max-h-[470px] w-[330px] flex-col overflow-hidden rounded-[6px] border border-line-strong bg-card"
+          className="animate-rise absolute right-0 flex max-h-[340px] w-[330px] flex-col overflow-hidden rounded-[6px] border border-line-strong bg-card"
           style={panelBelow ? { top: "72px" } : { bottom: "84px" }}
           role="dialog"
           aria-label="the desk agent chat"
@@ -316,7 +381,7 @@ export function FloatingAgent({ view }: { view: View }) {
           <div className="flex items-center gap-2.5 border-b border-line px-3.5 py-2.5">
             <DeskHead size={24} thinking={busy} className="text-ink" />
             <div className="flex-1">
-              <div className="label-caps">desk agent</div>
+              <div className="label-caps">moco</div>
               <div className="mt-0.5 flex items-center gap-1.5 text-[10.5px] text-inksoft">
                 <span aria-hidden className={cn("h-1 w-1 rounded-full", busy ? "bg-held" : "bg-cleared/80")} />
                 {busy ? "thinking" : "on the desk"}
@@ -347,15 +412,14 @@ export function FloatingAgent({ view }: { view: View }) {
             role="log"
             aria-live="polite"
             className={cn(
-              "flex-1 space-y-2.5 overflow-y-auto px-3.5 py-3 transition-opacity duration-300",
+              "chat-scroll flex-1 space-y-2.5 overflow-y-auto px-3.5 py-3 transition-opacity duration-300",
               clearing && "opacity-0"
             )}
-            style={{ maxHeight: "330px" }}
           >
             {lines.length === 0 && !clearing && (
               <p className="animate-rise py-4 text-center text-[12px] leading-relaxed text-inksoft">
-                The desk is open. Shopping runs on the house brain — ask it
-                for something, or just say hi.
+                The desk is open — moco here. Shopping runs on the house
+                brain — ask for something, or just say hi.
               </p>
             )}
             {lines.map((l) =>
@@ -401,8 +465,8 @@ export function FloatingAgent({ view }: { view: View }) {
                 setInput(e.target.value);
                 armAutoClose();
               }}
-                placeholder="ask the desk…"
-                aria-label="message the desk agent"
+                placeholder="ask moco…"
+                aria-label="message moco, the desk agent"
                 className="h-6 flex-1 bg-transparent text-[12.5px] text-ink placeholder:text-inksoft/60 focus:outline-none"
               />
               <button
@@ -425,8 +489,8 @@ export function FloatingAgent({ view }: { view: View }) {
         onPointerDown={onDown}
         onPointerMove={onMove}
         onPointerUp={onUp}
-        aria-label="the desk agent — drag to move, click to chat"
-        title="the desk agent — drag me, click to chat"
+        aria-label="moco, the desk agent — drag to move, click to chat"
+        title="moco — drag me, click to chat"
         className="relative z-10 block cursor-grab touch-none active:cursor-grabbing"
       >
         <DeskHead

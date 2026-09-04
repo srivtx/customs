@@ -50,6 +50,12 @@ be colored (the single exception: the bot's aurora, §7):
 Each has `-ink` (a ~8–10% tint for fills) and `-contrast` (text on solid fills)
 companions. A color that does not map to a verdict does not exist here.
 
+**The one non-verdict hue: the band.** `--band` (`#e0604e` dark / `#c04a3a` light,
+with `-ink`/`-contrast` companions) belongs to the music ghost — the second
+agent — the way the aurora hues belong to the bot. It is a character color,
+not a verdict: it must never appear on stamps, chips, text or borders outside
+the ghost and its transcript chip. Nothing else in the product may wear it.
+
 ### The sheet
 
 `.sheet` (the paper view) is a **white document in both themes** — x.ai's dark site
@@ -185,6 +191,70 @@ are cute: smooth, quiet, small tells.
 6. Colors: structural colors are tokens; the aurora's four hues (sage, sky,
    lilac, amber at 0.7–0.85 stops, themed total opacity 0.55 dark / 0.38 light)
    are the only non-verdict colors in the product. Keep exactly four.
+
+### The second character: coco, the music ghost — `music-ghost.tsx`
+
+Coco is the desk head's own body in the band red: the same 32×32 round
+volume, the same `desk-eye-g` / `desk-eye` classes (glance for glance,
+blink for blink — the choreography is shared, not copied). It is
+summoned by the desk agent's chat and plays what was asked.
+
+1. **Face law:** eyes only — no mouth, ever (the desk head is mouthless;
+   so is coco). Expression is eye state (wide; happy arcs when the
+   passage earns it) plus body motion. No new parts.
+2. **Twin law:** the silhouette is the desk head's own — one circle, no
+   skirt, no extra geometry. The band fill, the beat bob, and the sheen
+   (the bot's aurora pattern scaled down: a static rect clipped to the
+   circle, the paint drifting via SMIL, paused under reduced motion)
+   are the only departures. Paused music freezes the bob — coco
+   breathes only when the track does.
+3. **Motion budget:** arrive/sink (one 0.9s transform each), the beat
+   bob, the shared eye choreography, the tucked-away fade. That is all.
+4. **Controls** live in one hairline bubble: the YouTube player at
+   visible size (never a hidden or 1px frame), track, channel, a
+   transform-only progress ride, exactly three buttons (play/pause,
+   skip, stop). Mono for the metadata, sans for the title. No close box
+   on the card — the card is dismissed by stop, or hidden with the
+   music still humming. The card stays mounted while a track lives —
+   the background sink is visual only, so the music never dies
+   mid-track; stop alone ends the player, and the next summon starts
+   a fresh one.
+5. **Coco's chat** is the desk agent's panel in miniature, and it opens
+   on a click of coco: the same hairline header (the face at 24px, one
+   status dot — band while humming), the same quiet text close, the
+   same sunken composer well, TypeLine for coco's voice. It drops
+   downward from coco when there is sky below, rises when coco sits
+   low — clearing the card when the card is up (the desk panel's own
+   below/above law). Its ear is the rules brain: control verbs run at
+   zero tokens; a play wish rides the desk's chat pipeline over the
+   wire — the server-side rules brain catches it at zero tokens (the
+   LLM never wakes) and the crate answers in coco's own chat, no desk
+   conversation required. Hide ≠ stop: "hide" (chat word or header button)
+   tucks coco away while the music keeps humming; "give me controls"
+   recalls it. A **double-click** on coco toggles the video: it sinks
+   to the background — the music hums on, coco stays to talk to — and a
+   second double-click brings the screen back (a video the browser
+   still holds back can't sink — tap play first). "give me controls"
+   always works too. A ↻ fresh page fades the conversation before it
+   clears — turning a sheet over, not a wipe; the music is untouched.
+6. The summon is logged in both transcripts as a compact `coco ·` chip
+   with the chosen track — a receipt of the handoff, not decoration.
+7. **The agents view** presents both characters on their OWN woven desk
+   mat — deliberately not the bot's wool (HeroFabric is a hand-cut felt
+   blob with turbulence edges and aurora pastels; the agents' mat is
+   rectangular loom cloth: warp/weft crosshatch, machine hem, two dye
+   pools — ink for moco's cloth, band for coco's). The two cloths are
+   sewn together by a hand running-stitch seam corner to corner, and
+   the seam IS the bus wire — the handoff is the join between the two
+   cloths, never a line drawn on top. Elsewhere the house's craft
+   vocabulary holds (static feTurbulence grain, running-stitch seams,
+   woven-label nameplates, cross-stitch corner tacks, thread = hairline
+   gray except on the ghost's own cloth) under the craft school's
+   discipline (Web Interface Guidelines /
+   animations.dev / Linear's calmer interface): hover changes one
+   quiet thing, the live heads and the one-shot wire ping are the
+   delight budget, and the card/chat/head stack in one flow column
+   below the head so nothing ever overlaps.
 
 ## 8. Copy voice
 

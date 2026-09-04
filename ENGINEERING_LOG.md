@@ -887,3 +887,54 @@ references shipped products only, and all numbers regenerate from the new
 catalog (GMV ₹60,530 · 13 captures · net@1M ₹9,30,93,000).
 
 ---
+
+## 2026-09-04 — D7: the second agent — the ghost is summoned over the wire, not prompt-typed
+
+**What happened:** the request was "ask the desk agent to play a song, and a
+second agent comes and performs it." The cheap version of that is an LLM
+writing a YouTube URL into chat. That version costs tokens on every command,
+hallucinates track names, and makes the second agent a puppet of the first.
+The honest version makes the handoff structural: the desk agent *calls* the
+ghost over an event bus, the way it calls tools.
+
+**The call it came from:** the desk agent already had a quota discipline
+(regex brain catches shopping commands at zero tokens; the LLM only meets
+casual chat). Music text must never reach the model — "play Africa by Toto"
+is a command, not a conversation. So the ghost got its own rules brain
+(`music/brain.ts`): deterministic intent parsing for play/skip/pause/resume/
+stop/louder/quieter, with mood words ("something chill") mapped to fixed,
+curated search strings — replayable bit-for-bit, zero tokens, forever. The
+LLM brain is now skipped entirely when the rules brain catches music.
+
+**The wall that mattered:** resolving a song name to a playable track without
+scraping. The answer is the official YouTube Data API v3, server-side only
+(the key never reaches the browser), embeddable-filtered, with the embed
+player riding *visible* inside the ghost's control bubble — no 1px hidden
+frames, no re-built player UI. Search costs 100 quota units, durations 1
+more; the free tier covers hundreds of summons a day. No key: the desk says
+so calmly and the ghost stays in the floor — the refusal is an honesty
+label, not an error.
+
+**The bugs this round caught before they shipped:**
+1. **The arrive state was a trap.** The first draft set `state: "arriving"`
+   and never advanced it — the beat bob is gated on `"out"`, so the ghost
+   would have materialized and stood frozen forever. Arrive now schedules
+   its own successor (the same lesson as the toast beats, D5-era).
+2. **The eye mood cycle hit a temporal dead zone.** The rest-timer closure
+   referenced its own container before initialization. Rewritten so every
+   timer has a declared home and a clear-all teardown.
+3. **A sed edit ate the "ceiling rides with the intent" comment** while
+   inserting the music case — caught by re-reading the diff, restored in
+   the same commit. Comments are load-bearing in this repo.
+
+**The contract that grew:** the band (`--band`) is the product's one
+non-verdict hue, owned by the ghost the way the aurora is owned by the bot
+(DESIGN_SYSTEM §2, §7). Face law inherited: eyes only, no mouth — the ghost
+sings through the bob and the eye states, not through a drawn mouth.
+
+**The test it became:** `tests/music-brain.test.ts` — control verbs as whole
+commands (a "pause" inside a shopping sentence stays shopping), mood words
+resolve to fixed queries, "play X" strips politeness, bare "music" resolves
+to the chill mood.
+
+---

@@ -17,6 +17,9 @@ export async function POST(req: NextRequest) {
       message: string;
       adapter?: string;
       tier?: string;
+      persona?: string;
+
+      music?: { title?: unknown; channel?: unknown; playing?: unknown };
     };
     const rt = getRuntime();
     const adapter = (ADAPTERS.includes(body.adapter as AdapterId) ? body.adapter : "naive") as AdapterId;
@@ -24,7 +27,19 @@ export async function POST(req: NextRequest) {
     let session: BuyerSession | undefined = body.sessionId ? rt.sessions.get(body.sessionId) : undefined;
     if (!session) session = newSession(rt, (body.tier === "ATTESTED" || body.tier === "MANDATED" ? body.tier : "UNVERIFIED") as BuyerSession["tier"]);
 
-    const result = await agentTurn(rt, session.sessionId, body.message ?? "", adapter);
+    const persona = body.persona === "coco" ? ("coco" as const) : ("desk" as const);
+    /* the ghost's state, if it hums — one compact line of context so the
+       cheap voice can answer ANY phrasing of "what's playing" (the
+       regex brains keep the commands; this is chatter context only) */
+    const music =
+      body.music && typeof body.music.title === "string" && typeof body.music.channel === "string"
+        ? {
+            title: body.music.title.slice(0, 80),
+            channel: body.music.channel.slice(0, 80),
+            playing: body.music.playing === true,
+          }
+        : null;
+    const result = await agentTurn(rt, session.sessionId, body.message ?? "", adapter, { persona, music });
     return NextResponse.json({
       ok: true,
       sessionId: session.sessionId,

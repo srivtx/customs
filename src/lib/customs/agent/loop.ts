@@ -10,13 +10,15 @@ import { randomUUID, createHmac } from "node:crypto";
 import { CustomsRuntime, BuyerSession } from "../runtime";
 import { parseIntent, Intent } from "./nlu";
 import { adapterCall, AdapterId, ADAPTERS } from "../adapters";
-import { getLlmBrain, brainMode, getChatVoice } from "./llm";
+import { getLlmBrain, brainMode, getChatVoice, COCO_SYSTEM_PROMPT, CHAT_SYSTEM_PROMPT } from "./llm";
 import { Product, searchCatalog, parsePriceCeiling } from "../store/catalog";
 import { GateDecision, TrustTier, TRUST_TIERS, Mandate } from "../gate/types";
 import { signMandate, buildMandateBody } from "../gate/mandate";
 import { runTransaction, newSpan } from "../engine";
 import { ATTACK_CORPUS, AttackCase, attackTxInput } from "../fuzz/corpus";
 import { railInfo } from "../payments";
+import { searchTracks, Track } from "../music/youtube";
+import { MusicAction } from "../music/brain";
 
 export type ChatEvent =
   | { id: string; ts: number; role: "agent" | "user"; text: string }
@@ -28,7 +30,8 @@ export type ChatEvent =
   | { id: string; ts: number; kind: "payment"; orderId: string; totalPaise: number; status: "captured" | "held" | "refused"; rail: string; simulated: boolean }
   | { id: string; ts: number; kind: "receipt"; orderId: string; manifestNo: string; lines: { name: string; quantity: number; unitPricePaise: number }[]; totalPaise: number; rail: string; simulated: boolean }
   | { id: string; ts: number; kind: "attack"; attackId: string; label: string; verdict: string; code: string | null; checks: { label: string; pass: boolean | null; detail: string }[] }
-  | { id: string; ts: number; kind: "tier"; tier: TrustTier; note: string };
+  | { id: string; ts: number; kind: "tier"; tier: TrustTier; note: string }
+  | { id: string; ts: number; kind: "music"; action: MusicAction; tracks: Track[]; query: string | null; mood: string | null; note: string | null };
 
 export interface MandateView {
   id: string;
@@ -102,7 +105,13 @@ export async function agentTurn(
   sessionId: string,
   message: string,
   adapter: AdapterId,
-  opts?: { sessionless?: boolean }
+  opts?: {
+    sessionless?: boolean;
+    persona?: "desk" | "coco";
+    /* what the ghost hums, published by the client — chatter context
+       only, never the money path; commands stay on the rules brain */
+    music?: { title: string; channel: string; playing: boolean } | null;
+  }
 ): Promise<TurnResult> {
   const events: ChatEvent[] = [];
   const say = (text: string) => events.push({ id: eid(), ts: Date.now(), role: "agent", text });
@@ -114,21 +123,36 @@ export async function agentTurn(
 
   events.push({ id: eid(), ts: now(), role: "user", text: message });
 
-  // LLM brain (optional): parse intent via model, fall back to rules
+  // LLM brain (optional): parse intent via model, fall back to rules.
+  // Music never reaches the model — the rules brain owns it entirely,
+  // so summoning the ghost costs zero tokens (D7).
   let intent: Intent = parseIntent(message);
   let tokensIn = 0;
   let tokensOut = 0;
-  const llm = brainMode() === "llm" ? getLlmBrain() : null;
+  const llm = brainMode() === "llm" && intent.kind !== "music" ? getLlmBrain() : null;
   /* the companion voice — independent of AGENT_BRAIN: any provider key
      unlocks it, because casual chat is not the demo-critical intent path */
   const voice = getChatVoice();
+  /* the voice: two personas on the same cheap model — moco talks desk,
+     coco talks ghost. Commands never reach here; this is chatter only,
+     metered like everything else. */
+  const cocoPersona = opts?.persona === "coco";
+  /* one line of music context, appended to the persona prompt: with it
+     the cheap voice understands ANY phrasing of "what's playing" —
+     ~40 tokens, metered, and no state machine guessing English */
+  const musicLine = opts?.music
+    ? `Desk music right now: "${opts.music.title}" by ${opts.music.channel}, ${opts.music.playing ? "playing" : "paused"}. If asked about the music, answer from this line and nothing else — two short sentences, all lowercase.`
+    : "";
   const speakThroughVoice = async (message: string, fallback: string) => {
     if (!voice) {
       say(fallback);
       return;
     }
     const t0 = performance.now();
-    const { reply, usage, model } = await voice.chat(message);
+    const system = cocoPersona || musicLine
+      ? `${cocoPersona ? COCO_SYSTEM_PROMPT : CHAT_SYSTEM_PROMPT}${musicLine ? `\n\n${musicLine}` : ""}`
+      : undefined;
+    const { reply, usage, model } = await voice.chat(message, system);
     newSpan(rt.deps, `tr_ses_${session.sessionId}`, session.lastOrderId ?? "none", "llm.chat", Math.round(performance.now() - t0), adapter, {
       tokensIn: usage.tokensIn,
       tokensOut: usage.tokensOut,
@@ -160,13 +184,28 @@ export async function agentTurn(
   };
   const signCtx = (payload: string) => createHmac("sha256", rt.keys.fingerprint).update(payload).digest("hex").slice(0, 32);
 
+  /* coco is not a shopping agent: shopping intents typed to coco are
+     honestly deflected to moco — one line, zero tokens */
+  const cocoShopping =
+    cocoPersona &&
+    intent.kind !== "music" &&
+    intent.kind !== "greeting" &&
+    intent.kind !== "unknown" &&
+    intent.kind !== "help" &&
+    intent.kind !== "status";
+
+  if (cocoShopping) {
+    say(`that's moco's desk — tell the black head.`);
+  } else
   switch (intent.kind) {
     case "greeting": {
       /* a greeting is casual speech — when the cheap voice is available it
          answers like a person; without a key, the canned desk-open line */
       await speakThroughVoice(
         message,
-        `Customs desk, open. I'm your buying agent for Fieldnote Supply — ${rt.catalog.byId.size} items in the catalog. ` +
+        cocoPersona
+          ? "hey — coco here. say \u201cplay\u201d with a song, or ask me anything."
+          : `Customs desk, open. I'm **moco**, your buying agent for Fieldnote Supply — ${rt.catalog.byId.size} items in the catalog. ` +
           `Tell me what you need ("noise cancelling headphones under ₹5,000") and I'll search, build a cart, and ask the desk for a bounded mandate. ` +
           `Your trust tier is **${TRUST_TIERS[session.tier].label}** (${TRUST_TIERS[session.tier].blurb}).`
       );
@@ -201,6 +240,30 @@ export async function agentTurn(
       const t = TRUST_TIERS[next];
       events.push({ id: eid(), ts: now(), kind: "tier", tier: next, note: `${rupees(t.maxAmountPaise)} cap · ${t.maxItems} item${t.maxItems > 1 ? "s" : ""} · ${Math.round(t.mandateTtlMs / 60000)} min` });
       say(next === "ATTESTED" ? "You're verified." : "Standing mandate — the highest limits.");
+      break;
+    }
+    case "music": {
+      if (intent.action === "play") {
+        const query = intent.query ?? "chill lofi beats mix";
+        const res = await searchTracks(query);
+        if (res.error === "no-key") {
+          events.push({ id: eid(), ts: now(), kind: "music", action: "play", tracks: [], query, mood: intent.mood, note: "no-key" });
+          say(`The ghost can't reach the record crate — no YouTube key on the desk. Add YOUTUBE_API_KEY to .env and summon again.`);
+          break;
+        }
+        if (res.error || !res.tracks.length) {
+          say(`Nothing surfaced for that — try another name.`);
+          break;
+        }
+        events.push({ id: eid(), ts: now(), kind: "music", action: "play", tracks: res.tracks, query, mood: intent.mood, note: null });
+        say(
+          `The ghost takes it from here — **${res.tracks[0].title}**, ${res.tracks[0].channel}.` +
+            (intent.mood ? ` (${intent.mood} mood)` : ``)
+        );
+        break;
+      }
+      events.push({ id: eid(), ts: now(), kind: "music", action: intent.action, tracks: [], query: null, mood: null, note: null });
+      say(`Relayed to the ghost.`);
       break;
     }
     case "search": {
@@ -268,7 +331,10 @@ export async function agentTurn(
          answers casual questions briefly. Shopping commands never reach
          here (regex caught them above), so this path costs a few tokens
          only when a human actually chats. */
-      await speakThroughVoice(message, `I didn't catch that.`);
+      await speakThroughVoice(
+        message,
+        cocoPersona ? "hmm — I hum and I hold the playback. that one's beyond me." : `I didn't catch that.`
+      );
       break;
     }
   }
