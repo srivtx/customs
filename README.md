@@ -24,6 +24,13 @@
   <a href="PAPER.md"><img src="https://img.shields.io/badge/-PAPER.md-1b180f.svg?label=read" alt="read PAPER.md" /></a>
 </p>
 
+<p align="center">
+  Judging this repo? <code>make triage</code> runs a 60-second self-guided tour ·
+  <a href="JUDGE.md">JUDGE.md</a> maps every claim to a file and a command ·
+  live: <a href="https://customs.srivtx.xyz">customs.srivtx.xyz</a>
+  (<a href="https://customs.srivtx.xyz/api/health">/api/health</a> proves the rails)
+</p>
+
 ---
 
 Built for the **Razorpay AI Buildathon 2026** · Track 1 (AI Growth & Agentic
@@ -67,7 +74,19 @@ default, a pure-white light mode one click away in the footer), and one
 type system: the house sans carries every human sentence, the mono carries
 only what a machine would read.
 
+**One desk, two agents.** The desk agent **moco** — the black one — can
+summon the music ghost **coco** — the red one — over a live event bus: say
+*"play africa by toto"* and coco is pulled through, wire and all, and
+performs it. Play, skip and pause are a zero-token rules brain
+(`tests/music-brain.test.ts` owns that claim); anything else rides the same
+optional cheap chat voice as the desk. Both characters live on the
+**Agents** view.
+
 ## The gate in one look
+
+**The track's bar, met and mapped:** every money action explainable, bounded
+and gated — the audit trail, and one failure handled gracefully. Where each
+word is earned: [JUDGE.md → the track bar](JUDGE.md#the-track-bar-verbatim).
 
 ```
 tier caps        unverified ₹500 / attested ₹5,000 / mandated ₹50,000
@@ -96,7 +115,11 @@ an honestly-labeled in-process simulation, so a fresh clone runs with zero
 setup. Live keys are refused at construction. The LLM brain is optional too — set any one of
 `OPENAI_API_KEY` / `GROQ_API_KEY` / `GEMINI_API_KEY` / `XAI_API_KEY` (Groq and
 Gemini have free tiers) plus `AGENT_BRAIN=llm`; without a key the
-deterministic rules brain runs everything, replayable.
+deterministic rules brain runs everything, replayable. Any one of those keys
+alone also powers the moco/coco chat voice — the voice is independent of
+`AGENT_BRAIN`. Coco's crate resolves tracks server-side through the YouTube
+Data API — set `YOUTUBE_API_KEY` (free tier); without it coco says the crate
+is locked and everything else still runs.
 
 ## Status (honest, by construction)
 
@@ -120,6 +143,7 @@ the **Why it exists** view and `PAPER.md` §7.
 - `PAPER.md` — the working paper (machine-legible twin of the in-app paper)
 - `make triage` — self-guided judge tour: prints claims, runs checks, exits 0
 - `make verify` — the exact checks CI runs on every push
+- **221 evidence checks** — and the count verifies itself: `make verify` fails if this number drifts (`node scripts/verify.mjs | grep -c PASS`)
 - `ENGINEERING_LOG.md` — dated incidents; every incident becomes a test
 - `ARCHITECTURE.md` — one diagram + the decisions that mattered
 - `llms.txt` / `AGENTS.md` — the repo, machine-legible; the invariants
@@ -196,6 +220,7 @@ the **Why it exists** view and `PAPER.md` §7.
 | `public/wordmark-light.svg` | the wordmark, light surfaces (this README) |
 | `public/wordmark-dark.svg` | the wordmark, dark surfaces (this README) |
 | `public/og.png` | the social card |
+| `public/llms.txt` | the machine index, served at the domain root (`/llms.txt`) |
 | `docs/demo.gif` | the recorded golden path (this README) |
 | `docs/FORM_ANSWERS.md` | the 12 submission-form answers, claim → evidence |
 <!-- FILEMAP:END -->

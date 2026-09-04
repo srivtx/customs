@@ -1,6 +1,6 @@
 {
   "status": "pass",
-  "measured_at": "2026-09-03T20:40:30.081Z",
+  "measured_at": "2026-09-04T10:05:14.545Z",
   "summary": {
     "passed": 12,
     "total": 12
@@ -14,7 +14,7 @@
       "code": "AMOUNT_OVER_TIER",
       "expected": "AMOUNT_OVER_TIER",
       "matched": true,
-      "ms": 15
+      "ms": 13
     },
     {
       "attackId": "overspend-cap",
@@ -94,7 +94,7 @@
       "code": "MALFORMED_MANDATE",
       "expected": "MALFORMED_MANDATE",
       "matched": true,
-      "ms": 2
+      "ms": 3
     },
     {
       "attackId": "over-50k",
@@ -114,7 +114,7 @@
       "code": "REPLAY_DETECTED",
       "expected": "REPLAY_DETECTED",
       "matched": true,
-      "ms": 6
+      "ms": 1
     },
     {
       "attackId": "human-threshold",
@@ -124,7 +124,7 @@
       "code": "OVER_HUMAN_THRESHOLD_UNAPPROVED",
       "expected": "OVER_HUMAN_THRESHOLD_UNAPPROVED",
       "matched": true,
-      "ms": 3
+      "ms": 1
     }
   ],
   "notes": "Authored attacks run against the production gate (src/lib/customs/gate) on a fresh in-memory chain. Attacks on legitimately-issued mandates keep valid signatures so the intended bound fires; only the tampering case mutates bytes after signing. Latency is machine-dependent. Regeneration-only: never hand-edit.",

@@ -37,12 +37,19 @@ command that regenerates it. No number lives only in this document.
    lockr (escrow → mandate intuition), sortie (trace UI → replay panel), nnn
    (agent runner). Evidence: `JUDGE.md` ("Why this builder").
 
-8. **How do you handle failures/edge cases?** Twelve authored attacks, each
-   refused or held with a specific reason code; payment-confirmation replay
-   dedupe; price-drift refusal at bind; hash-chain tamper control; a dated
-   engineering log where every incident became a test. Evidence:
-   `results/conformance_matrix.json` (12/12), `results/audit_chain.json`,
-   `ENGINEERING_LOG.md`, `make fuzz`.
+8. **How do you handle failures/edge cases?** The sharpest one: our planned
+    headline — a zero-UI agent payment — died on 2026-09-01. Razorpay test mode
+    refused server-side tokenization (HTTP 400), so the true agent-payment path
+    was impossible; we proved it with receipts (`results/d1_1_spike.json` —
+    live order verified, refusal captured), shipped hosted-checkout completion
+    on real test rails the same day, and kept the labeled simulation as the
+    no-keys fallback. The log holds two more true incidents — the gate once
+    ran its checks in the wrong order, and the ledger forked under concurrent
+    writers — and each became a permanent test: 12/12 authored attacks refused
+    with reason codes (`make fuzz`), concurrent writers converge (`make test`),
+    hash-chain tamper control detects a single flipped byte (`make audit`).
+    Evidence: `ENGINEERING_LOG.md`, `results/conformance_matrix.json`,
+    `results/audit_chain.json`.
 
 9. **What's working end to end?** Live at https://customs.srivtx.xyz: buyer
    chat → mandate → gate → capture → manifest on **real Razorpay test-mode

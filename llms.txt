@@ -11,7 +11,11 @@ searches, builds a cart, requests an Ed25519-signed spending mandate and pays
 inside its bounds. Merchant side: a control room with the channel P&L meter
 (agent GMV minus AI serving cost, live, at-1M projection), human approvals
 over ₹10,000, order ledger, span replay, protocol ablation and a red-team log.
-Test mode only; without Razorpay keys the rail is a labeled simulation.
+One desk, two agents: the desk agent (moco, black) summons the music ghost
+(coco, red) over a live event bus — play/skip/pause are a zero-token rules
+brain, proven by `tests/music-brain.test.ts`; free-form questions ride an
+optional cheap chat voice. Test mode only; without Razorpay keys the rail is
+a labeled simulation.
 
 ## how to verify
 
@@ -39,6 +43,9 @@ Test mode only; without Razorpay keys the rail is a labeled simulation.
 - src/lib/customs/meter.ts — channel P&L + projection, assumptions declared
 - src/components/customs/why.tsx — the why page: architecture drawn as cards + desk ledger (shipped / simulated / the work order for next)
 - src/components/customs/agent-kit.tsx — the agent kit view: the HTTP contract, the protocol, and a live golden-path walkthrough in-page
+- src/components/customs/agents.tsx — the agents view: the two characters live, the summon, the handoff wire
+- src/lib/customs/music/ — the ghost: zero-token rules brain (music intents), server-side YouTube resolution (YouTube Data API v3), the client bus the desk agent calls the ghost over
+- tests/music-brain.test.ts — proves the music command path costs zero tokens
 - src/components/customs/paper.tsx — the paper view: a clean theme-aware document page; §5–§6 numbers read live from the ledger
 - src/components/customs/demo-player.tsx — the landing demo: the golden path plays itself in code, loops (docs/demo.gif is a recording of it)
 - src/components/customs/hero-bot.tsx — the customs bot: one smooth animated volume on the hero, token-inked, reduced-motion aware
@@ -54,6 +61,11 @@ Latency is machine-dependent and never cited as a promise. Competitor numbers ne
 ## status
 
 Live deployment: https://customs.srivtx.xyz — /api/health answers ok:true on
-real Razorpay test rails (simulated:false). Payment rail: test mode when keys
-are set; labeled in-process simulation as the no-keys fallback. x402: declared
-stretch goal, not core scope.
+real Razorpay test rails (simulated:false). Payment mechanism: the D1-1 spike
+executed on real test keys (2026-09-01) — hosted-checkout completion on real
+rails is the demo mechanism; the labeled simulation stays the no-keys/volume
+fallback and zero-UI tokenized payment is impossible in test mode (receipts in
+results/d1_1_spike.json). The ghost's crate needs YOUTUBE_API_KEY; without it
+coco reports the crate locked and everything else runs. Payment rail: test
+mode when keys are set; labeled in-process simulation as the no-keys fallback.
+x402: declared stretch goal, not core scope.
